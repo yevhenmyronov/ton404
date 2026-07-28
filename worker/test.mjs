@@ -1,15 +1,15 @@
-// Самоперевірка бекенду: node worker/test.mjs
-// Ліміти — єдине, що стоїть між дірою і накруткою, тож вони мають лишатись
-// перевіреними навіть коли решту коду ніхто не чіпає.
+// Backend self-check: node worker/test.mjs
+// The limits are all that stands between the hole and inflation, so they stay
+// tested even when nobody touches the rest of the code.
 import assert from 'node:assert';
 import { BlackHole } from './src/index.js';
 
-// платформенний клас; тут потрібен лише щоб конструктор не впав
+// platform class; only needed so the constructor doesn't crash
 globalThis.WebSocketRequestResponsePair = class {
   constructor(request, response) { this.request = request; this.response = response; }
 };
 
-// найтонший можливий двійник DurableObjectState: сховище в Map, сокетів немає
+// thinnest possible DurableObjectState stand-in: storage in a Map, no sockets
 const fakeState = () => {
   const store = new Map();
   return {
@@ -17,8 +17,8 @@ const fakeState = () => {
       get: async k => store.get(k),
       put: async (k, v) => void store.set(k, structuredClone(v)),
     },
-    // справжній DO тримає запити, поки конструктор вантажить стан; тут це
-    // просто промис, який тест чекає замість платформи
+    // a real DO holds requests while the constructor loads state; here it's
+    // just a promise the test awaits instead of the platform
     blockConcurrencyWhile(fn) { this._ready = fn(); },
     getWebSockets: () => [],
     setWebSocketAutoResponse(pair) { this._auto = pair; },
@@ -33,13 +33,13 @@ const hole = async () => {
   return h;
 };
 
-// сирий запит без зручностей feed() — саме ним перевіряються заголовки
+// raw request without feed()'s conveniences — used to test the header checks
 const raw = (h, init) => h.fetch(new Request('https://x/feed', {
   method: 'POST', headers: { 'cf-connecting-ip': '9.9.9.9', ...init.headers }, body: init.body,
 }));
 
-// content-length тут проставляється руками: node його не додає, а браузерний
-// fetch зі строковим тілом — завжди. Двійник має поводитись як браузер.
+// content-length is set by hand: node doesn't add it, but browser fetch with
+// a string body always does. The stand-in must behave like a browser.
 const feed = (h, body, ip = '1.2.3.4', headers = {}) => {
   const payload = JSON.stringify(body);
   return h.fetch(new Request('https://x/feed', {
@@ -55,218 +55,217 @@ const feed = (h, body, ip = '1.2.3.4', headers = {}) => {
 const GB = 1024 ** 3;
 let h = await hole();
 
-// ── базовий кидок ─────────────────────────────────────────────────────────
+// ── basic throw ───────────────────────────────────────────────────────────
 let r = await feed(h, { bytes: GB, ext: 'PNG', sig: 1 });
 assert.equal(r.status, 200);
-assert.equal((await r.json()).bytes, GB, 'байти долічилися');
-assert.equal(h.d.log[0].e, 'png', 'розширення в нижньому регістрі');
+assert.equal((await r.json()).bytes, GB, 'bytes were counted');
+assert.equal(h.d.log[0].e, 'png', 'extension lowercased');
 
-// ── санітизація розширення: імена файлів не мають шансу просочитись ────────
-await new Promise(r => setTimeout(r, 200));   // трохи довше за COOLDOWN
-await feed(h, { bytes: 1, ext: '../../Якесь Імʼя.pdf', sig: 2 });
-assert.match(h.d.log[0].e, /^[a-z0-9]{1,8}$/, 'розширення санітизоване: ' + h.d.log[0].e);
+// ── extension sanitizing: filenames must have no way to leak through ───────
+await new Promise(r => setTimeout(r, 200));   // slightly longer than COOLDOWN
+await feed(h, { bytes: 1, ext: '../../Wéird Nâme.pdf', sig: 2 });
+assert.match(h.d.log[0].e, /^[a-z0-9]{1,8}$/, 'extension sanitized: ' + h.d.log[0].e);
 
-// ── кулдаун списується з кожного запиту, а не лише з успішного ────────────
-// інакше сміттям можна молотити без обмежень: перевірки не проходять, а слот
-// не витрачається
+// ── cooldown is charged on every request, not just successful ones ─────────
+// otherwise garbage can hammer freely: checks fail but no slot is spent
 {
   const h2 = await hole();
   await feed(h2, { bytes: -1, ext: 'a', sig: 1 }, '3.3.3.3');
   assert.equal((await feed(h2, { bytes: 1, ext: 'a', sig: 2 }, '3.3.3.3')).status, 429,
-    'відбитий запит теж витрачає кулдаун');
+    'a rejected request still spends the cooldown');
 }
 
-// ── кулдаун ───────────────────────────────────────────────────────────────
-assert.equal((await feed(h, { bytes: 1, ext: 'a', sig: 3 })).status, 429, 'кулдаун тримає');
+// ── cooldown ──────────────────────────────────────────────────────────────
+assert.equal((await feed(h, { bytes: 1, ext: 'a', sig: 3 })).status, 429, 'cooldown holds');
 
-// ── дедуп по підпису ──────────────────────────────────────────────────────
-await new Promise(r => setTimeout(r, 200));   // трохи довше за COOLDOWN
-assert.equal((await feed(h, { bytes: GB, ext: 'png', sig: 1 })).status, 409, 'той самий файл двічі');
+// ── dedup by signature ────────────────────────────────────────────────────
+await new Promise(r => setTimeout(r, 200));   // slightly longer than COOLDOWN
+assert.equal((await feed(h, { bytes: GB, ext: 'png', sig: 1 })).status, 409, 'same file twice');
 
-// ── регресія: кулдаун мусить пускати клієнтський темп ─────────────────────
-// swallow() шле кидки кожні 160 мс. Щойно кулдаун переросте цю паузу,
-// перетягування кількох файлів наполовину відіб'ється з 429, а сторінка
-// відкотить уже показану масу. Помітно це лише очима, тож хай ловить тест.
+// ── regression: cooldown must admit the client-side pace ──────────────────
+// swallow() sends throws every 160 ms. The moment the cooldown outgrows that
+// pause, multi-file drags half-bounce with 429 and the page rolls back mass
+// it already showed. Only eyes would catch that, so a test does instead.
 h = await hole();
 for (const sig of [41, 42, 43]) {
   assert.equal((await feed(h, { bytes: 1, ext: 'a', sig })).status, 200,
-    `кидок ${sig} у клієнтському темпі 160 мс має проходити`);
+    `throw ${sig} at the 160 ms client pace must pass`);
   await new Promise(r => setTimeout(r, 160));
 }
 
-// ── межі розміру ──────────────────────────────────────────────────────────
-// адреси різні навмисно: кулдаун тепер списується з кожного запиту, що пройшов
-// саму перевірку кулдауна, а не лише з успішного — інакше сміттям можна було б
-// молотити скільки завгодно
+// ── size bounds ───────────────────────────────────────────────────────────
+// distinct addresses on purpose: the cooldown is now charged on every request
+// that reaches the cooldown check, not just successful ones
 h = await hole();
-assert.equal((await feed(h, { bytes: 1e12, ext: 'a', sig: 9 }, '1.0.0.1')).status, 400, 'понад MAX_FEED');
-assert.equal((await feed(h, { bytes: -5,   ext: 'a', sig: 9 }, '1.0.0.2')).status, 400, 'відʼємний розмір');
-assert.equal((await feed(h, { bytes: 'NaN', ext: 'a', sig: 9 }, '1.0.0.3')).status, 400, 'не число');
+assert.equal((await feed(h, { bytes: 1e12, ext: 'a', sig: 9 }, '1.0.0.1')).status, 400, 'over MAX_FEED');
+assert.equal((await feed(h, { bytes: -5,   ext: 'a', sig: 9 }, '1.0.0.2')).status, 400, 'negative size');
+assert.equal((await feed(h, { bytes: 'NaN', ext: 'a', sig: 9 }, '1.0.0.3')).status, 400, 'not a number');
 assert.equal(
   (await feed(h, { bytes: 1, ext: 'a', sig: 9 }, '1.1.1.1', { 'content-length': '99999' })).status,
-  413, 'роздуте тіло не доходить до JSON.parse');
+  413, 'a bloated body never reaches JSON.parse');
 
-// ── ліміти рахуються по /64, а не по повній адресі: одному клієнту роздають
-//    цілу підмережу, тож інакше ліміт обходиться зміною останнього блоку ────
+// ── limits are counted per /64, not per full address: clients get a whole
+//    subnet, so the limit would otherwise be dodged by rotating the last block ──
 h = await hole();
 const v6 = n => `2001:db8:1:2:ffff:ffff:ffff:${n}`;
 assert.equal((await feed(h, { bytes: 1e9, ext: 'a', sig: 11 }, v6(1))).status, 200);
 assert.equal((await feed(h, { bytes: 1e9, ext: 'a', sig: 12 }, v6(2))).status, 429,
-  'сусідня адреса тієї ж підмережі ділить ліміт');
+  'a neighbor in the same subnet shares the limit');
 assert.equal((await feed(h, { bytes: 1e9, ext: 'a', sig: 13 }, '2001:db8:9:9::1')).status, 200,
-  'інша підмережа має власний ліміт');
+  'a different subnet has its own limit');
 
-// ── крос-доменне годування ────────────────────────────────────────────────
-// Відсутність CORS не заважає чужому сайту НАДІСЛАТИ запит — вона лише не дає
-// прочитати відповідь. POST із text/plain це «простий» запит, він летить без
-// preflight. Вимога application/json робить його непростим, тобто нездійсненним
-// із чужого origin, а перевірка Origin ловить ще й <form enctype="text/plain">.
+// ── cross-origin feeding ──────────────────────────────────────────────────
+// Missing CORS headers don't stop a foreign site from SENDING a request —
+// they only block reading the response. A text/plain POST is a "simple"
+// request and flies without preflight. Requiring application/json makes it
+// non-simple (impossible cross-origin), and the Origin check also catches
+// <form enctype="text/plain">.
 h = await hole();
 const payload = JSON.stringify({ bytes: 1e9, ext: 'a', sig: 77 });
 assert.equal((await raw(h, {
   headers: { 'content-type': 'text/plain;charset=UTF-8', 'content-length': String(payload.length) },
   body: payload,
-})).status, 415, 'text/plain не приймається — інакше preflight обходиться');
+})).status, 415, 'text/plain is refused — otherwise preflight is bypassed');
 assert.equal((await raw(h, {
   headers: { 'content-type': 'application/json', 'content-length': String(payload.length),
              origin: 'https://evil.example' },
   body: payload,
-})).status, 403, 'чужий Origin відбивається');
-assert.equal(h.d.count, 0, 'жоден крос-доменний запит не долічився');
-// свій origin проходить
+})).status, 403, 'foreign Origin is refused');
+assert.equal(h.d.count, 0, 'no cross-origin request was counted');
+// own origin passes
 assert.equal((await raw(h, {
   headers: { 'content-type': 'application/json', 'content-length': String(payload.length),
              origin: 'https://x' },
   body: payload,
-})).status, 200, 'власний origin працює');
+})).status, 200, 'own origin works');
 
-// ── тіло без content-length ───────────────────────────────────────────────
-// Number(null) === 0, тож раніше досить було не слати заголовок, і req.json()
-// розбирав тіло будь-якого розміру, палячи єдиний на весь світ потік
+// ── body without content-length ───────────────────────────────────────────
+// Number(null) === 0, so omitting the header used to let req.json() parse a
+// body of any size, burning the one thread the whole world shares
 h = await hole();
 assert.equal((await raw(h, {
   headers: { 'content-type': 'application/json' }, body: payload,
-})).status, 413, 'без content-length запит не приймається');
+})).status, 413, 'a request without content-length is refused');
 
-// ── автовідповідь на пінг ─────────────────────────────────────────────────
-// Без неї сокет на спокійній дірі ріже NAT, а клієнт про це не дізнається.
-// Пінгувати самотужки клієнт не може: webSocketMessage закриває зʼєднання.
+// ── ping auto-response ────────────────────────────────────────────────────
+// Without it, NATs cut the socket on a quiet hole and the client never knows.
+// Clients can't ping on their own: webSocketMessage closes the connection.
 {
   const st = fakeState();
   const h2 = new BlackHole(st, {});
   await st._ready;
-  assert.equal(st._auto.request, 'ping', 'автовідповідь чекає ping');
-  assert.equal(st._auto.response, 'pong', 'і відповідає pong');
+  assert.equal(st._auto.request, 'ping', 'auto-response expects ping');
+  assert.equal(st._auto.response, 'pong', 'and answers pong');
   void h2;
 }
 
-// ── ліміти не потрапляють у блоб: інакше 128 КБ на значення колись луснуть ─
+// ── limits never reach the blob: the 128 KB value limit would burst one day ──
 h = await hole();
 await feed(h, { bytes: 1, ext: 'a', sig: 21 });
 await h.save();
-assert.equal(h.state._store.get('d').ips, undefined, 'лічильників адрес немає на диску');
+assert.equal(h.state._store.get('d').ips, undefined, 'no address counters on disk');
 
-// ── пачка одним запитом ───────────────────────────────────────────────────
-// Кинута тека — одна дія. По одному не виходило: кулдаун 150 мс ставить стелю
-// ~6.6 файлів на секунду, і на 98 файлах більшість відбивалась 429.
+// ── batch in one request ──────────────────────────────────────────────────
+// A dropped folder is one action. One-by-one didn't work: the 150 ms cooldown
+// caps at ~6.6 files/s, and most of a 98-file folder bounced with 429.
 h = await hole();
 {
   const items = Array.from({ length: 98 }, (_, i) => ({ bytes: 1000 + i, ext: 'jpg', sig: 1000 + i }));
   const r1 = await feed(h, { items });
   assert.equal(r1.status, 200);
   const d1 = await r1.json();
-  assert.equal(d1.count, 98, 'усі 98 прийнято одним запитом');
-  assert.equal(d1.rejected.length, 0, 'без відмов');
+  assert.equal(d1.count, 98, 'all 98 accepted in one request');
+  assert.equal(d1.rejected.length, 0, 'no rejections');
 
-  // повтор тієї самої пачки — дедуп має відбити кожен елемент поіменно,
-  // а не всю пачку цілком
+  // replaying the same batch — dedup must bounce each item by name,
+  // not the batch as a whole
   await new Promise(r => setTimeout(r, 200));
   const d2 = await (await feed(h, { items })).json();
-  assert.equal(d2.count, 98, 'жоден дубль не долічився');
-  assert.equal(d2.rejected.length, 98, 'усі 98 повернулись як відхилені');
+  assert.equal(d2.count, 98, 'no duplicate was counted');
+  assert.equal(d2.rejected.length, 98, 'all 98 returned as rejected');
   assert.equal(d2.rejected[0].error, 'already swallowed');
-  assert.equal(d2.rejected[0].sig, 1000, 'відхилення підписані sig, щоб клієнт зняв рівно їх');
+  assert.equal(d2.rejected[0].sig, 1000, 'rejections carry sig so the client rolls back exactly them');
 
-  // часткова відмова: один поганий елемент не валить решту
+  // partial rejection: one bad item doesn't sink the rest
   await new Promise(r => setTimeout(r, 200));
   const d3 = await (await feed(h, { items: [
     { bytes: 5000, ext: 'a', sig: 7001 },
     { bytes: -1,   ext: 'a', sig: 7002 },
     { bytes: 6000, ext: 'a', sig: 7003 },
   ] })).json();
-  assert.equal(d3.count, 100, 'два добрі елементи пройшли');
-  assert.equal(d3.rejected.length, 1, 'відбито рівно поганий');
+  assert.equal(d3.count, 100, 'the two good items passed');
+  assert.equal(d3.rejected.length, 1, 'exactly the bad one bounced');
   assert.equal(d3.rejected[0].sig, 7002);
 }
 
-// ── старий однофайловий формат теж приймається ────────────────────────────
-// у відкритих вкладках ще крутиться попередній клієнт
+// ── the old single-item format is still accepted ──────────────────────────
+// open tabs may still run the previous client
 h = await hole();
 assert.equal((await feed(h, { bytes: 1234, ext: 'png', sig: 81 })).status, 200);
-assert.equal(h.d.count, 1, 'одиночний кидок долічився');
+assert.equal(h.d.count, 1, 'single throw counted');
 
-// ── стеля пачки ───────────────────────────────────────────────────────────
+// ── batch ceiling ─────────────────────────────────────────────────────────
 h = await hole();
-assert.equal((await feed(h, { items: [] })).status, 400, 'порожня пачка відбивається');
+assert.equal((await feed(h, { items: [] })).status, 400, 'empty batch refused');
 assert.equal((await feed(h, {
   items: Array.from({ length: 201 }, (_, i) => ({ bytes: 1, ext: 'a', sig: i })),
-})).status, 400, 'пачка понад стелю відбивається');
+})).status, 400, 'batch over the ceiling refused');
 
-// ── витіснення лічильників за останнім зверненням, а не за вставкою ───────
-// Було FIFO: той, хто вже вперся в добовий кап, скидав собі лічильник одним
-// заходом із MAX_IPS адрес — його власний запис виїжджав першим.
+// ── counter eviction by last access, not insertion ────────────────────────
+// It was FIFO: whoever hit the daily cap could reset their own counter with
+// one sweep from MAX_IPS addresses — their entry evicted first.
 h = await hole();
 await feed(h, { bytes: 1, ext: 'a', sig: 61 }, '10.0.0.1');
 await feed(h, { bytes: 1, ext: 'a', sig: 62 }, '10.0.0.2');
 await new Promise(r => setTimeout(r, 200));
 await feed(h, { bytes: 1, ext: 'a', sig: 63 }, '10.0.0.1');
 assert.equal([...h.ips.keys()].pop(), '10.0.0.1',
-  'повторне звернення переносить запис у кінець черги витіснення');
+  'a repeat visit moves the entry to the back of the eviction queue');
 
-// ── рекорд доби рахується по повному логу, а не по 20 останніх ────────────
+// ── daily record uses the full log, not the last 20 ───────────────────────
 h = await hole();
 await feed(h, { bytes: 5e6, ext: 'a', sig: 51 });
-h.d.log.push({ t: Date.now() - 3600e3, b: 9e8, e: 'iso', s: 52 });   // година тому, найбільший
-h.d.log.push({ t: Date.now() - 48 * 864e5, b: 9e9, e: 'old', s: 53 }); // позавчора, поза добою
+h.d.log.push({ t: Date.now() - 3600e3, b: 9e8, e: 'iso', s: 52 });   // an hour ago, biggest
+h.d.log.push({ t: Date.now() - 48 * 864e5, b: 9e9, e: 'old', s: 53 }); // two days ago, outside the day
 {
   const snap = h.snapshot();
-  assert.equal(snap.record.bytes, 9e8, 'рекорд — найбільший за добу, а не за весь час');
+  assert.equal(snap.record.bytes, 9e8, 'record is the biggest of the day, not all-time');
   assert.equal(snap.record.ext, 'iso');
 }
 
-// ── відкат ────────────────────────────────────────────────────────────────
+// ── rollback ──────────────────────────────────────────────────────────────
 h = await hole();
 await feed(h, { bytes: GB, ext: 'a', sig: 31 });
-h.d.log.push({ t: Date.now() - 48 * 864e5, b: 5 * GB, e: 'old', s: 32 });   // позавчорашня подія
+h.d.log.push({ t: Date.now() - 48 * 864e5, b: 5 * GB, e: 'old', s: 32 });   // event from two days ago
 h.d.bytes += 5 * GB;
 h.d.count++;
 
 const roll = (token) => h.fetch(new Request('https://x/rollback?hours=24', {
   method: 'POST', headers: token ? { 'x-admin-token': token } : {},
 }));
-assert.equal((await roll()).status, 403, 'без токена відкат закритий');
-assert.equal((await roll('wrong')).status, 403, 'чужий токен не працює');
+assert.equal((await roll()).status, 403, 'rollback is closed without a token');
+assert.equal((await roll('wrong')).status, 403, 'a wrong token does not work');
 
-// Одруківка в curl не має коштувати всього логу: Number('abc') давав NaN, а
-// filter(x => x.t < NaN) — порожній масив. Маса лишалась, лог зникав.
+// A curl typo must not cost the whole log: Number('abc') gave NaN, and
+// filter(x => x.t < NaN) an empty array. Mass stayed, the log vanished.
 {
   const bad = await h.fetch(new Request('https://x/rollback?hours=abc', {
     method: 'POST', headers: { 'x-admin-token': 'secret' },
   }));
-  assert.equal(bad.status, 400, 'нечислові години відбиваються');
-  assert.equal(h.d.log.length, 2, 'лог на місці після відбитого відкату');
+  assert.equal(bad.status, 400, 'non-numeric hours refused');
+  assert.equal(h.d.log.length, 2, 'log intact after the refused rollback');
 }
 const out = await (await roll('secret')).json();
-assert.equal(out.removed, 1, 'знято рівно свіжу подію');
-assert.equal(out.bytes, 5 * GB, 'позавчорашня маса на місці');
+assert.equal(out.removed, 1, 'exactly the fresh event removed');
+assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
 
-// ── невідомі шляхи не будять Durable Object ───────────────────────────────
+// ── unknown paths never wake the Durable Object ───────────────────────────
 const worker = (await import('./src/index.js')).default;
 let woke = false;
 const env = { HOLE: { idFromName: () => 0, get: () => ({ fetch: () => (woke = true, new Response()) }) } };
 assert.equal((await worker.fetch(new Request('https://x/favicon.ico'), env)).status, 404);
-assert.equal(woke, false, '/favicon.ico не дійшов до обʼєкта');
+assert.equal(woke, false, '/favicon.ico never reached the object');
 await worker.fetch(new Request('https://x/state'), env);
-assert.equal(woke, true, '/state дійшов');
+assert.equal(woke, true, '/state did');
 
-console.log('✓ бекенд зійшовся');
+console.log('✓ backend checks passed');

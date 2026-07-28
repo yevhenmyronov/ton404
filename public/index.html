@@ -3,46 +3,46 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- Заголовок і опис тут англійською навмисно: їх читають краулери, а вони
-     Accept-Language не шлють. Картка при шері однією мовою назавжди, і ця мова
-     має бути тією, якою посилання полетить далі. Для самого користувача
-     document.title перевизначається скриптом на його мову. -->
+<!-- Title and description are deliberately English: crawlers read them and
+     never send Accept-Language, so a shared card keeps one language forever —
+     the language the link travels in. The user's own tab title is overridden
+     by script in their language. -->
 <title>TON 404 — one black hole, fed with files</title>
 <meta name="description" content="A black hole you feed with files. Its mass follows the real Bekenstein–Hawking entropy: one gigabyte weighs 0.474 grams. Files are never uploaded — only the bytes are counted.">
 <meta name="theme-color" content="#000000">
-<!-- Проти білого спалаху при кожному вході на сторінку. До того, як браузер
-     розбере стилі, він малює підкладку своїм кольором за замовчуванням — білим,
-     і background:#000 нижче тут не допомагає, бо застосовується вже після.
-     Мета-тег діє найраніше з можливого; властивість у :root дублює його для
-     тих, хто читає лише CSS. -->
+<!-- Kills the white flash on every load: before CSS is parsed the browser
+     paints its default (white) backdrop, and background:#000 applies too late.
+     This meta acts earliest of all; the :root property duplicates it for
+     anything that only reads CSS. -->
 <meta name="color-scheme" content="dark">
-<!-- Іконка вбудована в саму сторінку: окремий файл — це зайвий запит із кожної
-     вкладки, а без неї браузер довбить /favicon.ico і ловить 404. -->
+<!-- Inlined icon: a separate file is an extra request per tab, and without
+     one the browser hammers /favicon.ico into 404s. -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23ffc880' stroke-width='4'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='%23000'/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TON 404">
 <meta property="og:title" content="TON 404 — one black hole, fed with files">
 <meta property="og:description" content="Throw anything in. A gigabyte of information weighs 0.474 grams and its event horizon is 10¹⁵ times smaller than a proton. One hole, shared by everyone.">
 <meta property="og:url" content="https://nohair.dev">
-<!-- summary_large_image, а не summary: без картинки на всю ширину посилання
-     в телеграмі й твітері виглядає сірим прямокутником, а весь проєкт
-     побудований на «кинь другу подивитись».
-     1200×630 — співвідношення 1.91:1, якого чекають усі краулери. -->
-<meta property="og:image" content="https://nohair.dev/og.png">
+<!-- summary_large_image, not summary: without a full-width image the link
+     looks like a dead gray rectangle in Telegram/Twitter, and this whole
+     project runs on "throw it to a friend". 1200×630 is the 1.91:1 ratio
+     every crawler expects. -->
+<meta property="og:image" content="https://nohair.dev/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="TON 404 — a black hole with its accretion disc, and its mass in grams">
-<!-- Стара адреса на workers.dev лишається робочою, щоб не побити посилання.
-     Але канонічна одна, інакше краулери бачитимуть два сайти-близнюки. -->
+<!-- The old workers.dev address keeps working so links don't break, but only
+     one URL is canonical — otherwise crawlers see two twin sites. -->
 <link rel="canonical" href="https://nohair.dev">
 <meta name="twitter:card" content="summary_large_image">
 <style>
   :root {
     --amber: #ffc880;
     --hot: #ffffff;
-    --txt: #f2eee6;     /* основний текст */
-    --dim: #d0c9bd;     /* підписи */
-    --faint: #b4ac9f;   /* пояснення дрібним шрифтом */
+    --txt: #f2eee6;     /* body text */
+    --dim: #d0c9bd;     /* labels */
+    --faint: #b4ac9f;   /* fine-print explanations */
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root { color-scheme: dark; }
@@ -58,11 +58,10 @@
     position: fixed; inset: 0; pointer-events: none; padding: 22px 24px;
     display: flex; justify-content: space-between; align-items: stretch; gap: 28px;
   }
-  /* Колонки в потоці, а не абсолютні: відстань між верхом і низом тримає
-     flexbox, тож на низькому екрані вони не можуть налізти одна на одну.
-     position+z-index обовʼязкові: .ui::before має position:fixed, а позиційовані
-     елементи малюються пізніше за вміст у потоці — без цього градієнт лягає
-     ПОВЕРХ тексту колонок і глушить його. */
+  /* Columns are in-flow, not absolute: flexbox keeps top and bottom apart, so
+     they can't overlap on a short screen. position+z-index are required:
+     .ui::before is position:fixed, and positioned elements paint after in-flow
+     content — without this the gradient lands ON TOP of the column text. */
   .col {
     position: relative; z-index: 1;
     display: flex; flex-direction: column; justify-content: space-between; min-height: 0;
@@ -72,9 +71,9 @@
 
   .top, .bot, .feed, .about, #quasar, #upd { pointer-events: auto; }
 
-  /* Затемнення по краях — єдине, що відділяє текст від диска: тіней немає.
-     Тому на телефоні воно розвертається вертикально: там колонки стоять
-     угорі й унизу, а бічні градієнти до них просто не дістають. */
+  /* Edge darkening is the only thing separating text from the disc — there
+     are no shadows. On phones it turns vertical: the columns sit top and
+     bottom, out of reach of the side gradients. */
   .ui::before {
     content: ''; position: fixed; inset: 0; pointer-events: none;
     background:
@@ -82,8 +81,8 @@
       linear-gradient(270deg, rgba(0,0,0,.4), transparent 38%);
   }
   @media (max-width: 820px) {
-    /* Сильніше, ніж на десктопі: там текст лежить на порожньому полі збоку,
-       а тут просто на диску й фотонному кільці — найяскравішому, що є. */
+    /* Stronger than on desktop: there the text sits on empty space, here it
+       sits right on the disc and photon ring — the brightest things around. */
     .ui::before {
       background:
         linear-gradient(180deg, rgba(0,0,0,.72), rgba(0,0,0,.34) 30%, transparent 48%),
@@ -122,7 +121,7 @@
   .rank { border-left: 1px solid #2a2620; padding-left: 12px; margin: 0 0 26px -13px; }
   #rankName { font-size: 15px; letter-spacing: .05em; color: var(--amber); margin-top: 3px; }
 
-  /* маса домінує над усім іншим — це головне число сторінки */
+  /* mass dominates everything else — it is the page's headline number */
   .hero { margin-bottom: 24px; }
   #mass {
     font-size: 54px; line-height: 1; margin-top: 4px; color: var(--hot);
@@ -141,8 +140,8 @@
     transition: width .9s cubic-bezier(.2,.8,.2,1);
   }
 
-  /* Телеметрія другорядна за розміром, а не за прозорістю: приглушувати
-     до 34% і ховати підписи під max-height було просто нечитабельно. */
+  /* Telemetry is secondary by size, not by opacity: dimming it to 34% and
+     hiding labels under max-height was simply unreadable. */
   .tele .t {
     display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
     gap: 0 14px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.055);
@@ -164,8 +163,8 @@
   #recent li span { color: var(--amber); }
   #recent li i { display: block; font-style: normal; font-size: 9.5px; color: var(--faint); letter-spacing: .04em; }
 
-  /* Нативний <dialog>: фон, Esc, блокування скролу й фокус — усе від браузера.
-     margin:auto обовʼязково — інакше * { margin:0 } вище ламає центрування. */
+  /* Native <dialog>: backdrop, Esc, scroll lock and focus all come from the
+     browser. margin:auto is required — * { margin:0 } above breaks centering. */
   dialog {
     margin: auto; padding: 0;
     width: min(690px, calc(100% - 40px)); max-height: min(86vh, 940px);
@@ -173,8 +172,8 @@
     border: 1px solid #2a251f; background: #07060b; color: var(--txt);
     box-shadow: 0 30px 90px rgba(0,0,0,.85), 0 0 140px rgba(255,178,87,.05);
   }
-  /* display ставимо ТІЛЬКИ для [open]: закритий <dialog> ховається через
-     display:none у стилях браузера, і безумовний display:flex його перебиває */
+  /* display goes on [open] ONLY: a closed <dialog> hides via display:none in
+     browser styles, and an unconditional display:flex overrides that */
   dialog[open] {
     display: flex; flex-direction: column;
     animation: dlg .34s cubic-bezier(.2,.8,.2,1) both;
@@ -182,7 +181,7 @@
   @keyframes dlg { from { opacity: 0; transform: translateY(14px) scale(.985); } }
   dialog::backdrop { background: rgba(0,0,0,.82); backdrop-filter: blur(4px); }
 
-  /* шапка липне, щоб хрестик був досяжний із будь-якого місця */
+  /* the header sticks so the close button is reachable from anywhere */
   dialog header {
     flex: none; display: flex; align-items: center; justify-content: space-between;
     padding: 19px 30px; border-bottom: 1px solid #221e19;
@@ -215,7 +214,7 @@
   dialog p b { color: var(--txt); font-weight: 400; }
   dialog code { color: var(--amber); font-size: 11px; }
 
-  /* формула — окремий експонат, а не рядок у тексті */
+  /* the formula is an exhibit of its own, not a line of text */
   dialog .eq {
     font-size: 14px; text-align: center; color: var(--amber); letter-spacing: .05em;
     padding: 22px 10px; margin: 16px 0 18px;
@@ -250,9 +249,9 @@
   }
   @keyframes in { from { opacity: 0; transform: translateX(14px); } }
 
-  /* Вхід: прилади вмикаються по черзі, в такт формуванню діри (~3 с у скрипті).
-     Ліва колонка зверху вниз, права наздоганяє — як бортова панель, що
-     послідовно проходить самоперевірку. */
+  /* Entry: instruments switch on one by one, in step with the hole forming
+     (~3 s in the script). Left column top-down, right column catches up —
+     like an instrument panel running its self-check. */
   @keyframes boot { from { opacity: 0; transform: translateY(7px); } }
   h1    { animation: boot .7s ease .2s both; }
   .rank { animation: boot .7s ease .6s both; }
@@ -268,8 +267,8 @@
   .hint .act span { display: block; margin-top: 4px; font-size: 11px; color: var(--dim); }
   .hint p { font-size: 10.5px; line-height: 1.8; color: var(--dim); }
 
-  /* дії — однаковий стиль в обох нижніх кутах */
-  /* три кнопки — на вузькому екрані мусять переноситись, а не вилазити */
+  /* actions share one style in both bottom corners */
+  /* three buttons — on a narrow screen they must wrap, not overflow */
   .ctl { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 13px 0 12px; }
   .ctl button, .about button {
     background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
@@ -279,7 +278,7 @@
   .ctl button:hover, .about button:hover { opacity: 1; text-shadow: 0 0 14px rgba(255,178,87,.6); }
   .ctl button::before { content: '→ '; opacity: .5; }
 
-  /* короткий довідник у кутку — головне читабельно, решта за кнопкою */
+  /* short primer in the corner — essentials readable, the rest behind a button */
   .about { margin-top: 26px; }
   .about .f {
     font-size: 13px; color: var(--amber); letter-spacing: .04em;
@@ -295,7 +294,7 @@
   }
   .about button:hover { opacity: 1; text-shadow: 0 0 14px rgba(255,178,87,.6); }
 
-  /* потік Гокінга розчиняється вправо, а не обривається посеред рядка */
+  /* the Hawking stream dissolves to the right instead of cutting mid-line */
   #hawking {
     margin-bottom: 14px;
     font-size: 9.5px; color: #8a8175; letter-spacing: .2em;
@@ -309,12 +308,12 @@
     box-shadow: inset 0 0 160px rgba(255,178,87,.28);
   }
 
-  /* На телефоні діра має лишатись видимою, тож середина екрана порожня:
-     зверху клас і маса, знизу підказка й останні жертви. Телеметрія й лог — геть. */
-  /* Ліва колонка при повному вмісті потребує ~900px висоти. Пороги нижче
-     зрізають її трьома кроками, у кожному лишається запас близько 100px:
-     спершу пояснення, потім ритм і декор, і лише наостанок уся телеметрія.
-     Рядок про приватність не чіпаємо на жодному кроці. */
+  /* On phones the hole must stay visible, so mid-screen stays empty: class and
+     mass on top, hint and recent victims below. Telemetry and log go away. */
+  /* At full content the left column needs ~900px of height. The thresholds
+     below trim it in three steps, each keeping ~100px of headroom: first the
+     explanations, then rhythm and decoration, and only last the telemetry.
+     The privacy line is never touched. */
   @media (min-width: 821px) and (max-height: 1000px) {
     .tele .t > i { display: none; }
   }
@@ -330,11 +329,11 @@
     .tele { display: none; }
   }
 
-  /* віха: HUD на мить затягує за горизонт і відпускає назад */
+  /* milestone: the HUD gets pulled past the horizon for a beat and let back */
   .ui { transition: transform 1.1s cubic-bezier(.5,0,.75,0), opacity 1.1s, filter 1.1s; }
   body.collapse .ui { transform: scale(.4) rotate(-7deg); opacity: 0; filter: blur(3px); }
 
-  /* повноекранний шейдер і так на межі; затягування інтерфейсу — вже забагато */
+  /* the fullscreen shader is already borderline; sucking in the UI is too much */
   @media (prefers-reduced-motion: reduce) {
     .ui { transition: opacity .4s; }
     body.collapse .ui { transform: none; filter: none; opacity: .15; }
@@ -342,9 +341,10 @@
   }
 
   @media (max-width: 820px), (max-height: 620px) {
-    /* Сторінка гортається. Перший екран — тільки діра й головна дія, решта
-       нижче. Полотно лишається fixed, тож діра не їде разом із текстом, а
-       нижні блоки мають власне тло — інакше вони б лягли просто на диск. */
+    /* The page scrolls. First screen holds only the hole and the main action,
+       everything else below. The canvas stays fixed so the hole doesn't ride
+       along with the text, and the lower blocks get their own backdrop —
+       otherwise they'd sit right on the disc. */
     html, body { height: auto; overflow: visible; }
     .ui {
       position: relative; inset: auto; min-height: 100dvh;
@@ -352,19 +352,18 @@
     }
     .col { display: block; width: auto; text-align: left; position: relative; z-index: 1; }
 
-    /* Перший екран: статистика вгорі, кнопка внизу, діра між ними.
-       Мінус 88px — рівно стільки, щоб визирав не сам блок (він чорний на
-       чорному й невидимий), а його заголовок. Це єдиний натяк, що сторінку
-       взагалі можна гортати. dvh, а не vh: на телефоні адресний рядок
-       згортається, і vh дає хибну висоту. */
+    /* First screen: stats on top, button below, hole in between. Minus 88px is
+       exactly enough for the next block's heading to peek in (the block itself
+       is black-on-black and invisible) — the only hint the page scrolls at
+       all. dvh, not vh: the phone address bar collapses and vh lies. */
     .left {
       min-height: calc(100dvh - 88px);
       display: flex; flex-direction: column; justify-content: space-between;
     }
 
-    /* Нижче згину. Власне тло обовʼязкове — полотно під ним не рухається.
-       Але не суцільне з різкою межею: різка межа читається як стик двох
-       різних сторінок. Тому тло проявляється градієнтом. */
+    /* Below the fold. Its own backdrop is required — the canvas underneath
+       doesn't scroll. But not a solid one with a hard edge: a hard edge reads
+       as two different pages stitched together, so it fades in as a gradient. */
     .right {
       margin: 0 -16px;
       padding: 46px 16px calc(26px + env(safe-area-inset-bottom));
@@ -376,20 +375,20 @@
     h1 { margin-bottom: 14px; }
     h1 small { display: none; }
     #hawking { display: none; }
-    /* Опис класу й «перетягни файл» — з першого екрана геть: перший дублює
-       діалог, другий на телефоні просто неправда, перетягнути нічого не можна. */
+    /* Class note and "drag a file here" leave the first screen: the former
+       duplicates the dialog, the latter is simply false on a phone. */
     #rankNote, .hint .act { display: none; }
     #mass { font-size: 38px; }
     .rank { margin-bottom: 16px; }
     .goal { margin-bottom: 0; }
-    /* Телеметрія лишається схованою. Вона лежить усередині .top, тобто всередині
-       першого екрана — показати її тут означає виштовхнути кнопку за згин.
-       Щоб опустити її вниз, треба виносити з .col.left у розмітці, а це зачепить
-       і десктоп. Поки що вона доступна з діалогу. */
+    /* Telemetry stays hidden. It lives inside .top — inside the first screen —
+       and showing it here would push the button past the fold. Moving it down
+       means moving it out of .col.left in the markup, which touches desktop
+       too. For now it's available from the dialog. */
     .tele { display: none; }
 
-    /* Головна дія — справжня кнопка, а не посилання на 10 пікселів.
-       Перетягнути файл на телефоні неможливо, тож увесь трафік іде сюди. */
+    /* The main action is a real button, not a 10-pixel link. Dragging a file
+       is impossible on a phone, so all traffic goes here. */
     .ctl { gap: 12px 18px; margin: 4px 0 10px; }
     #pick {
       order: -1; width: 100%; padding: 15px 12px; text-align: center;
@@ -398,8 +397,8 @@
     }
     #pick::before { content: none; }
     .hint p { font-size: 11px; opacity: .75; }
-    /* Список нижче згину, місця вистачає — показуємо все, що прийшло,
-       разом із типом матерії (#recent li i), який раніше різали */
+    /* The list sits below the fold with room to spare — show everything,
+       including the matter kind (#recent li i) that used to be cut */
     .hint { max-width: none; }
     #warn { top: auto; bottom: 30%; }
     dialog { max-height: 90vh; }
@@ -413,9 +412,9 @@
 </head>
 <body>
 <canvas id="gl"></canvas>
-<!-- другий шар: іскри глядачів і приблудні зорі. Прозоре 2D-полотно поверх
-     шейдера — десятки точок тут коштують копійки, а в фрагментному шейдері
-     це були б ґауси на кожен піксель екрана. -->
+<!-- Second layer: viewer sparks and stray stars. A transparent 2D canvas over
+     the shader — dozens of dots cost pennies here, but would be per-pixel
+     gaussians in the fragment shader. -->
 <canvas id="sp"></canvas>
 
 <div class="ui">
@@ -438,8 +437,8 @@
       <div class="k" data-t="massLabel">Маса</div>
       <div id="mass">—</div>
       <div class="sub" id="massCmp"></div>
-      <!-- єдина цифра, що росте на кожному кидку при будь-якому масштабі:
-           маса на важкій дірі вже не ворушиться, бо росте як √байтів -->
+      <!-- the one number that moves on every throw at any scale: on a heavy
+           hole the mass barely stirs, since it grows as √bytes -->
       <div class="sub" id="eaten"></div>
     </div>
 
@@ -447,9 +446,9 @@
       <div class="k" data-t="goalLabel">Глобальна ціль</div>
       <div class="bar"><i id="goalFill"></i></div>
       <div class="sub" id="goalTxt"></div>
-      <!-- Випаровування було тихою бухгалтерією: воно працює з першого дня,
-           але його ніхто не бачив. А це і є та причина, через яку сюди варто
-           повернутись завтра — за ніч діра всохне. -->
+      <!-- Evaporation used to be silent bookkeeping: live since day one, seen
+           by no one. But it's the very reason to come back tomorrow — the
+           hole shrinks overnight. -->
       <div class="sub" id="decay"></div>
       <div class="sub" id="mine" style="color:var(--amber);opacity:.75"></div>
     </div>
@@ -520,10 +519,10 @@
     <h3 data-n="03" data-t="hHorizon"></h3>
     <div class="eq">r<sub>s</sub> = 2GM/c² &nbsp;&nbsp;·&nbsp;&nbsp; T = ℏc³/8πGMk &nbsp;&nbsp;·&nbsp;&nbsp; t = 5120πG²M³/ℏc⁴</div>
     <p data-t="pHorizon"></p>
-    <!-- Живі значення тієї самої телеметрії, що в лівій колонці. На телефоні
-         вона схована (лежить усередині першого екрана), і без цього блоку
-         мобільний користувач — тобто більшість трафіку з шерів у месенджерах —
-         не бачив найцікавішої частини фізики взагалі. -->
+    <!-- Live values of the same telemetry as the left column. On phones that
+         column is hidden (it lives inside the first screen), and without this
+         block mobile users — most of the messenger-share traffic — never saw
+         the most interesting physics at all. -->
     <table id="teleDlg"></table>
 
     <h3 data-n="04" data-t="hCheat"></h3>
@@ -534,8 +533,9 @@
     <p data-t="pCheat4"></p>
 
     <h3 data-n="05" data-t="hClasses"></h3>
-    <!-- рядки генеруються з тих самих CLASSES, що й ранг ліворуч: інакше
-         підпис у діалозі й реальна межа розійдуться при першій же правці -->
+    <!-- rows are generated from the same CLASSES as the rank on the left:
+         otherwise the dialog caption and the real boundary drift apart on the
+         very first edit -->
     <table id="clsTable"></table>
 
     <div class="foot">
@@ -548,28 +548,27 @@
 <input type="file" id="file" multiple hidden>
 
 <script>
-// ─── бекенд ────────────────────────────────────────────────────────────────
-// Порожньо = діра лише твоя, у localStorage. Встав URL воркера — стане спільною.
-// Свій же origin, а не захардкоджений хост: інакше після переїзду на домен
-// сторінка стукала б на workers.dev, тобто в чужий origin — а CORS знято.
-// На file:// origin дорівнює "null" — там діра просто стає особистою.
+// ─── backend ───────────────────────────────────────────────────────────────
+// Empty = the hole is yours alone, in localStorage. Set a worker URL to share it.
+// Own origin rather than a hardcoded host: after moving to the domain the page
+// would otherwise call workers.dev — a foreign origin, with CORS removed.
+// On file:// the origin is "null" — the hole simply goes personal there.
 const API = location.protocol.startsWith('http') ? location.origin : '';
 
-// ─── мова ──────────────────────────────────────────────────────────────────
-// navigator.languages — це заголовок Accept-Language, надійніший за
-// navigator.language: той дає лише мову інтерфейсу браузера.
-// Українська для україномовних, англійська для решти. Вибір руками перекриває
-// автовизначення й переживає перезавантаження.
+// ─── language ──────────────────────────────────────────────────────────────
+// navigator.languages mirrors Accept-Language and beats navigator.language,
+// which only reports the browser UI locale. Ukrainian for Ukrainian speakers,
+// English for everyone else. Manual choice overrides detection and survives reloads.
 const LKEY = 'blackhole.lang';
 const LANG = localStorage.getItem(LKEY)
   || ((navigator.languages || [navigator.language || 'en']).some(l => l.startsWith('uk')) ? 'uk' : 'en');
 
-// 1 жертва / 2 жертви / 5 жертв — без цього лічильник читається як машинний
+// Ukrainian plural forms — without them the counter reads machine-made
 const plural = (n, one, few, many) => {
   const t = n % 100, u = n % 10;
   return t > 10 && t < 20 ? many : u === 1 ? one : u >= 2 && u <= 4 ? few : many;
 };
-// «у 4 рази», «у 1.7 раза», «у 11 разів»
+// Ukrainian "times" declension: «у 4 рази», «у 1.7 раза», «у 11 разів»
 const RAZ = n => {
   if (n % 1) return 'раза';
   const a = n % 100, b = n % 10;
@@ -577,8 +576,8 @@ const RAZ = n => {
   return b === 1 ? 'раз' : b >= 2 && b <= 4 ? 'рази' : 'разів';
 };
 
-// Фрази з числами живуть у словнику функціями, а не шматками: граматика в
-// кожної мови своя, і склеювати її ззовні означало б писати кальку.
+// Phrases with numbers live in the dictionary as functions, not fragments:
+// each language has its own grammar, and gluing it externally produces calques.
 const TXT = {
 uk: {
   name: 'українська', other: 'English',
@@ -642,8 +641,8 @@ uk: {
   bitsOn: b => `${b} бітів на горизонті`,
   goalLeft: (g, left) => `${g} — лишилось ${left}`,
   goalDone: 'цілей більше немає',
-  // саме БАЙТИ, а не маса: маса втрачає 1% за добу, а байти 1.99% —
-  // людину цікавить, скільки донести, тобто друге число
+  // BYTES, not mass: mass loses 1% a day but bytes lose 1.99% — people care
+  // how much to bring back, which is the second number
   decay: v => `тане на ${v} за добу`,
   alone: 'ти сам на сам із нею', watchers: n => `за нею спостерігає ${n}`,
   yours: (v, pct) => `твій внесок: ${v}` + (pct ? ` · ${pct}% маси` : ''),
@@ -776,21 +775,20 @@ en: {
   foot: 'A fun project. One HTML file, one fragment shader, one Durable Object.',
 },
 };
-// L, а не T: T у цьому файлі — температура Гокінга
+// L, not T: in this file T is the Hawking temperature
 const L = TXT[LANG];
 document.documentElement.lang = LANG;
-// <title> у розмітці англійський — його читають краулери. А у вкладці
-// користувача має стояти його мова.
+// The markup <title> is English for crawlers; the user's tab shows their language.
 document.title = L.title;
 
-// data-t — простий текст, data-th — з розміткою всередині, data-ta — aria-label.
-// Українська лишається в самому HTML як запасний варіант: якщо скрипт упаде,
-// сторінка все одно читається.
+// data-t is plain text, data-th allows markup, data-ta sets aria-label.
+// Ukrainian stays in the HTML itself as the fallback: if the script dies,
+// the page still reads.
 for (const el of document.querySelectorAll('[data-t]'))  el.textContent = L[el.dataset.t];
 for (const el of document.querySelectorAll('[data-th]')) el.innerHTML  = L[el.dataset.th];
 for (const el of document.querySelectorAll('[data-ta]')) el.setAttribute('aria-label', L[el.dataset.ta]);
 
-// ─── фізика ────────────────────────────────────────────────────────────────
+// ─── physics ───────────────────────────────────────────────────────────────
 const M_PLANCK = 2.176434e-8, G = 6.67430e-11, C = 2.99792458e8;
 const HBAR = 1.054571817e-34, KB = 1.380649e-23, LN2 = Math.LN2;
 
@@ -798,62 +796,63 @@ const massOf   = bits => M_PLANCK * Math.sqrt(bits * LN2 / (4 * Math.PI));
 const radiusOf = m => 2 * G * m / (C * C);
 const tempOf   = m => m > 0 ? HBAR * C ** 3 / (8 * Math.PI * G * m * KB) : 0;
 const evapOf   = m => 5120 * Math.PI * G * G * m ** 3 / (HBAR * C ** 4);
-// площа горизонту: A = 4·l_P²·N·ln2. єдина величина, лінійна за байтами
+// horizon area: A = 4·l_P²·N·ln2 — the only quantity linear in bytes
 const LP2      = HBAR * G / C ** 3;
 const areaOf   = bits => 4 * LP2 * bits * LN2;
-// обернена задача: скільки байтів треба, щоб діра важила m
+// the inverse problem: how many bytes make the hole weigh m
 const bytesFor = m => (m / M_PLANCK) ** 2 * 4 * Math.PI / LN2 / 8;
 
 const SUN = 1.989e30;
-// класи за реальною масою. знизу — квантовий режим, бо стільки ми й наїмо.
-// межі тут, назви в словнику — вони в кожної мови свої
+// classes by real mass; the bottom is the quantum regime, which is all we'll
+// ever feed. Boundaries here, names in the dictionary — per language
 const CLASSES = [0, 1e-30, M_PLANCK, 1e-6, 1e-3, 1e12, 3 * SUN, 1e5 * SUN, 1e6 * SUN]
   .map((m, i) => [m, L.classes[i], L.classNotes[i]]);
 const classOf = m => CLASSES.reduce((a, c) => m >= c[0] ? c : a, CLASSES[0]);
 const nextClass = m => CLASSES.find(c => c[0] > m);
 
-// ─── стан ──────────────────────────────────────────────────────────────────
+// ─── state ─────────────────────────────────────────────────────────────────
 const KEY = 'blackhole.v1', MKEY = 'blackhole.mine', MTKEY = 'blackhole.mine.t';
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
-// у спільному режимі S приходить із сервера, локально не зберігається
+// in shared mode S comes from the server and is never stored locally
 let S = (API ? null : load()) || { bytes: 0, count: 0, recent: [], t: Date.now() };
-S.count |= 0;                                  // стан, збережений до появи лічильника
-// Особистий внесок — завжди свій, але він частина діри й тане разом із нею.
-// Без цього «твій внесок» доростав до сотень відсотків маси: діра втрачає 2%
-// за добу, а лічильник не втрачав нічого. Формула та сама, що у воркера.
+S.count |= 0;                                  // state saved before the counter existed
+// The personal contribution is always yours, but it is part of the hole and
+// evaporates with it. Without this, "your contribution" grew past hundreds of
+// percent: the hole loses ~2% of bytes a day, the counter lost nothing.
+// Same formula as the worker's.
 let MINE = +localStorage.getItem(MKEY) || 0;
 {
   const days = (Date.now() - (+localStorage.getItem(MTKEY) || Date.now())) / 864e5;
   if (days > 0 && MINE > 0) MINE *= Math.pow(0.99, days) ** 2;
 }
 
-// випаровування Гокінга: -1% маси за добу. маса ∝ √байтів ⇒ байти ∝ маса²
-// (у спільному режимі це рахує сервер)
+// Hawking evaporation: -1% mass per day. mass ∝ √bytes ⇒ bytes ∝ mass²
+// (in shared mode the server does this)
 const days = (Date.now() - S.t) / 864e5;
 if (!API && days > 0 && S.bytes > 0) S.bytes *= Math.pow(0.99, days) ** 2;
 S.t = Date.now();
 
-// try/catch обовʼязковий: у приватному Safari і при переповненій квоті
-// setItem кидає, а save() викликається всередині swallow() — виняток обривав
-// поглинання після першого ж файлу з пачки.
+// try/catch is mandatory: private-mode Safari and full quotas make setItem
+// throw, and save() runs inside swallow() — the exception used to abort
+// swallowing after the first file of a batch.
 const save = () => {
   try {
     localStorage.setItem(MKEY, MINE);
-    localStorage.setItem(MTKEY, Date.now());   // від чого відлічувати випаровування
+    localStorage.setItem(MTKEY, Date.now());   // evaporation epoch for MINE
     if (API) return;
     S.t = Date.now(); localStorage.setItem(KEY, JSON.stringify(S));
   } catch {}
 };
 
-// ─── форматування ──────────────────────────────────────────────────────────
+// ─── formatting ────────────────────────────────────────────────────────────
 const GRAM_UNITS = [1e-24,1e-21,1e-18,1e-15,1e-12,1e-9,1e-6,1e-3,1,1e3,1e6]
   .map((f, i) => [f, L.gram[i]]);
-// sig > 0 — головна цифра: фіксована кількість значущих цифр. Саме фіксована,
-// а не «більше знаків після коми»: інакше число смикається в ширині на кожному
-// кидку, а воно на сторінці найбільше. Шість цифр — це поріг, за яким видно
-// мегабайти на дірі в десятки гігабайтів (маса росте як √байтів).
-// sig = 0 — підписи цілей. Цілі завжди круглі, тож хвостові нулі зрізаються:
-// «10 г» і «3 г», а не «10.0 г» і «3.00 г».
+// sig > 0 — the headline number: a FIXED count of significant digits, not
+// "more decimals", or the biggest number on the page jitters in width on
+// every throw. Six digits is the threshold where megabytes still register on
+// a hole of tens of gigabytes (mass grows as √bytes).
+// sig = 0 — goal captions. Goals are always round, so trailing zeros are cut:
+// "10 g" and "3 g", not "10.0 g" and "3.00 g".
 function fmtMass(kg, sig = 0) {
   const g = kg * 1000;
   if (g <= 0) return ['0', L.gram[8]];
@@ -861,7 +860,7 @@ function fmtMass(kg, sig = 0) {
     const [f, u] = GRAM_UNITS[i];
     if (g >= f || i === 0) {
       const v = g / f;
-      // +'' через Number, а не регуляркою: вона зрізала б нулі і в «100»
+      // +'' via Number, not a regex: a regex would also strip zeros in "100"
       return [sig ? v.toPrecision(sig)
                   : +v.toFixed(v < 10 ? 2 : v < 100 ? 1 : 0) + '', u];
     }
@@ -881,10 +880,9 @@ function sci(x, d = 2) {
 }
 const SCALES = [1.616e-35, 8.4e-16, 5.3e-11, 2e-9, 1e-6, 5e-4, 1, 6.371e6, 6.96e8]
   .map((r, i) => [r, L.scales[i]]);
-// Порівняння маси зі звичними предметами. Астрономічні класи в діапазоні
-// від грама до тонни мовчать — справжніх чорних дір такої маси не буває.
-// назви українською — в називному відмінку: обидві конструкції нижче будуються
-// через «як» і «ніж», тож відмінювати нічого не доводиться
+// Mass compared to everyday objects — astronomy is silent between a gram and
+// a ton, since real black holes of such mass don't exist. Ukrainian names stay
+// in the nominative: both phrases below are built so no declension is needed.
 const OBJECTS = [1e-9, 1e-6, 5e-5, 1e-3, 5e-3, 0.15, 2, 70, 1500, 7.3e6, 5.97e24]
   .map((m, i) => [m, L.objects[i]]);
 function cmpMass(kg) {
@@ -899,21 +897,21 @@ function cmpMass(kg) {
   return L.cmpDiff(v, best[1], k > 1);
 }
 
-// ─── колір диска ───────────────────────────────────────────────────────────
-// Сама діра кольору не має: у неї немає ознак, крім маси, і діра на 3 г та на
-// 3 кг виглядають однаково. А от диск має. За моделлю тонкого диска
-// Шакури–Сюняєва його температура падає як T ∝ M^(−1/4) — саме тому діри
-// зоряних мас світять у рентгені, а надмасивні у видимому.
+// ─── disc color ────────────────────────────────────────────────────────────
+// The hole itself has no color: no features besides mass, so a 3 g and a 3 kg
+// hole look identical. The disc does. In the Shakura–Sunyaev thin-disc model
+// its temperature falls as T ∝ M^(−1/4) — the reason stellar-mass holes shine
+// in X-rays while supermassive ones shine in visible light.
 //
-// ponytail: закон справжній, підігнана лише константа прив'язки — 3000 K на
-// масі монети. Інакше для наших грамів температури були б поза будь-якою
-// видимою шкалою. Той самий тип зрізаного кута, що й екранний радіус.
+// ponytail: the law is real, only the anchor constant is tuned — 3000 K at
+// coin mass. Otherwise our few grams would sit outside any visible scale.
+// Same kind of cut corner as the on-screen radius.
 const T_ANCHOR = 3000, M_ANCHOR = 5e-3;
 const diskT = kg => kg <= 0 ? 30000
   : Math.min(30000, Math.max(700, T_ANCHOR * Math.pow(kg / M_ANCHOR, -0.25)));
 
-// Наближення Планка в RGB (Tanner Helland, чинне приблизно 1000–40000 K).
-// Точний інтеграл із функціями змішування CIE тут нічого б не додав на око.
+// Planck-in-RGB approximation (Tanner Helland, valid ~1000-40000 K).
+// An exact integral with CIE matching functions adds nothing visible here.
 function bbColor(K) {
   const t = Math.min(40000, Math.max(1000, K)) / 100;
   const cl = x => Math.min(1, Math.max(0, x / 255));
@@ -925,8 +923,8 @@ function bbColor(K) {
   return [cl(r), cl(g), cl(b)];
 }
 
-// Диск гарячіший до центру: T ∝ r^(−3/4). Видима частина в шейдері лежить
-// між 1.2 і 3.2 радіуса, звідси й розкид температур між краями.
+// The disc runs hotter inward: T ∝ r^(−3/4). The visible part in the shader
+// spans 1.2 to 3.2 radii, hence the temperature spread between its edges.
 const T_SPREAD = Math.pow(3.2 / 1.2, 0.75);
 const diskColors = kg => {
   const t = diskT(kg);
@@ -947,7 +945,7 @@ function fmtTime(s) {
   if (s < 3.156e7) return sci(s, 2) + ' ' + L.sec;
   return sci(s / 3.156e7, 2) + ' ' + L.years;
 }
-// розширення тут, назви в словнику
+// extensions here, names in the dictionary
 const KIND_RE = [
   /^(pdf|docx?|xlsx?|pptx?|odt|rtf|csv|djvu)$/,
   /^(png|jpe?g|gif|webp|svg|bmp|heic|tiff?|avif|ico)$/,
@@ -963,47 +961,47 @@ const kindOf = ext => L.kinds[KIND_RE.findIndex(re => re.test(ext))] ?? L.kindUn
 
 const rel = ts => L.ago((Date.now() - ts) / 1000);
 
-// ─── рендер UI ─────────────────────────────────────────────────────────────
+// ─── UI rendering ──────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
-// Круглі числа маси в кг, по два кроки на порядок. Кожні ×10 маси коштують
-// ×100 інформації, тож на самих десятках смуга від цілі до цілі майже стоїть:
-// проміжний крок ×3 по масі — це ×10 по байтах, і вона рухається вдесятеро жвавіше.
+// Round mass numbers in kg, two steps per decade. Every ×10 in mass costs
+// ×100 in information, so on pure decades the goal bar barely moves: the ×3
+// intermediate step in mass is ×10 in bytes and moves ten times livelier.
 const GOALS = [];
 for (let e = -9; e <= 3; e++) GOALS.push(10 ** e, 3 * 10 ** e);
 const nextGoal = m => GOALS.find(g => g > m);
 
-// Віха — перетин ваги звичного предмета, а не астрономічного класу. Класів
-// досяжних лише чотири (остання — первинна діра на 4.5 ГБ), і на ній діра вже
-// стоїть назавжди. Предмети ж розкладені рівно по досяжному діапазону:
-// піщинка 4.7 КБ · крапля 11 МБ · скріпка 4.5 ГБ · монета 111 ГБ · яблуко 98 ТБ.
+// A milestone is crossing an everyday object's weight, not an astronomy class.
+// Only four classes are reachable (the last, primordial, at 4.5 GB — and the
+// hole sits there forever). Objects span the reachable range evenly:
+// sand grain 4.7 KB · droplet 11 MB · paperclip 4.5 GB · coin 111 GB · apple 98 TB.
 const milestoneOf = kg => OBJECTS.filter(o => o[0] <= kg).length;
-// Локальна діра вже має масу з localStorage — засіваємо одразу, інакше перша ж
-// віха оголоситься заднім числом. У спільному режимі S стрибає з нуля до
-// серверної маси, тож там засіває перший знімок, а до нього mile лишається null.
+// A local hole already has mass from localStorage — seed at once, or the first
+// milestone announces itself retroactively. In shared mode S jumps from zero
+// to server mass, so the first snapshot seeds it; until then mile stays null.
 let mile = null;
 if (!API) mile = milestoneOf(massOf(S.bytes * 8));
 
 function checkMilestone() {
   const now = milestoneOf(massOf(S.bytes * 8));
   if (mile !== null && now > mile) {
-    // Інтерфейс на мить затягує за горизонт і відпускає назад.
+    // The UI gets pulled past the horizon for a beat and let back.
     document.body.classList.add('collapse');
-    // Повідомлення після повернення: під час затягування воно поїхало б разом
-    // з усім іншим, бо #warn живе всередині .ui
+    // Announce after the return: during the pull the message would ride along
+    // with everything else, since #warn lives inside .ui
     setTimeout(() => {
       document.body.classList.remove('collapse');
       warn(L.milestone(OBJECTS[now - 1][1]));
     }, 1100);
-    // при загасанні 0.7/с колишні 2.2 горіли б три секунди
+    // at 0.7/s decay the old 2.2 would burn for three seconds
     shock = 1.4;
   }
   mile = now;
 }
 
-let shown = 0;   // маса докручується до S.bytes, а не смикається
+let shown = 0;   // mass eases toward S.bytes instead of jumping
 
-// числа — щокадрово, поки триває докручування
+// numbers — every frame while the easing runs
 function renderNumbers() {
   const bits = shown * 8, m = massOf(bits), r = radiusOf(m), Th = tempOf(m);
   const [mv, mu] = fmtMass(m, 6), [bv, bu] = fmtBytes(shown);
@@ -1020,8 +1018,8 @@ function renderNumbers() {
   $('info').textContent = bv + ' ' + bu;
   $('bits').textContent = bits > 0 ? L.bitsOn(sci(bits, 2)) : '';
 
-  // Той самий набір у діалозі — лише поки він відкритий, інакше це зайвий
-  // innerHTML щокадрово під час докручування маси
+  // The same set in the dialog — only while it's open, otherwise it's a
+  // wasted innerHTML every frame during the mass easing
   if ($('about').open) $('teleDlg').innerHTML = [
     [L.teleRadius, r > 0 ? sci(r) + ' ' + L.metre : '0 ' + L.metre],
     [L.teleArea,   (bits > 0 ? sci(areaOf(bits)) : '0') + ' ' + L.metre2],
@@ -1043,14 +1041,14 @@ function renderNumbers() {
     $('goalTxt').textContent = L.goalLeft(fmtMass(g).join(' '), `${nv} ${nu}`);
   } else $('goalTxt').textContent = L.goalDone;
 
-  // Маса тане на 1% за добу, але маса ∝ √байтів — отже байти тануть на
-  // 1 − 0.99² = 1.99%. Показуємо саме байти: людину цікавить не відсоток,
-  // а скільки треба донести, щоб діра просто лишилась на місці.
+  // Mass loses 1% a day, but mass ∝ √bytes — so bytes lose 1 − 0.99² = 1.99%.
+  // Show bytes: people don't care about the percent, they care how much to
+  // bring just to keep the hole where it is.
   const perDay = shown * (1 - 0.99 ** 2);
   $('decay').textContent = shown > 0 ? L.decay(fmtBytes(perDay).join(' ')) : '';
 }
 
-// списки — лише коли справді змінились
+// lists — only when they actually changed
 function renderList() {
   $('watching').textContent = S.watching > 0
     ? (S.watching === 1 ? L.alone : L.watchers(S.watching)) : '';
@@ -1061,9 +1059,9 @@ function renderList() {
       API && S.bytes > 0 ? +Math.min(100, MINE / S.bytes * 100).toFixed(2) : 0);
   } else $('mine').textContent = '';
 
-  // Рекорд доби рахує сервер: у нього повний лог, а сюди приїжджають лише
-  // 20 останніх подій — на живому трафіку це хвилини, а не доба. Локально
-  // (без бекенду) рахуємо з того, що є: там "останні" і є весь лог.
+  // The daily record comes from the server: it has the full log, while only
+  // the 20 latest events arrive here — minutes of live traffic, not a day.
+  // Locally (no backend) compute from what we have: "recent" IS the whole log.
   const top = S.record !== undefined ? S.record
     : S.recent.filter(x => x.ts > Date.now() - 864e5)
         .reduce((a, b) => b.bytes > (a?.bytes || 0) ? b : a, null);
@@ -1076,9 +1074,9 @@ function renderList() {
     return `<li><b>.${x.ext}</b> <span>${v} ${u}</span> · ${rel(x.ts)}<i>${kindOf(x.ext)}</i></li>`;
   }).join('') || `<li>${L.horizonClear}</li>`;
 }
-// Жива маса в заголовку — закріплена вкладка стає віджетом: видно, що діра
-// ворухнулась, не відкриваючи сторінку. titleFlash тимчасово перекриває масу
-// повідомленням про великий чужий кидок.
+// Live mass in the title — a pinned tab becomes a widget: you see the hole
+// stir without opening the page. titleFlash temporarily overrides the mass
+// with a big-foreign-throw notice.
 let titleFlash = 0;
 function setTitle() {
   if (Date.now() < titleFlash) return;
@@ -1087,10 +1085,10 @@ function setTitle() {
 }
 const render = () => { renderNumbers(); renderList(); setTitle(); };
 
-// ─── таблиці в діалозі ─────────────────────────────────────────────────────
-// Рахуються з тих самих формул і меж, що й усе решта, а не переписуються
-// руками. Ця заміна одразу виправила два числа, які встигли застаріти:
-// астероїдна діра насправді 4.8·10³⁹ байтів, а не 10⁴⁰, зоряна — 1.7·10⁷⁷.
+// ─── dialog tables ─────────────────────────────────────────────────────────
+// Computed from the same formulas and boundaries as everything else, not
+// hand-written. The switch immediately fixed two stale numbers: the asteroid
+// hole is really 4.8·10³⁹ bytes, not 10⁴⁰, and the stellar one 1.7·10⁷⁷.
 const atBytes = b => b < 1024 ? +b.toFixed(1) + ' ' + L.byte[0]
                    : b < 1024 ** 6 ? fmtBytes(b).join(' ')
                    : sci(b, 1) + ' ' + L.byte[0];
@@ -1111,22 +1109,22 @@ $('clsTable').innerHTML =
   }).join('');
 
 
-// ─── випромінювання Гокінга: слід від останнього файлу ──────────────────────
+// ─── Hawking radiation: a trace of the last file ───────────────────────────
 let seed = S.recent[0]?.sig || 0x811c9dc5, hawkBuf = '';
-// Рідко — в середньому раз на пів години споглядання — серед шуму проступає
-// фраза і спливає геть разом із потоком. Нічим не виділяється: той самий
-// шрифт і сірість, ніби це просто збіг у випромінюванні. Хто помітив — той
-// помітив. Пояснень немає ніде, і це навмисно.
+// Rarely — about once per half hour of watching — a phrase surfaces in the
+// noise and drifts away with the stream. Nothing marks it: same font, same
+// gray, as if it were a coincidence in the radiation. Those who noticed,
+// noticed. It is documented nowhere, on purpose.
 let whisper = null;
 function hawkTick() {
-  if (document.hidden) return;   // rAF браузер приспить сам, setInterval — ні
+  if (document.hidden) return;   // the browser pauses rAF itself; setInterval it won't
   seed = (seed ^ (seed << 13)) >>> 0; seed = (seed ^ (seed >>> 17)) >>> 0; seed = (seed ^ (seed << 5)) >>> 0;
   let chunk;
   if (whisper) {
     chunk = whisper.msg.slice(whisper.i, whisper.i + 2);
     whisper.i += 2;
     if (whisper.i >= whisper.msg.length) whisper = null;
-  } else if (S.bytes > 0 && Math.random() < 1 / 13500) {   // ~раз на 27 хв при 120 мс/такт
+  } else if (S.bytes > 0 && Math.random() < 1 / 13500) {   // ~every 27 min at 120 ms/tick
     whisper = { msg: ' ' + L.whispers[Math.floor(Math.random() * L.whispers.length)] + ' ', i: 2 };
     chunk = whisper.msg.slice(0, 2);
   } else {
@@ -1137,9 +1135,10 @@ function hawkTick() {
 }
 setInterval(hawkTick, 120);
 
-// ─── поглинання ────────────────────────────────────────────────────────────
-// ponytail: FNV-1a по перших 64 КБ замість SHA-256 — це лише сіда для візуалу
-// випромінювання, а не крипта; працює і на file:// де crypto.subtle недоступний.
+// ─── swallowing ────────────────────────────────────────────────────────────
+// ponytail: FNV-1a over the first 64 KB instead of SHA-256 — it's a dedup and
+// radiation-visual seed, not crypto; also works on file:// where crypto.subtle
+// is unavailable.
 async function signature(file) {
   const buf = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
   let h = 0x811c9dc5;
@@ -1155,14 +1154,16 @@ function warn(msg) {
   warnTimer = setTimeout(() => w.style.opacity = '0', 3800);
 }
 
-// Кидок показується одразу, ще до відповіді сервера — інакше він відчувався б
-// із затримкою. Якщо сервер відмовив, показане треба зняти самим: інакше
-// наступний знімок відкотить масу мовчки, і це читається як глюк, а не як відмова.
+// A throw shows immediately, before the server answers — otherwise it feels
+// laggy. If the server refuses, we must take back what we showed ourselves:
+// otherwise the next snapshot silently rolls back the mass, which reads as a
+// glitch rather than a refusal.
 function refuse(entry, err) {
-  // Між POST і відповіддю міг прилетіти знімок, який уже переписав S.bytes
-  // серверною правдою — без цього кидка. Відняти вдруге означає провалити
-  // масу нижче реальної до наступного знімка. Ознака, що знімок був: наш
-  // запис зник зі списку, бо applyServer підставляє серверний масив.
+  // A snapshot may have arrived between the POST and this response, already
+  // overwriting S.bytes with server truth — without this throw. Subtracting
+  // again would sink the mass below reality until the next snapshot. The tell
+  // that a snapshot came: our entry vanished from the list, because
+  // applyServer substitutes the server array.
   if (!S.recent.includes(entry)) { warn(L.refusal[err] || L.refused); return; }
   S.bytes -= entry.bytes;
   S.count--;
@@ -1172,32 +1173,28 @@ function refuse(entry, err) {
   save(); render();
 }
 
-// Кулдаун на сервері 150 мс, пауза між кидками тут 160 мс — запас усього 10 мс,
-// і мережевий джитер легко стискає два запити ближче, ніж вони вийшли. Це не
-// відмова по суті, а «зарано», тож один повтор дешевший, ніж сповільнювати всю
-// пачку заради випадкової затримки.
-// Пачка йде одним запитом. По одному не виходило принципово: кулдаун на сервері
-// ставить стелю ~6.6 файлів на секунду, тож на теці зі ста файлами більшість
-// відбивалась 429 — а людина бачила, що ніби всі проковтнулись. Повтори тут не
-// рятували, вони лише доливали запитів у вже забитий канал.
-const BATCH = 200;                         // мусить збігатися з MAX_ITEMS у воркері
+// The batch goes as one request. One-by-one fundamentally didn't work: the
+// server cooldown caps at ~6.6 files/s, so on a hundred-file folder most
+// bounced with 429 while the page looked like everything was swallowed.
+// Retries didn't help — they only poured more requests into a jammed channel.
+const BATCH = 200;                         // must match MAX_ITEMS in the worker
 function sendFeed(entries) {
   for (let i = 0; i < entries.length; i += BATCH) {
     const chunk = entries.slice(i, i + BATCH);
-    // між частинами — пауза, довша за кулдаун, інакше друга відлетить у 429
+    // pause between chunks longer than the cooldown, or the second one gets 429
     setTimeout(() => {
       fetch(API + '/feed', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ items: chunk.map(e => ({ bytes: e.bytes, ext: e.ext, sig: e.sig })) }),
       }).then(r => r.json()).then(d => {
         if (!d.bytes) return chunk.forEach(e => refuse(e, d.error));
-        // сервер судить кожен елемент окремо й повертає список відхилених —
-        // знімаємо рівно їх, а не всю пачку
+        // the server judges each item on its own and returns the rejected
+        // list — we roll back exactly those, not the whole batch
         const bad = new Map((d.rejected || []).map(r => [r.sig, r.error]));
         for (const e of chunk) {
           if (!bad.has(e.sig)) { thrown.add(e.sig); continue; }
           refuse(e, bad.get(e.sig));
-          // підтверджений дубль — наступний такий кидок зупиниться ще до анімації
+          // a confirmed duplicate — the next such throw stops before any animation
           if (bad.get(e.sig) === 'already swallowed') thrown.add(e.sig);
         }
         applyServer(d);
@@ -1206,16 +1203,16 @@ function sendFeed(entries) {
   }
 }
 
-// Колір світіння від кидка — чорне тіло за розміром: кілобайти жевріють
-// бурштином (~2500 K), гігабайти спалахують біло-блакитним (~7000 K).
-// Більше впало — гарячіше горить, як і належить акреції.
+// Glow color of a throw — blackbody by size: kilobytes smolder amber
+// (~2500 K), gigabytes flare white-blue (~7000 K). More infall burns hotter,
+// as accretion should.
 let shockCol = [0.9, 0.72, 0.45];
 const shockColorFor = bytes => bbColor(800 + 550 * Math.log10(1 + bytes));
 
-// Підписи, про які клієнт уже знає, що вони в дірі: прийняті сервером плюс
-// підтверджені ним дублі. Показувати падіння для такого файлу означало б
-// одразу відкочувати показане — заплутує сильніше, ніж чесна відмова одразу.
-// Сесійний: підписи чужих кидків сервер не роздає, тож глибше не зазирнути.
+// Signatures the client already knows are in the hole: accepted by the server
+// plus its confirmed duplicates. Playing the infall animation for such a file
+// would mean rolling it right back — more confusing than an honest refusal up
+// front. Session-scoped: the server never hands out other people's signatures.
 const thrown = new Set();
 
 async function swallow(files) {
@@ -1224,15 +1221,16 @@ async function swallow(files) {
     if (!f.size) continue;
     if (/(^|[^a-z])(light|photon|фотон|світло)([^a-z]|$)/i.test(f.name))
       warn(L.lightspeed);
-    // Підпис рахується ДО оптимістичного показу: повтор того самого файлу
-    // (чи копія всередині теки) видно ще тут — без анімації й без відкату.
+    // The signature is computed BEFORE the optimistic update: re-throwing the
+    // same file (or a copy inside a folder) is caught right here — no
+    // animation, no rollback.
     const sig = await signature(f);
     if (thrown.has(sig) || batch.some(e => e.sig === sig)) {
       warn(L.refusal['already swallowed']);
       continue;
     }
     S.bytes += f.size;
-    S.count++;                             // сервер перезапише своїм числом
+    S.count++;                             // the server will overwrite with its number
     const entry = {
       ext: (f.name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'bin',
       bytes: f.size, ts: Date.now(), sig
@@ -1246,20 +1244,20 @@ async function swallow(files) {
   justFed = Date.now();
   seed = batch[batch.length - 1].sig;
   checkMilestone();
-  // Одна анімація на всю пачку, а не по одній на файл: сто файлів — це один
-  // обʼєкт, що падає, а не стробоскоп. Колір світіння несе розмір пачки.
+  // One animation for the whole batch, not one per file: a hundred files is
+  // one falling object, not a strobe. The glow color carries the batch size.
   const total = batch.reduce((a, e) => a + e.bytes, 0);
   shockCol = shockColorFor(total);
   infall();
-  sparkFlash();                            // одна з іскор на орбіті — це ти
+  sparkFlash();                            // one of the orbiting sparks is you
   shock = Math.max(shock, 0.3 + 0.12 * Math.min(1, Math.log10(1 + total) / 12));
-  quasar = Math.min(1, quasar + 0.35);     // швидке годування → джети
-  // Один запит на всю пачку — після того, як усі підписи пораховані
+  quasar = Math.min(1, quasar + 0.35);     // fast feeding → jets
+  // one request for the whole batch — after all signatures are computed
   if (API) sendFeed(batch);
   save(); render();
 }
 
-// текст із буфера / перетягнутий текст — теж інформація
+// clipboard text / dragged text is information too
 const asFile = txt => new File([txt], L.clip, { type: 'text/plain' });
 
 addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('dragging'); });
@@ -1277,25 +1275,25 @@ addEventListener('paste', e => {
 });
 $('upd').onclick = () => location.reload();
 
-// повний текст — тільки за кнопкою. нічого не відкривається саме собою
-// renderNumbers заповнює телеметрію в діалозі лише коли він відкритий, тож
-// перший кадр треба домалювати одразу після showModal, інакше таблиця порожня
-// до наступного докручування маси
+// full text only behind a button — nothing opens on its own.
+// renderNumbers fills the dialog telemetry only while it's open, so the first
+// frame must be drawn right after showModal or the table stays empty until
+// the next mass easing
 $('what').onclick = () => { $('about').showModal(); renderNumbers(); };
-// клік по затемненню теж закриває: у ::backdrop ціль події — сам <dialog>
+// clicking the backdrop closes too: for ::backdrop the event target is the <dialog>
 $('about').onclick = e => { if (e.target === $('about')) $('about').close(); };
 
-// Ручний вибір перекриває автовизначення: україномовний браузер за кордоном і
-// англомовний в Україні — обидва трапляються. Перезавантаження, а не переклад
-// на місці: половина словника вшита в конcтанти на старті (CLASSES, OBJECTS…).
+// Manual choice overrides detection: a Ukrainian browser abroad and an English
+// one in Ukraine both happen. Reload rather than in-place translation: half
+// the dictionary is baked into constants at startup (CLASSES, OBJECTS…).
 $('lang').onclick = () => {
   localStorage.setItem(LKEY, LANG === 'uk' ? 'en' : 'uk');
   location.reload();
 };
 
-// navigator.share існує майже лише на мобільних і лише в безпечному контексті;
-// на десктопі падаємо на буфер обміну. Скасування діалогу шеру кидає
-// AbortError — його й ловить порожній catch.
+// navigator.share exists mostly on mobile and only in secure contexts; on
+// desktop we fall back to the clipboard. Cancelling the share dialog throws
+// AbortError — that's what the empty catch is for.
 $('share').onclick = async () => {
   const url = location.origin;
   try {
@@ -1307,13 +1305,13 @@ $('share').onclick = async () => {
 $('pick').onclick = () => $('file').click();
 $('file').onchange = e => { swallow([...e.target.files]); e.target.value = ''; };
 
-// ─── синхронізація зі спільною дірою ───────────────────────────────────────
-// ponytail: свій кидок відрізняємо від чужого за 2.5-секундним вікном після POST.
-// При двох одночасних кидках можна проґавити чужий — не варте справжніх id.
-// ─── «поки тебе не було» ───────────────────────────────────────────────────
-// Знімок останнього візиту: маса, лічильник, час. Оновлюється на кожному
-// серверному знімку — це точніше за beforeunload, який на мобільних часто
-// не спрацьовує. Порівнюється рівно раз, із першим знімком нової сесії.
+// ─── syncing with the shared hole ──────────────────────────────────────────
+// ponytail: own throws are told from others' by a 2.5 s window after POST.
+// Two simultaneous throws can hide a foreign one — not worth real ids.
+// ─── "while you were away" ─────────────────────────────────────────────────
+// Snapshot of the last visit: mass, counter, time. Updated on every server
+// snapshot — more reliable than beforeunload, which mobile often skips.
+// Compared exactly once, against the first snapshot of a new session.
 const SKEY = 'blackhole.seen';
 let seenPrev = null, seenChecked = false;
 try { seenPrev = JSON.parse(localStorage.getItem(SKEY)); } catch {}
@@ -1321,19 +1319,20 @@ function checkAway(bytes, count) {
   if (seenChecked) return;
   seenChecked = true;
   const p = seenPrev;
-  if (!p || Date.now() - p.t < 3600e3) return;   // менше години — не варте слова
+  if (!p || Date.now() - p.t < 3600e3) return;   // under an hour — not worth a word
   const df = count - p.c, db = bytes - p.b;
   let msg = null;
   if (df > 0) msg = L.awayAte(L.victims(df), fmtBytes(Math.max(0, db)).join(' '));
   else if (db < -1e6) msg = L.awayEvap(fmtBytes(-db).join(' '));
-  // після формування діри, щоб не перебивати одометр; при reduced-motion одразу
+  // after the hole finishes forming, so it doesn't cut into the odometer;
+  // with reduced-motion, right away
   if (msg) setTimeout(() => warn(msg), calm.matches ? 800 : 3300);
 }
 
 let lastTs = 0, justFed = 0, myVer = null;
 function applyServer(d) {
-  // ponytail: id версії приїжджає від Durable Object, а він перезапускається
-  // на деплої з невеликою затримкою — сповіщення може спізнитись на хвилину.
+  // ponytail: the version id comes from the Durable Object, which restarts
+  // shortly after a deploy — the notice can run a minute late.
   if (d.v) {
     if (!myVer) myVer = d.v;
     else if (d.v !== myVer) $('upd').hidden = false;
@@ -1346,7 +1345,7 @@ function applyServer(d) {
     sparkFlash();
     shockCol = shockColorFor(top.bytes);
     shock = Math.max(shock, 0.3);
-    // великий чужий кидок помітно навіть із фонової вкладки
+    // a big foreign throw is visible even from a background tab
     if (top.bytes > 1e8) {
       titleFlash = Date.now() + 5000;
       document.title = `⚡ .${top.ext} ${v} ${u} — TON 404`;
@@ -1356,58 +1355,59 @@ function applyServer(d) {
   if (top) lastTs = top.ts;
   S.bytes = d.bytes; S.count = d.count; S.recent = d.recent;
   S.watching = d.watching; S.record = d.record;
-  // Внесок не може перевищувати всю діру — це не оформлення, а факт. Він
-  // розходився з правдою двома шляхами: кидки, які сервер відбив за добовим
-  // капом чи дедупом, довго рахувались локально; плюс сам відкат, який MINE
-  // не зачіпав. Обрізання по серверній масі лікує і вже зіпсовані значення.
+  // A contribution can't exceed the whole hole — that's a fact, not styling.
+  // It drifted from truth two ways: throws the server rejected (daily cap,
+  // dedup) kept counting locally, and rollbacks never touched MINE. Clamping
+  // to server mass also heals already-corrupted values.
   if (MINE > S.bytes) { MINE = S.bytes; save(); }
-  checkMilestone();                      // віха є віха, хто б її не продавив
+  checkMilestone();                      // a milestone is a milestone, whoever pushed it
   checkAway(d.bytes, d.count);
   try { localStorage.setItem(SKEY, JSON.stringify({ b: d.bytes, c: d.count, t: Date.now() })); } catch {}
   render();
 }
 let ws, retry = 1000, retryTimer, fails = 0;
 function connect() {
-  clearTimeout(retryTimer);                  // робить виклик ідемпотентним
+  clearTimeout(retryTimer);                  // makes the call idempotent
   ws = new WebSocket(API.replace(/^http/, 'ws') + '/ws');
   ws.onopen = () => { retry = 1000; fails = 0; };
-  // 'pong' — відповідь платформи на наш keepalive, не знімок стану
+  // 'pong' is the platform's keepalive reply, not a state snapshot
   ws.onmessage = e => { if (e.data !== 'pong') applyServer(JSON.parse(e.data)); };
-  // Зростання з джитером. З фіксованими 5 с увесь зал ломиться назад в один
-  // такт і не дає воркеру піднятись — падіння стає самопідтримним.
+  // Backoff with jitter. With a fixed 5 s the whole audience storms back in
+  // one beat and never lets the worker back up — the outage self-sustains.
   ws.onclose = () => {
-    // За корпоративним проксі WebSocket не піднімається ніколи, і тоді людина
-    // бачить «порожньо, вона голодна» на дірі, що важить грами, — при цьому її
-    // власні кидки долітають. Після другої поспіль невдачі беремо стан разово.
-    // Це не полінг: рівно один запит на весь сеанс, доки сокет не оживе.
+    // Behind a corporate proxy WebSocket never comes up, and the visitor sees
+    // "empty, it is hungry" on a hole weighing grams — while their own throws
+    // land fine. After the second straight failure, fetch state once.
+    // Not polling: exactly one request per session until the socket revives.
     if (++fails === 2) fetch(API + '/state').then(r => r.json()).then(applyServer).catch(() => {});
     retryTimer = setTimeout(connect, retry * (0.5 + Math.random()));
-    retry = Math.min(retry * 2, 60000);      // сервер лежить → живемо локально
+    retry = Math.min(retry * 2, 60000);      // server down → live locally
   };
 }
-// Розсилка йде лише на подіях, тож на спокійній дірі сокет мовчить годинами —
-// а NAT і мобільні проксі ріжуть idle-TCP за 30–120 секунд. Пінг тримає його
-// живим; відповідає сама платформа (setWebSocketAutoResponse), не будячи
-// Durable Object, тому це нічого не коштує навіть при тисячі глядачів.
+// Broadcasts happen only on events, so on a quiet hole the socket sits silent
+// for hours — and NATs and mobile proxies cut idle TCP in 30-120 s. The ping
+// keeps it alive; the platform itself answers (setWebSocketAutoResponse)
+// without waking the Durable Object, so it costs nothing even with a
+// thousand viewers.
 setInterval(() => { if (ws && ws.readyState === 1) ws.send('ping'); }, 30000);
 
-// Приспаний мобільний таб часто не отримує close: сокет просто мертвий, і
-// сторінка мовчки показує вчорашню діру, поки її не перезавантажать.
+// A dozing mobile tab often never receives close: the socket is just dead and
+// the page silently shows yesterday's hole until reloaded.
 addEventListener('visibilitychange', () => {
   if (!document.hidden && ws && ws.readyState > 1) { retry = 1000; connect(); }
 });
-// Знімок стану приїжджає першим повідомленням сокета — окремий GET /state був би
-// другим зверненням до єдиного на весь світ обʼєкта на кожного відвідувача.
+// The state snapshot arrives as the socket's first message — a separate
+// GET /state would be a second hit on the world's only object per visitor.
 if (API) connect();
 
-// ─── WebGL: лінзування + акреційний диск ───────────────────────────────────
+// ─── WebGL: lensing + accretion disc ───────────────────────────────────────
 const cv = $('gl');
 const gl = cv.getContext('webgl', { alpha: false, antialias: false });
 
 const FRAG = `
 precision highp float;
 uniform vec2 res, mouse; uniform float time, rad, act, shock, qsr, hot, hotA;
-// колір диска за температурою T ∝ M^(−1/4): dIn — внутрішній край, dOut — зовнішній
+// disc color by temperature T ∝ M^(−1/4): dIn is the inner edge, dOut the outer
 uniform vec3 dIn, dOut, shockCol;
 
 float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
@@ -1424,7 +1424,7 @@ float fbm(vec2 p){
   return v;
 }
 
-// пилова туманність — глибина замість плаского чорного
+// dust nebula — depth instead of flat black
 vec3 nebula(vec2 p){
   float n = fbm(p * 1.7);
   float m = vnoise(p * 0.8 + 5.3);
@@ -1449,65 +1449,65 @@ vec3 stars(vec2 uv){
 }
 
 void main(){
-  // Нормалізація по меншій стороні, а не по висоті. На альбомному екрані це
-  // те саме (менша сторона — висота), а на вертикальному телефоні поділ на
-  // висоту робив півширину ~0.23 при радіусі діри 0.32: вона ширша за екран
-  // і перетворювалась на тло замість обʼєкта.
+  // Normalize by the shorter side, not the height. In landscape that's the
+  // same thing; on a portrait phone dividing by height made the half-width
+  // ~0.23 against a hole radius of 0.32 — wider than the screen, turning the
+  // hole into a backdrop instead of an object.
   vec2 uv = (gl_FragCoord.xy - 0.5 * res) / min(res.x, res.y) - mouse * 0.008;
   float r = length(uv);
   if (r < rad) { gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
   vec2 dir = uv / max(r, 1e-5);
 
-  // відхилення променя: чим ближче до горизонту, тим сильніше
+  // ray deflection: the closer to the horizon, the stronger
   float bend = rad * rad * 2.1 / r;
   float a = time * 0.008;
   vec2 s = dir * (r + bend);
   s = vec2(s.x * cos(a) - s.y * sin(a), s.x * sin(a) + s.y * cos(a));
-  // фон ущільнюється, коли діра росте — наче камера відʼїжджає.
-  // зірки зміщуються за курсором сильніше за туманність — це й дає паралакс
+  // the background densifies as the hole grows — as if the camera pulls back.
+  // stars shift with the cursor more than the nebula — that's the parallax
   vec2 bg = s * (0.8 + rad * 2.4);
   vec3 col = nebula(bg * 0.55 + mouse * 0.05);
   col += stars(bg + mouse * 0.025) * 0.9;
 
-  // фотонне кільце. канали розведені по радіусу — хроматична аберація
+  // photon ring; channels spread across the radius — chromatic aberration
   float rw = rad * 0.055 + 0.0015;
   col += vec3(exp(-pow((r - rad * 1.082) / rw, 2.0)),
               exp(-pow((r - rad * 1.090) / rw, 2.0)),
-              exp(-pow((r - rad * 1.098) / rw, 2.0))) * dIn * 1.15;   // це лінзоване світло диска
+              exp(-pow((r - rad * 1.098) / rw, 2.0))) * dIn * 1.15;   // lensed disc light
 
-  // акреційний диск (сплюснутий + доплерівське підсилення зліва)
+  // accretion disc (flattened + Doppler boost on the left)
   vec2 d = vec2(uv.x, uv.y * 3.4);
   float dr = length(d);
   float disk = exp(-pow((dr - rad * 2.5) / (rad * 1.15 + 0.02), 2.0));
   float ang = atan(d.y, d.x);
   disk *= 0.55 + 0.45 * sin(ang * 3.0 - time * 1.6 + dr * 26.0);
   disk *= smoothstep(rad * 0.95, rad * 1.5, dr);
-  float dop = smoothstep(-0.25, 0.25, -uv.x);   // 1 — бік, що летить на нас
+  float dop = smoothstep(-0.25, 0.25, -uv.x);   // 1 = the side coming at us
   disk *= 0.35 + 1.05 * dop;
   disk *= 0.35 + 0.9 * act;
-  vec3 dcol = mix(dOut, dIn, smoothstep(rad * 3.2, rad * 1.2, dr));   // до центру гарячіше: T ∝ r^(−3/4)
-  dcol = mix(dcol * vec3(1.2, 0.5, 0.3), dcol, dop);   // бік, що тікає, ще й червоніший
+  vec3 dcol = mix(dOut, dIn, smoothstep(rad * 3.2, rad * 1.2, dr));   // hotter inward: T ∝ r^(−3/4)
+  dcol = mix(dcol * vec3(1.2, 0.5, 0.3), dcol, dop);   // the receding side is also redder
   col += disk * dcol;
 
-  // зворотний бік диска, загнутий гравітацією над горизонтом і під ним.
-  // без цієї арки силует читається просто як світляне кільце
+  // the disc's far side, bent by gravity over and under the horizon.
+  // without this arch the silhouette reads as just a ring of light
   float arc = exp(-pow((r - rad * 2.3) / (rad * 0.42 + 0.012), 2.0));
-  arc *= smoothstep(0.18, 0.62, abs(uv.y) / max(r, 1e-5));   // лише згори й знизу
+  arc *= smoothstep(0.18, 0.62, abs(uv.y) / max(r, 1e-5));   // top and bottom only
   arc *= 0.5 + 0.5 * sin(atan(uv.y, uv.x) * 3.0 - time * 1.6 + r * 26.0);
   arc *= (0.4 + 0.85 * dop) * (0.35 + 0.9 * act);
   col += arc * mix(dOut, dIn, smoothstep(rad * 3.0, rad * 1.4, r)) * 0.9;
 
-  // релятивістські джети з полюсів — квазарний режим при швидкому годуванні
+  // relativistic polar jets — quasar mode under fast feeding
   if (qsr > 0.002) {
     float w = rad * 0.30 + abs(uv.y) * 0.10;
     float j = exp(-pow(uv.x / w, 2.0));
     j *= smoothstep(rad * 0.7, rad * 2.4, abs(uv.y));
     j *= exp(-abs(uv.y) * 1.4);
-    j *= 0.55 + 0.45 * sin(abs(uv.y) * 34.0 - time * 8.0);   // згустки, що летять
+    j *= 0.55 + 0.45 * sin(abs(uv.y) * 34.0 - time * 8.0);   // clumps in flight
     col += j * qsr * vec3(0.55, 0.78, 1.0) * 1.7;
   }
 
-  // тепла пляма: речовина обертається й по спіралі падає за горизонт
+  // hot spot: matter orbits and spirals in past the horizon
   if (hot < 2.2) {
     float ht = hot / 2.2;
     float hrad = mix(rad * 3.5, rad * 1.02, ht * ht);
@@ -1517,24 +1517,24 @@ void main(){
            * (1.0 - ht * 0.5) * vec3(1.0, 0.86, 0.62) * 2.4;
   }
 
-  // світіння при поглинанні: ширше й насиченіше за колишній спалах, але
-  // з повільним загасанням — жар довкола горизонту, а не блимання
+  // swallow glow: wider and richer than the old flash, with a slow decay —
+  // heat around the horizon, not blinking
   col += shock * shockCol * 1.5 * exp(-(r - rad) * 3.5);
 
-  col = col / (col + 0.85);          // тонмапінг
+  col = col / (col + 0.85);          // tonemapping
   col = pow(col, vec3(0.85));
 
-  // зерно: заодно прибирає смуги на темних градієнтах
+  // grain: also removes banding on dark gradients
   col += (h21(gl_FragCoord.xy + fract(time) * vec2(37.1, 61.7)) - 0.5) * 0.024;
 
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-// Контексту може не бути взагалі: вимкнене апаратне прискорення, стара збірка,
-// корпоративна політика. Раніше це вбивало сторінку цілком — скрипт падав на
-// gl.createShader, і все, що оголошено нижче, лишалось у мертвій зоні: цифри
-// назавжди «—». Діри без WebGL не буде, але маса, стрічка й саме годування
-// мусять працювати.
+// The context may not exist at all: hardware acceleration off, an old build,
+// corporate policy. This used to kill the whole page — the script died on
+// gl.createShader and everything declared below stayed in the dead zone,
+// numbers forever "—". Without WebGL there is no hole, but mass, the feed
+// list, and feeding itself must still work.
 let U = null;
 if (gl) {
   const shader = (type, src) => {
@@ -1547,7 +1547,7 @@ if (gl) {
   gl.attachShader(prog, shader(gl.VERTEX_SHADER, 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));
   gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FRAG));
   gl.linkProgram(prog);
-  // без цієї перевірки збійний шейдер дає просто чорний екран без жодного натяку
+  // without this check a broken shader is just a black screen with no clue
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(prog));
   gl.useProgram(prog);
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
@@ -1557,31 +1557,31 @@ if (gl) {
   U = n => gl.getUniformLocation(prog, n);
 }
 
-// На мобільних контекст губиться регулярно — згорнув вкладку, повернувся, а
-// полотно застигло назавжди. Відновити його означає перестворити всі ресурси;
-// перезавантаження дешевше, а втрачати нема чого: стан лежить на сервері.
+// On mobile the context is lost routinely — background the tab, come back,
+// the canvas is frozen forever. Recovering means recreating every resource;
+// a reload is cheaper and nothing is lost: state lives on the server.
 cv.addEventListener('webglcontextlost', e => { e.preventDefault(); location.reload(); });
 
-// ─── другий шар: іскри глядачів і приблудні зорі ───────────────────────────
+// ─── second layer: viewer sparks and stray stars ───────────────────────────
 const sp = $('sp'), sx = sp.getContext('2d');
-// детермінований хеш → [0,1): та сама іскра щокадру летить своєю орбітою
+// deterministic hash → [0,1): the same spark flies its own orbit every frame
 const h32 = i => {
   let x = Math.imul(i ^ 0x9e3779b9, 2246822507);
   x = Math.imul(x ^ (x >>> 13), 3266489909);
   return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
 };
-// центр і радіус діри в CSS-пікселях — та сама математика, що uv у шейдері,
-// разом із паралаксом: інакше при русі миші іскри відклеюються від сцени
+// hole center and radius in CSS pixels — same math as uv in the shader,
+// parallax included: otherwise mouse movement peels the sparks off the scene
 function holeC() {
   const m = Math.min(innerWidth, innerHeight);
   const px = calm.matches ? 0 : mx, py = calm.matches ? 0 : my;
   return [innerWidth / 2 + px * 0.008 * m, innerHeight / 2 - py * 0.008 * m, visRadius() * m];
 }
 
-// Кожен глядач — іскра на орбіті довкола діри. Кидок (свій чи чужий) —
-// випадкова іскра на секунду розгоряється: хтось із присутніх щойно годував.
-// За горизонт ніхто не пірнає: глядачі спостерігають, а не падають.
-const SPARKS = 60;             // стеля показу: далі окремих точок все одно не видно
+// Every viewer is a spark orbiting the hole. On a throw (yours or theirs) a
+// random spark brightens for a second: someone present just fed it. Nobody
+// dives past the horizon: viewers watch, they don't fall.
+const SPARKS = 60;             // display ceiling: beyond that dots blur together anyway
 let flashI = -1, flashT = -9;
 const sparkFlash = () => {
   flashI = Math.floor(Math.random() * Math.max(1, Math.min(SPARKS, S.watching | 0)));
@@ -1592,15 +1592,15 @@ function drawSparks(now) {
   const n = Math.min(SPARKS, S.watching | 0);
   if (!n) return;
   const [cx, cy, R] = holeC();
-  const t = calm.matches ? 0 : now;        // reduced-motion: орбіти завмирають
+  const t = calm.matches ? 0 : now;        // reduced-motion: orbits stand still
   for (let i = 0; i < n; i++) {
     const a = h32(i), b = h32(i + 977), c = h32(i + 1901);
-    const k = 2.35 + 1.3 * a;                       // орбіта за зовнішнім краєм диска
-    const ang = b * 6.2832 + t * 1.15 * Math.pow(k, -1.5);   // кеплер: далі — повільніше
+    const k = 2.35 + 1.3 * a;                       // orbit beyond the disc's outer edge
+    const ang = b * 6.2832 + t * 1.15 * Math.pow(k, -1.5);   // Kepler-ish: farther is slower
     const x = cx + Math.cos(ang) * R * k;
-    const y = cy + Math.sin(ang) * R * k * 0.30;    // та сама сплюснутість, що в диска
-    const far = Math.sin(ang) < 0;                  // верхня дуга — дальній бік
-    if (far && Math.hypot(x - cx, y - cy) < R * 1.06) continue;   // сховалась за діру
+    const y = cy + Math.sin(ang) * R * k * 0.30;    // same flattening as the disc
+    const far = Math.sin(ang) < 0;                  // the upper arc is the far side
+    if (far && Math.hypot(x - cx, y - cy) < R * 1.06) continue;   // hidden behind the hole
     const tw = calm.matches ? 0.45 : 0.30 + 0.22 * Math.sin(now * (0.5 + c) + c * 40);
     let al = tw * (far ? 0.55 : 1), sz = 1.1;
     if (i === flashI) {
@@ -1614,16 +1614,16 @@ function drawSparks(now) {
   sx.shadowBlur = 0;
 }
 
-// ─── припливне руйнування зорі (TDE) ───────────────────────────────────────
-// Справжній клас транзієнтів: зоря підходить заблизько, приплив розтягує її
-// в потік, і найяскравіший момент — перицентр. Подія детермінована від
-// настінного годинника, тож усі відкриті вкладки світу бачать ту саму зорю
-// тієї самої миті — нуль байтів синхронізації.
-const TDE_EVERY = 420, TDE_DUR = 9;      // секунди: вікно і тривалість прольоту
+// ─── tidal disruption event (TDE) ──────────────────────────────────────────
+// A real class of transients: a star wanders too close, the tide stretches it
+// into a stream, and the brightest moment is pericenter. The event is
+// deterministic from wall-clock time, so every open tab in the world sees the
+// same star at the same instant — zero bytes of synchronization.
+const TDE_EVERY = 420, TDE_DUR = 9;      // seconds: window and flyby duration
 let tdeFlared = 0;
 function tdeNow(sec) {
   const w = Math.floor(sec / TDE_EVERY), h = h32(w);
-  if (h < 0.45) return null;             // у це вікно ніхто не заблукав
+  if (h < 0.45) return null;             // nobody wandered in this window
   const start = w * TDE_EVERY + h32(w + 7) * (TDE_EVERY - TDE_DUR - 30);
   const p = (sec - start) / TDE_DUR;
   return p >= 0 && p <= 1
@@ -1635,14 +1635,14 @@ function drawTDE(sec) {
   if (!e) return;
   const [cx, cy, R] = holeC();
   const D = Math.max(innerWidth, innerHeight) * 0.75;
-  const q = R * 1.75 * e.side;           // перицентр — за фотонним кільцем
+  const q = R * 1.75 * e.side;           // pericenter — beyond the photon ring
   const ca = Math.cos(e.ang), sa = Math.sin(e.ang);
   const P = (lx, ly) => [cx + lx * ca - ly * sa, cy + lx * sa + ly * ca];
   const [x0, y0] = P(D, q * 2.6), [x1, y1] = P(0, q * 0.62), [x2, y2] = P(-D * 0.9, -q * 2.2);
   const bez = u => { const v = 1 - u;
     return [v * v * x0 + 2 * v * u * x1 + u * u * x2, v * v * y0 + 2 * v * u * y1 + u * u * y2]; };
-  // темп по smoothstep: повільний під'їзд, максимум швидкості в перицентрі.
-  // Слід із точок позаду при цьому природно видовжується — це і є приплив.
+  // smoothstep pacing: slow approach, peak speed at pericenter. The trail of
+  // points behind stretches out naturally there — that IS the tide.
   const U = pp => pp * pp * (3 - 2 * pp);
   const bright = Math.exp(-(((e.p - 0.5) / 0.16) ** 2));
   let prev = null;
@@ -1662,7 +1662,7 @@ function drawTDE(sec) {
   sx.fillStyle = `rgba(255,240,215,${(0.45 + 0.55 * bright).toFixed(3)})`;
   sx.beginPath(); sx.arc(hx, hy, 1.3 + 1.8 * bright, 0, 6.2832); sx.fill();
   sx.shadowBlur = 0;
-  // перицентр: діра ледь відгукується теплом — та сама мить у всіх вкладках
+  // pericenter: the hole answers with a faint warmth — the same instant in every tab
   if (e.p > 0.5 && tdeFlared !== e.id) {
     tdeFlared = e.id;
     shockCol = [1, 0.9, 0.75];
@@ -1671,49 +1671,50 @@ function drawTDE(sec) {
 }
 
 function resize() {
-  // на великих екранах опускаємо стелю: кадр удвічі дешевший, різниця майже не видна
+  // lower the ceiling on big screens: half the frame cost, barely visible
   const dpr = Math.min(devicePixelRatio || 1, innerWidth > 1800 ? 1.5 : 2);
   cv.width = innerWidth * dpr | 0; cv.height = innerHeight * dpr | 0;
   if (gl) gl.viewport(0, 0, cv.width, cv.height);
   sp.width = innerWidth * dpr | 0; sp.height = innerHeight * dpr | 0;
-  // зміна розміру полотна скидає стан контексту — транформ і lineCap щоразу
+  // resizing a canvas resets context state — transform and lineCap every time
   sx.setTransform(dpr, 0, 0, dpr, 0, 0);
   sx.lineCap = 'round';
 }
 addEventListener('resize', resize); resize();
 
-// ponytail: екранний радіус — √(log₁₀ байтів), а не √байтів. Справжній закон
-// дав би різницю в 33000× між 1 Б і 1 ГБ — діра або невидима, або на весь екран.
-// На вузькому екрані діра меншає на третину. Це не про саму діру, а про диск:
-// він тягнеться до 3.2 радіуса, тож у повний розмір накриває телефон цілком і
-// текст лягає просто на світле. На десктопі те саме число не заважає — там
-// колонки стоять по краях, куди диск уже не дістає.
+// ponytail: on-screen radius is √(log₁₀ bytes), not √bytes. The real law puts
+// a 33000× gap between 1 B and 1 GB — the hole would be invisible or the
+// whole screen. On narrow screens the hole shrinks by a third; that's about
+// the disc, not the hole: it reaches 3.2 radii and at full size covers the
+// whole phone, putting text on bright pixels. On desktop the same number is
+// harmless — the columns sit at the edges, out of the disc's reach.
 const narrow = matchMedia('(max-width: 820px)');
 const calm = matchMedia('(prefers-reduced-motion: reduce)');
 const visRadius = () =>
   (0.045 + 0.33 * Math.sqrt(Math.log10(1 + shown) / 15)) * (narrow.matches ? 0.7 : 1);
 
-// курсор для паралаксу — з інерцією, інакше фон смикається
+// parallax cursor — with inertia, or the background twitches
 let mx = 0, my = 0, tmx = 0, tmy = 0;
 addEventListener('pointermove', e => {
   tmx = (e.clientX / innerWidth - 0.5) * 2;
-  tmy = -(e.clientY / innerHeight - 0.5) * 2;   // у шейдері вісь Y дивиться вгору
+  tmy = -(e.clientY / innerHeight - 0.5) * 2;   // shader Y axis points up
 });
 
-// тепла пляма: 99 = зараз нічого не падає
+// hot spot: 99 = nothing is falling right now
 let hotT = 99, hotA = 0;
 function infall() { hotT = 0; hotA = Math.random() * 6.2832; }
 
-// Вхід: діра не стоїть готова, а формується — маса відлічується з нуля до
-// серверної за ~3 с по smoothstep, одометром. Якщо за 6 с маси так і немає
-// (порожня діра, локальний режим, впалий сокет) — інтро тихо знімається.
+// Entry: the hole doesn't stand ready — it forms. Mass counts up from zero to
+// the server value over ~3 s on a smoothstep, odometer-style. If no mass
+// shows up within 6 s (empty hole, local mode, dead socket) the intro quietly
+// steps aside.
 let intro = !calm.matches, introT0 = 0;
 
 let shock = 0, quasar = 0, last = 0;
 function frame(t) {
   const dt = Math.min((t - last) / 1000, 0.05); last = t;
-  // 0.7/с: пік кидка тримається ~пів секунди і догоряє ще з секунду —
-  // повільний жар замість колишнього спалаху на 1.6/с
+  // 0.7/s: a throw's peak holds ~half a second and smolders for another —
+  // slow heat instead of the old 1.6/s flash
   shock = Math.max(0, shock - dt * 0.7);
   hotT = Math.min(99, hotT + dt);
   mx += (tmx - mx) * Math.min(1, dt * 3);
@@ -1726,24 +1727,24 @@ function frame(t) {
     shown = S.bytes * p * p * (3 - 2 * p);
     renderNumbers();
     if (p === 1) intro = false;
-  // числа й діра докручуються до нового значення, а не стрибають
+  // numbers and the hole ease toward the new value instead of jumping
   } else if (shown !== S.bytes) {
     shown = Math.abs(S.bytes - shown) < Math.max(1, S.bytes * 1e-9)
       ? S.bytes : shown + (S.bytes - shown) * Math.min(1, dt * 3.2);
     renderNumbers();
   }
-  quasar = Math.max(0, quasar - dt * 0.13);            // ~8 с до згасання джетів
+  quasar = Math.max(0, quasar - dt * 0.13);            // ~8 s until the jets fade
   const q = $('quasar');
   q.style.opacity = quasar > 0.5 ? '1' : '0';
   q.textContent = quasar > 0.92 ? L.quasarMax : L.quasar;
   const hourAgo = Date.now() - 36e5;
   const act = Math.min(1, S.recent.filter(x => x.ts > hourAgo).length / 6);
   gl.uniform2f(U('res'), cv.width, cv.height);
-  // При reduced-motion диск сповільнюється, але не завмирає: 0.08 було
-  // перебором — на такій швидкості він візуально стоїть, і від проєкту
-  // лишається чорний круг. Найгостріший подразник тут не обертання само по
-  // собі, а паралакс: він відповідає на рух самої людини. Його й вимикаємо
-  // повністю, а диску лишаємо третину швидкості.
+  // With reduced-motion the disc slows but doesn't freeze: 0.08 was too much —
+  // at that speed it visually stands still and the project becomes a black
+  // circle. The sharpest trigger isn't the rotation itself but the parallax,
+  // which answers the person's own movement — that one goes off entirely,
+  // while the disc keeps a third of its speed.
   gl.uniform1f(U('time'), (calm.matches ? t * 0.35 : t) / 1000);
   gl.uniform1f(U('rad'), visRadius());
   gl.uniform1f(U('act'), act);
@@ -1757,7 +1758,7 @@ function frame(t) {
   gl.uniform3fv(U('dOut'), dOut);
   gl.uniform3fv(U('shockCol'), shockCol);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
-  // другий шар: іскри йдуть за часом анімації, TDE — за настінним (синхронна)
+  // second layer: sparks run on animation time, TDE on wall clock (synchronized)
   sx.clearRect(0, 0, innerWidth, innerHeight);
   drawSparks(t / 1000);
   drawTDE(Date.now() / 1000);
@@ -1766,110 +1767,110 @@ function frame(t) {
 if (gl) requestAnimationFrame(frame);
 
 render();
-setInterval(render, 15000);   // оновлює "N хв тому" і випаровування
+setInterval(render, 15000);   // refreshes "N min ago" and the evaporation line
 
-// ─── самоперевірка: node index.html не запустиш, тож ?test у URL ────────────
+// ─── self-check: you can't `node index.html`, hence ?test in the URL ────────
 if (location.search.includes('test')) {
   const eq = (a, b, msg) => console.assert(Math.abs(a / b - 1) < 0.02, msg, a, b);
-  eq(massOf(8 * 1024 ** 3), 4.74e-4, '1 ГБ ≈ 0.47 г');
-  eq(radiusOf(massOf(8 * 1024 ** 3)), 7.04e-31, 'r_s для 1 ГБ');
-  eq(massOf(1), 5.11e-9, 'маса одного біта');
+  eq(massOf(8 * 1024 ** 3), 4.74e-4, '1 GB ≈ 0.47 g');
+  eq(radiusOf(massOf(8 * 1024 ** 3)), 7.04e-31, 'r_s for 1 GB');
+  eq(massOf(1), 5.11e-9, 'mass of one bit');
   console.assert(fmtBytes(1536)[0] === '1.50', 'fmtBytes', fmtBytes(1536));
   console.assert(sci(4.74e-4) === '4.74·10⁻⁴', 'sci', sci(4.74e-4));
-  eq(bytesFor(massOf(8 * 1024 ** 3)), 1024 ** 3, 'bytesFor обертає massOf');
-  eq(evapOf(massOf(8 * 1024 ** 3)), 8.97e-27, 'час випаровування 1 ГБ');
-  console.assert(classOf(massOf(8 * 1024 ** 3))[1] === L.classes[3], 'клас для 1 ГБ');
-  console.assert(classOf(0)[1] === L.classes[0], 'клас для порожньої');
-  console.assert(nextClass(1e40) === undefined, 'вище надмасивної нічого немає');
-  console.assert(nextGoal(5.3e-5) === 1e-4, 'наступна ціль після 53 мг — 100 мг');
-  eq(bytesFor(1e-4), 4.784e7, '100 мг = 45.6 МБ');
-  console.assert(fmtMass(1e-4).join(' ') === '100 ' + L.gram[7], 'fmtMass цілі', fmtMass(1e-4));
-  // головна цифра мусить ворушитись від мегабайтів на дірі в десятки гігабайтів —
-  // саме заради цього їй дано шість значущих цифр
+  eq(bytesFor(massOf(8 * 1024 ** 3)), 1024 ** 3, 'bytesFor inverts massOf');
+  eq(evapOf(massOf(8 * 1024 ** 3)), 8.97e-27, 'evaporation time of 1 GB');
+  console.assert(classOf(massOf(8 * 1024 ** 3))[1] === L.classes[3], 'class for 1 GB');
+  console.assert(classOf(0)[1] === L.classes[0], 'class for an empty hole');
+  console.assert(nextClass(1e40) === undefined, 'nothing above supermassive');
+  console.assert(nextGoal(5.3e-5) === 1e-4, 'goal after 53 mg is 100 mg');
+  eq(bytesFor(1e-4), 4.784e7, '100 mg = 45.6 MB');
+  console.assert(fmtMass(1e-4).join(' ') === '100 ' + L.gram[7], 'fmtMass for goals', fmtMass(1e-4));
+  // the headline number must stir from megabytes on a tens-of-GB hole —
+  // that is exactly why it gets six significant digits
   console.assert(fmtMass(massOf(43.5e9 * 8), 6)[0] !== fmtMass(massOf(43.5e9 * 8 + 6e6 * 8), 6)[0],
-    '6 МБ мають зрушити масу на 43.5 ГБ');
+    '6 MB must move the mass on 43.5 GB');
   console.assert(fmtMass(1e-2, 6)[0].length === fmtMass(3e-3, 6)[0].length,
-    'ширина головної цифри стала — інакше вона смикається на кожному кидку');
-  console.assert(GOALS.every((g, i) => !i || g > GOALS[i - 1]), 'GOALS мають зростати');
-  // Регресія: внесок не може бути більшим за всю діру. Розходився двома
-  // шляхами — відбиті сервером кидки й відкат, — і давав «2593% маси».
-  console.assert(MINE <= S.bytes || !API, 'внесок не перевищує масу діри', MINE, S.bytes);
-  // Класична поломка локалізації: ключ забули в одному словнику, і користувач
-  // бачить undefined. Дешевше ловити тут, ніж очима на живому сайті.
+    'headline width is constant — otherwise it jitters on every throw');
+  console.assert(GOALS.every((g, i) => !i || g > GOALS[i - 1]), 'GOALS must be increasing');
+  // Regression: a contribution can't exceed the whole hole. It drifted two
+  // ways — server-rejected throws and rollbacks — and showed "2593% of mass".
+  console.assert(MINE <= S.bytes || !API, 'contribution never exceeds hole mass', MINE, S.bytes);
+  // The classic i18n breakage: a key forgotten in one dictionary and the user
+  // sees undefined. Cheaper to catch here than by eye on the live site.
   {
     const ku = Object.keys(TXT.uk).sort(), ke = Object.keys(TXT.en).sort();
-    console.assert(ku.join() === ke.join(), 'словники мають однакові ключі',
+    console.assert(ku.join() === ke.join(), 'dictionaries must have the same keys',
       ku.filter(k => !ke.includes(k)), ke.filter(k => !ku.includes(k)));
     const bad = [...document.querySelectorAll('[data-t],[data-th],[data-ta]')]
       .map(el => el.dataset.t || el.dataset.th || el.dataset.ta)
       .filter(k => L[k] === undefined);
-    console.assert(!bad.length, 'у розмітці є data-t без відповідника в словнику', bad);
+    console.assert(!bad.length, 'markup has data-t without a dictionary entry', bad);
     console.assert($('clsTable').rows.length === 7 && $('massTable').rows.length === 5,
-      'таблиці в діалозі згенерувались');
+      'dialog tables generated');
     for (const k of ['classes', 'classNotes', 'gram', 'byte', 'scales', 'objects', 'kinds', 'whispers'])
-      console.assert(TXT.uk[k].length === TXT.en[k].length, 'різна довжина масиву ' + k);
+      console.assert(TXT.uk[k].length === TXT.en[k].length, 'array length differs for ' + k);
   }
-  // диск: T ∝ M^(−1/4) — важча діра холодніша, отже червоніша
-  eq(diskT(1e-3) / diskT(1e-3 * 16), 2, 'T ∝ M^(−1/4): ×16 маси = ÷2 температури');
-  console.assert(diskT(0) === 30000 && diskT(1e9) === 700, 'температура затиснута з обох боків');
+  // disc: T ∝ M^(−1/4) — a heavier hole is cooler, hence redder
+  eq(diskT(1e-3) / diskT(1e-3 * 16), 2, 'T ∝ M^(−1/4): ×16 mass = ÷2 temperature');
+  console.assert(diskT(0) === 30000 && diskT(1e9) === 700, 'temperature clamped on both ends');
   const blue = c => c[2] / c[0];
-  console.assert(blue(bbColor(20000)) > blue(bbColor(2000)), 'гарячіше чорне тіло — синіше');
+  console.assert(blue(bbColor(20000)) > blue(bbColor(2000)), 'hotter blackbody is bluer');
   console.assert(blue(shockColorFor(1e9)) > blue(shockColorFor(1e3)),
-    'гігабайт світиться гарячіше за кілобайт');
-  console.assert(h32(42) === h32(42) && h32(42) >= 0 && h32(42) < 1, 'h32 детермінований');
-  // одна й та сама зоря в один і той самий час — основа синхронності TDE
+    'a gigabyte glows hotter than a kilobyte');
+  console.assert(h32(42) === h32(42) && h32(42) >= 0 && h32(42) < 1, 'h32 is deterministic');
+  // the same star at the same time — the basis of TDE synchronicity
   console.assert(JSON.stringify(tdeNow(1234567)) === JSON.stringify(tdeNow(1234567)),
-    'TDE однакова в усіх вкладках');
+    'TDE identical across tabs');
   const [dIn_, dOut_] = diskColors(3e-3);
-  console.assert(blue(dIn_) > blue(dOut_), 'внутрішній край диска гарячіший за зовнішній');
-  // віхи — предмети, а не астрономічні класи: класів досяжних лише чотири
-  console.assert(milestoneOf(0) === 0, 'порожня діра — без віх');
+  console.assert(blue(dIn_) > blue(dOut_), 'inner disc edge hotter than outer');
+  // milestones are objects, not astronomy classes: only four classes are reachable
+  console.assert(milestoneOf(0) === 0, 'empty hole has no milestones');
   console.assert(milestoneOf(massOf(120 * 1024 ** 3 * 8)) > milestoneOf(massOf(110 * 1024 ** 3 * 8)),
-    'монета — віха десь на 111 ГБ');
-  // відмова сервера мусить знімати рівно те, що сторінка вже показала —
-  // інакше маса тихо розходиться з дірою і відкочується наступним знімком
+    'the coin milestone sits near 111 GB');
+  // a server refusal must take back exactly what the page already showed —
+  // otherwise mass quietly diverges and the next snapshot rolls it back
   {
     const b = S.bytes, c = S.count, mine = MINE, n = S.recent.length;
     const e = { ext: 'tst', bytes: 1234, ts: Date.now(), sig: -1 };
     S.bytes += e.bytes; S.count++; MINE += e.bytes; S.recent.unshift(e);
     refuse(e, 'already swallowed');
     console.assert(Math.abs(S.bytes - b) < 1e-6 && S.count === c && MINE === mine
-      && S.recent.length === n && !S.recent.includes(e), 'refuse має відкотити показане');
+      && S.recent.length === n && !S.recent.includes(e), 'refuse must undo what was shown');
   }
-  console.assert(nextGoal(4e-3) === 1e-2 && nextGoal(2e-3) === 3e-3, 'проміжні цілі на місці');
+  console.assert(nextGoal(4e-3) === 1e-2 && nextGoal(2e-3) === 3e-3, 'intermediate goals in place');
   console.assert(
     ['жертва', 'жертви', 'жертв', 'жертв', 'жертва', 'жертв'].every((w, i) =>
       plural([1, 2, 5, 11, 21, 111][i], 'жертва', 'жертви', 'жертв') === w),
-    'відмінювання лічильника');
-  // Константи мають бути самоузгоджені, а не просто набрані з довідника:
-  // m_P = √(ħc/G), l_P² = ħG/c³. Одруківка в будь-якій із них інакше тихо
-  // перекосить геть усе, бо решта формул виводиться саме з них.
+    'Ukrainian counter declension');
+  // Constants must be self-consistent, not just typed from a reference:
+  // m_P = √(ħc/G), l_P² = ħG/c³. A typo in either would silently skew
+  // everything, since all other formulas derive from them.
   eq(M_PLANCK, Math.sqrt(HBAR * C / G), 'm_P = √(ħc/G)');
   eq(LP2, HBAR * G / C ** 3, 'l_P² = ħG/c³');
-  // Число в тексті діалогу: 2.6·10²⁶ K проти ядра Сонця 1.5·10⁷ K — це 10¹⁹,
-  // а не 10⁹. Тут довго стояло «сімнадцять мільярдів», помилка на мільярд разів.
-  eq(tempOf(massOf(8 * 1024 ** 3)) / 1.5e7, 1.73e19, 'температура: 1.7·10¹⁹ ядер Сонця');
-  eq(bytesFor(3 * SUN), 1.703e77, 'найлегша зоряна діра — 1.7·10⁷⁷ байтів');
-  eq(1e80 / bytesFor(3 * SUN), 587, 'один байт на кожні 587 атомів Всесвіту');
-  eq(massOf(200e21 * 8), 6470, 'усі дані людства (200 ЗБ) — 6.5 тонни');
-  // Показ випаровування: −1% маси за добу означає −1.99% байтів, бо маса ∝ √байтів.
-  // Показати замість цього 1% — та сама підміна, на якій ми спіймали текст про
-  // температуру: величина правильна, одиниця не та.
-  eq(1 - 0.99 ** 2, 0.0199, 'за добу тане 1.99% байтів');
-  eq(Math.sqrt(0.99 ** 2), 0.99, '…що дає рівно −1% маси');
-  // площа має збігатися з 4πr² — це перевірка самої формули Бекенштейна
+  // The dialog number: 2.6·10²⁶ K over the Sun's core 1.5·10⁷ K is 10¹⁹, not
+  // 10⁹. "Seventeen billion" sat here for a long time — off by a billion.
+  eq(tempOf(massOf(8 * 1024 ** 3)) / 1.5e7, 1.73e19, 'temperature: 1.7·10¹⁹ solar cores');
+  eq(bytesFor(3 * SUN), 1.703e77, 'lightest stellar hole is 1.7·10⁷⁷ bytes');
+  eq(1e80 / bytesFor(3 * SUN), 587, 'one byte per 587 atoms of the universe');
+  eq(massOf(200e21 * 8), 6470, 'all of humanity\'s data (200 ZB) is 6.5 tons');
+  // Evaporation display: −1% mass per day means −1.99% bytes, since mass ∝
+  // √bytes. Showing 1% instead is the same substitution the temperature text
+  // was caught on: right value, wrong unit.
+  eq(1 - 0.99 ** 2, 0.0199, '1.99% of bytes evaporate per day');
+  eq(Math.sqrt(0.99 ** 2), 0.99, '…which is exactly −1% of mass');
+  // the area must match 4πr² — a check of Bekenstein's formula itself
   eq(areaOf(8 * 1024 ** 3), 4 * Math.PI * radiusOf(massOf(8 * 1024 ** 3)) ** 2, 'A = 4πr_s²');
-  eq(areaOf(2e9) / areaOf(1e9), 2, 'площа лінійна за бітами');
-  console.assert(cmpMass(1e-3) === L.cmpSame(L.objects[3]), 'cmpMass точне', cmpMass(1e-3));
-  console.assert(cmpMass(2e-2) === L.cmpDiff(4, L.objects[4], true), 'cmpMass множник', cmpMass(2e-2));
-  console.assert(cmpMass(0) === L.empty, 'cmpMass нуль');
-  // регресія: безумовний display на <dialog> перебиває браузерне display:none
-  console.assert(getComputedStyle($('about')).display === 'none', 'закритий діалог має бути прихований');
+  eq(areaOf(2e9) / areaOf(1e9), 2, 'area is linear in bits');
+  console.assert(cmpMass(1e-3) === L.cmpSame(L.objects[3]), 'cmpMass exact', cmpMass(1e-3));
+  console.assert(cmpMass(2e-2) === L.cmpDiff(4, L.objects[4], true), 'cmpMass multiplier', cmpMass(2e-2));
+  console.assert(cmpMass(0) === L.empty, 'cmpMass zero');
+  // regression: an unconditional display on <dialog> overrides browser display:none
+  console.assert(getComputedStyle($('about')).display === 'none', 'closed dialog must be hidden');
   $('about').showModal();
-  console.assert(getComputedStyle($('about')).display === 'flex', 'відкритий діалог має бути flex');
+  console.assert(getComputedStyle($('about')).display === 'flex', 'open dialog must be flex');
   $('about').close();
-  console.assert(getComputedStyle($('about')).display === 'none', 'close() має ховати діалог');
-  console.log('%c✓ фізика зійшлася', 'color:#ffb257');
+  console.assert(getComputedStyle($('about')).display === 'none', 'close() must hide the dialog');
+  console.log('%c✓ physics checks out', 'color:#ffb257');
 }
 </script>
 </body>

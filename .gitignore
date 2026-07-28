@@ -1,18 +1,12 @@
-# Локальний стан wrangler: кеш, тимчасові файли й копія Durable Object,
-# яку створює `wrangler dev`. Нічого з цього не має їхати в історію.
+# Local wrangler state: cache, temp files, and the Durable Object copy
+# created by `wrangler dev`.
 .wrangler/
 
-# Дозволи Claude Code — машинозалежні
+# Machine-specific Claude Code permissions.
 .claude/settings.local.json
 
-# Стан панелей Obsidian: змінюється від кожного відкриття файлу.
-# Самі нотатки в історії лишаються — це частина проєкту.
-obsidian/**/.obsidian/workspace*.json
-
-# Картка для шеру. Тримається в репозиторії навмисно: вона частина сторінки,
-# а не збірковий артефакт. Рядок нижче лишений як нагадування, що og.png
-# мусить бути закомічений, інакше посилання в месенджерах виглядає мертвим.
-!public/og.png
+# Personal working notes — not part of the public project.
+obsidian/
 
 node_modules/
 *.log

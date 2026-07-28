@@ -2,35 +2,32 @@ name = "blackhole"
 main = "worker/src/index.js"
 compatibility_date = "2025-07-01"
 
-# Обовʼязково явно: щойно зʼявляється custom domain, wrangler вимикає
-# workers.dev "за замовчуванням", і стара адреса віддає error code 1042.
-# Вона має жити далі — на неї вже роздані посилання.
+# Must stay explicit: adding a custom domain makes wrangler disable workers.dev
+# by default (the old address would return error 1042), and links to it are
+# already out in the wild.
 workers_dev = true
 
-# Кожна задеплоєна версія інакше отримує власну публічну адресу — це третій
-# живий хост на той самий Durable Object, який ніхто не використовує:
-# деплой іде одразу в прод, версійних прев'ю тут немає.
+# Otherwise every deployed version gets its own public URL — a third live host
+# on the same Durable Object that nobody uses.
 preview_urls = false
 
-# Власний домен. Ім'я воркера навмисно лишається "blackhole": воно визначає
-# адресу blackhole.mironovjm.workers.dev, і перейменування вбило б її разом з
-# усіма посиланнями. Домен вішається зверху, стара адреса живе далі.
-# custom_domain = true означає, що wrangler сам заведе DNS-запис при деплої.
+# The worker keeps its original name on purpose: it defines the workers.dev
+# address, and renaming would kill it along with every shared link. The custom
+# domain sits on top; custom_domain = true lets wrangler manage the DNS record.
 [[routes]]
 pattern = "nohair.dev"
 custom_domain = true
 
-# сторінка віддається тим самим воркером — один домен, нуль CORS між своїми
+# The page is served by the same worker — one origin, zero CORS between our own parts.
 [assets]
 directory = "./public"
 
-# дає воркеру id власної задеплоєної версії — щоб відкриті вкладки дізнавались,
-# що вийшло оновлення, і не крутили старий код тижнями
+# Gives the worker its deployed version id, so open tabs learn about new
+# releases instead of running stale code for weeks.
 [version_metadata]
 binding = "CF_VERSION"
 
-# Безкоштовні логи воркера. Без них перший інцидент доведеться дебажити наосліп:
-# wrangler tail показує лише те, що ллється просто зараз.
+# Free worker logs; without them the first incident gets debugged blind.
 [observability]
 enabled = true
 
@@ -38,7 +35,7 @@ enabled = true
 name = "HOLE"
 class_name = "BlackHole"
 
-# SQLite-варіант обовʼязковий: лише він доступний на безкоштовному тарифі
+# The SQLite flavor is the only one available on the free plan.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["BlackHole"]
