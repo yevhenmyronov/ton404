@@ -1,0 +1,44 @@
+name = "blackhole"
+main = "worker/src/index.js"
+compatibility_date = "2025-07-01"
+
+# Обовʼязково явно: щойно зʼявляється custom domain, wrangler вимикає
+# workers.dev "за замовчуванням", і стара адреса віддає error code 1042.
+# Вона має жити далі — на неї вже роздані посилання.
+workers_dev = true
+
+# Кожна задеплоєна версія інакше отримує власну публічну адресу — це третій
+# живий хост на той самий Durable Object, який ніхто не використовує:
+# деплой іде одразу в прод, версійних прев'ю тут немає.
+preview_urls = false
+
+# Власний домен. Ім'я воркера навмисно лишається "blackhole": воно визначає
+# адресу blackhole.mironovjm.workers.dev, і перейменування вбило б її разом з
+# усіма посиланнями. Домен вішається зверху, стара адреса живе далі.
+# custom_domain = true означає, що wrangler сам заведе DNS-запис при деплої.
+[[routes]]
+pattern = "nohair.dev"
+custom_domain = true
+
+# сторінка віддається тим самим воркером — один домен, нуль CORS між своїми
+[assets]
+directory = "./public"
+
+# дає воркеру id власної задеплоєної версії — щоб відкриті вкладки дізнавались,
+# що вийшло оновлення, і не крутили старий код тижнями
+[version_metadata]
+binding = "CF_VERSION"
+
+# Безкоштовні логи воркера. Без них перший інцидент доведеться дебажити наосліп:
+# wrangler tail показує лише те, що ллється просто зараз.
+[observability]
+enabled = true
+
+[[durable_objects.bindings]]
+name = "HOLE"
+class_name = "BlackHole"
+
+# SQLite-варіант обовʼязковий: лише він доступний на безкоштовному тарифі
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["BlackHole"]
