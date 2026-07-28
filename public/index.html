@@ -439,6 +439,10 @@
       <div class="k" data-t="goalLabel">Глобальна ціль</div>
       <div class="bar"><i id="goalFill"></i></div>
       <div class="sub" id="goalTxt"></div>
+      <!-- Випаровування було тихою бухгалтерією: воно працює з першого дня,
+           але його ніхто не бачив. А це і є та причина, через яку сюди варто
+           повернутись завтра — за ніч діра всохне. -->
+      <div class="sub" id="decay"></div>
       <div class="sub" id="mine" style="color:var(--amber);opacity:.75"></div>
     </div>
 
@@ -579,7 +583,7 @@ uk: {
   goalLabel: 'Глобальна ціль', teleLabel: 'Телеметрія',
   teleRadius: 'радіус горизонту', teleArea: 'площа горизонту',
   teleTemp: 'температура Гокінга', teleEvap: 'повне випаровування',
-  teleInfo: 'поглинуто', teleRecord: 'рекорд доби',
+  teleInfo: 'поглинуто', teleRecord: 'рекорд доби', teleDecay: 'випаровується за добу',
   areaNote: 'єдине число тут, що росте рівно вдвічі від удвічі більших даних',
   evapNote: 'тому ми жульничаємо',
   dropHere: 'Перетягни файл сюди', orPaste: 'або встав із буфера',
@@ -627,6 +631,9 @@ uk: {
   bitsOn: b => `${b} бітів на горизонті`,
   goalLeft: (g, left) => `${g} — лишилось ${left}`,
   goalDone: 'цілей більше немає',
+  // саме БАЙТИ, а не маса: маса втрачає 1% за добу, а байти 1.99% —
+  // людину цікавить, скільки донести, тобто друге число
+  decay: v => `тане на ${v} за добу`,
   alone: 'ти сам на сам із нею', watchers: n => `за нею спостерігає ${n}`,
   yours: (v, pct) => `твій внесок: ${v}` + (pct ? ` · ${pct}% маси` : ''),
   nothing: 'нічого', horizonClear: 'горизонт чистий',
@@ -670,7 +677,7 @@ en: {
   goalLabel: 'Global goal', teleLabel: 'Telemetry',
   teleRadius: 'horizon radius', teleArea: 'horizon area',
   teleTemp: 'Hawking temperature', teleEvap: 'full evaporation',
-  teleInfo: 'swallowed', teleRecord: 'record of the day',
+  teleInfo: 'swallowed', teleRecord: 'record of the day', teleDecay: 'evaporates per day',
   areaNote: 'the only number here that doubles when the data doubles',
   evapNote: 'which is exactly why we cheat',
   dropHere: 'Drag a file here', orPaste: 'or paste from the clipboard',
@@ -719,6 +726,7 @@ en: {
   bitsOn: b => `${b} bits on the horizon`,
   goalLeft: (g, left) => `${g} — ${left} to go`,
   goalDone: 'no goals left',
+  decay: v => `evaporating at ${v} a day`,
   alone: 'you are alone with it', watchers: n => `${n} watching it`,
   yours: (v, pct) => `your contribution: ${v}` + (pct ? ` · ${pct}% of the mass` : ''),
   nothing: 'nothing', horizonClear: 'the horizon is clear',
@@ -1005,6 +1013,7 @@ function renderNumbers() {
     [L.teleTemp,   Th > 0 ? sci(Th) + ' K' : '—'],
     [L.teleEvap,   m > 0 ? fmtTime(evapOf(m)) : '—'],
     [L.teleInfo,   bv + ' ' + bu],
+    [L.teleDecay,  fmtBytes(shown * (1 - 0.99 ** 2)).join(' ')],
   ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
 
   const [, rname, rnote] = classOf(m);
@@ -1018,6 +1027,12 @@ function renderNumbers() {
     const [nv, nu] = fmtBytes(Math.max(0, need - shown));
     $('goalTxt').textContent = L.goalLeft(fmtMass(g).join(' '), `${nv} ${nu}`);
   } else $('goalTxt').textContent = L.goalDone;
+
+  // Маса тане на 1% за добу, але маса ∝ √байтів — отже байти тануть на
+  // 1 − 0.99² = 1.99%. Показуємо саме байти: людину цікавить не відсоток,
+  // а скільки треба донести, щоб діра просто лишилась на місці.
+  const perDay = shown * (1 - 0.99 ** 2);
+  $('decay').textContent = shown > 0 ? L.decay(fmtBytes(perDay).join(' ')) : '';
 }
 
 // списки — лише коли справді змінились
@@ -1659,6 +1674,11 @@ if (location.search.includes('test')) {
   eq(bytesFor(3 * SUN), 1.703e77, 'найлегша зоряна діра — 1.7·10⁷⁷ байтів');
   eq(1e80 / bytesFor(3 * SUN), 587, 'один байт на кожні 587 атомів Всесвіту');
   eq(massOf(200e21 * 8), 6470, 'усі дані людства (200 ЗБ) — 6.5 тонни');
+  // Показ випаровування: −1% маси за добу означає −1.99% байтів, бо маса ∝ √байтів.
+  // Показати замість цього 1% — та сама підміна, на якій ми спіймали текст про
+  // температуру: величина правильна, одиниця не та.
+  eq(1 - 0.99 ** 2, 0.0199, 'за добу тане 1.99% байтів');
+  eq(Math.sqrt(0.99 ** 2), 0.99, '…що дає рівно −1% маси');
   // площа має збігатися з 4πr² — це перевірка самої формули Бекенштейна
   eq(areaOf(8 * 1024 ** 3), 4 * Math.PI * radiusOf(massOf(8 * 1024 ** 3)) ** 2, 'A = 4πr_s²');
   eq(areaOf(2e9) / areaOf(1e9), 2, 'площа лінійна за бітами');
