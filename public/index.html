@@ -291,15 +291,6 @@
     mask-image: linear-gradient(90deg, #000 55%, transparent);
   }
 
-  /* спагетифікація */
-  .noodle {
-    position: fixed; z-index: 5; pointer-events: none;
-    font-size: 12px; color: var(--hot); white-space: nowrap;
-    text-shadow: 0 0 14px var(--amber);
-    transition: transform 1.15s cubic-bezier(.55,0,.95,.4), opacity 1.15s ease-in;
-    transform-origin: center;
-  }
-
   body.dragging::after {
     content: ""; position: fixed; inset: 0; pointer-events: none;
     box-shadow: inset 0 0 160px rgba(255,178,87,.28);
@@ -334,7 +325,6 @@
   @media (prefers-reduced-motion: reduce) {
     .ui { transition: opacity .4s; }
     body.collapse .ui { transform: none; filter: none; opacity: .15; }
-    .noodle { transition: opacity .3s !important; }
   }
 
   @media (max-width: 820px), (max-height: 620px) {
@@ -971,8 +961,7 @@ if (!API) mile = milestoneOf(massOf(S.bytes * 8));
 function checkMilestone() {
   const now = milestoneOf(massOf(S.bytes * 8));
   if (mile !== null && now > mile) {
-    // Інтерфейс на мить затягує за горизонт — та сама мова, що й спагетифікація
-    // імен файлів, лише застосована до самого HUD.
+    // Інтерфейс на мить затягує за горизонт і відпускає назад.
     document.body.classList.add('collapse');
     // Повідомлення після повернення: під час затягування воно поїхало б разом
     // з усім іншим, бо #warn живе всередині .ui
@@ -980,7 +969,8 @@ function checkMilestone() {
       document.body.classList.remove('collapse');
       warn(L.milestone(OBJECTS[now - 1][1]));
     }, 1100);
-    shock = 2.2;
+    // при загасанні 0.7/с колишні 2.2 горіли б три секунди
+    shock = 1.4;
   }
   mile = now;
 }
@@ -1153,65 +1143,72 @@ function sendFeed(entries) {
         // сервер судить кожен елемент окремо й повертає список відхилених —
         // знімаємо рівно їх, а не всю пачку
         const bad = new Map((d.rejected || []).map(r => [r.sig, r.error]));
-        for (const e of chunk) if (bad.has(e.sig)) refuse(e, bad.get(e.sig));
+        for (const e of chunk) {
+          if (!bad.has(e.sig)) { thrown.add(e.sig); continue; }
+          refuse(e, bad.get(e.sig));
+          // підтверджений дубль — наступний такий кидок зупиниться ще до анімації
+          if (bad.get(e.sig) === 'already swallowed') thrown.add(e.sig);
+        }
         applyServer(d);
       }).catch(() => {});
     }, (i / BATCH) * 400);
   }
 }
 
-async function swallow(files, x, y) {
+// Колір світіння від кидка — чорне тіло за розміром: кілобайти жевріють
+// бурштином (~2500 K), гігабайти спалахують біло-блакитним (~7000 K).
+// Більше впало — гарячіше горить, як і належить акреції.
+let shockCol = [0.9, 0.72, 0.45];
+const shockColorFor = bytes => bbColor(800 + 550 * Math.log10(1 + bytes));
+
+// Підписи, про які клієнт уже знає, що вони в дірі: прийняті сервером плюс
+// підтверджені ним дублі. Показувати падіння для такого файлу означало б
+// одразу відкочувати показане — заплутує сильніше, ніж чесна відмова одразу.
+// Сесійний: підписи чужих кидків сервер не роздає, тож глибше не зазирнути.
+const thrown = new Set();
+
+async function swallow(files) {
   const batch = [];
-  // Темп анімації підлаштовується під кількість: 160 мс на файл гарні для
-  // трьох, але на ста це майже пів хвилини мовчазного чекання.
-  const pace = Math.max(35, Math.min(160, 3000 / files.length));
   for (const f of files) {
     if (!f.size) continue;
     if (/(^|[^a-z])(light|photon|фотон|світло)([^a-z]|$)/i.test(f.name))
       warn(L.lightspeed);
-    spaghetti(f.name, x, y);
+    // Підпис рахується ДО оптимістичного показу: повтор того самого файлу
+    // (чи копія всередині теки) видно ще тут — без анімації й без відкату.
+    const sig = await signature(f);
+    if (thrown.has(sig) || batch.some(e => e.sig === sig)) {
+      warn(L.refusal['already swallowed']);
+      continue;
+    }
     S.bytes += f.size;
     S.count++;                             // сервер перезапише своїм числом
-    checkMilestone();
     const entry = {
       ext: (f.name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'bin',
-      bytes: f.size, ts: Date.now(), sig: await signature(f)
+      bytes: f.size, ts: Date.now(), sig
     };
     S.recent.unshift(entry);
     S.recent = S.recent.slice(0, 40);
     MINE += f.size;
-    justFed = Date.now();
     batch.push(entry);
-    seed = entry.sig;
-    infall();                              // пляма замінила грубий спалах на весь екран
-    shock = Math.max(shock, 0.55);
-    quasar = Math.min(1, quasar + 0.45);   // швидке годування → джети
-    await new Promise(r => setTimeout(r, pace));
   }
+  if (!batch.length) return;
+  justFed = Date.now();
+  seed = batch[batch.length - 1].sig;
+  checkMilestone();
+  // Одна анімація на всю пачку, а не по одній на файл: сто файлів — це один
+  // обʼєкт, що падає, а не стробоскоп. Колір світіння несе розмір пачки.
+  const total = batch.reduce((a, e) => a + e.bytes, 0);
+  shockCol = shockColorFor(total);
+  infall();
+  shock = Math.max(shock, 0.3 + 0.12 * Math.min(1, Math.log10(1 + total) / 12));
+  quasar = Math.min(1, quasar + 0.35);     // швидке годування → джети
   // Один запит на всю пачку — після того, як усі підписи пораховані
-  if (API && batch.length) sendFeed(batch);
+  if (API) sendFeed(batch);
   save(); render();
 }
 
 // текст із буфера / перетягнутий текст — теж інформація
 const asFile = txt => new File([txt], L.clip, { type: 'text/plain' });
-
-function spaghetti(name, x, y) {
-  const el = document.createElement('div');
-  el.className = 'noodle';
-  el.textContent = name.length > 34 ? name.slice(0, 31) + '…' : name;
-  const sx = x ?? innerWidth * (.2 + Math.random() * .6);
-  const sy = y ?? innerHeight * (.2 + Math.random() * .6);
-  el.style.left = sx + 'px'; el.style.top = sy + 'px';
-  document.body.appendChild(el);
-  requestAnimationFrame(() => {
-    const dx = innerWidth / 2 - sx, dy = innerHeight / 2 - sy;
-    const ang = Math.atan2(dy, dx) * 180 / Math.PI;
-    el.style.transform = `translate(${dx}px,${dy}px) rotate(${ang}deg) scaleX(9) scaleY(.06)`;
-    el.style.opacity = '0';
-  });
-  setTimeout(() => el.remove(), 1300);
-}
 
 addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('dragging'); });
 addEventListener('dragleave', e => { if (e.relatedTarget === null) document.body.classList.remove('dragging'); });
@@ -1219,7 +1216,7 @@ addEventListener('drop', e => {
   e.preventDefault(); document.body.classList.remove('dragging');
   const fs = [...e.dataTransfer.files];
   const txt = fs.length ? '' : e.dataTransfer.getData('text');
-  swallow(fs.length ? fs : txt ? [asFile(txt)] : [], e.clientX, e.clientY);
+  swallow(fs.length ? fs : txt ? [asFile(txt)] : []);
 });
 addEventListener('paste', e => {
   const fs = [...(e.clipboardData?.files || [])];
@@ -1274,8 +1271,8 @@ function applyServer(d) {
     const [v, u] = fmtBytes(top.bytes);
     warn(L.someoneFed(top.ext, `${v} ${u}`));
     infall();
-    shock = Math.max(shock, 0.5);
-    spaghetti('.' + top.ext);
+    shockCol = shockColorFor(top.bytes);
+    shock = Math.max(shock, 0.3);
   }
   if (top) lastTs = top.ts;
   S.bytes = d.bytes; S.count = d.count; S.recent = d.recent;
@@ -1330,7 +1327,7 @@ const FRAG = `
 precision highp float;
 uniform vec2 res, mouse; uniform float time, rad, act, shock, qsr, hot, hotA;
 // колір диска за температурою T ∝ M^(−1/4): dIn — внутрішній край, dOut — зовнішній
-uniform vec3 dIn, dOut;
+uniform vec3 dIn, dOut, shockCol;
 
 float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 
@@ -1439,8 +1436,9 @@ void main(){
            * (1.0 - ht * 0.5) * vec3(1.0, 0.86, 0.62) * 2.4;
   }
 
-  // спалах при поглинанні
-  col += shock * vec3(0.9, 0.72, 0.45) * exp(-(r - rad) * 5.0);
+  // світіння при поглинанні: ширше й насиченіше за колишній спалах, але
+  // з повільним загасанням — жар довкола горизонту, а не блимання
+  col += shock * shockCol * 1.5 * exp(-(r - rad) * 3.5);
 
   col = col / (col + 0.85);          // тонмапінг
   col = pow(col, vec3(0.85));
@@ -1516,7 +1514,9 @@ function infall() { hotT = 0; hotA = Math.random() * 6.2832; }
 let shock = 0, quasar = 0, last = 0;
 function frame(t) {
   const dt = Math.min((t - last) / 1000, 0.05); last = t;
-  shock = Math.max(0, shock - dt * 1.6);
+  // 0.7/с: пік кидка тримається ~пів секунди і догоряє ще з секунду —
+  // повільний жар замість колишнього спалаху на 1.6/с
+  shock = Math.max(0, shock - dt * 0.7);
   hotT = Math.min(99, hotT + dt);
   mx += (tmx - mx) * Math.min(1, dt * 3);
   my += (tmy - my) * Math.min(1, dt * 3);
@@ -1550,6 +1550,7 @@ function frame(t) {
   const [dIn, dOut] = diskColors(massOf(shown * 8));
   gl.uniform3fv(U('dIn'), dIn);
   gl.uniform3fv(U('dOut'), dOut);
+  gl.uniform3fv(U('shockCol'), shockCol);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   requestAnimationFrame(frame);
 }
@@ -1604,6 +1605,8 @@ if (location.search.includes('test')) {
   console.assert(diskT(0) === 30000 && diskT(1e9) === 700, 'температура затиснута з обох боків');
   const blue = c => c[2] / c[0];
   console.assert(blue(bbColor(20000)) > blue(bbColor(2000)), 'гарячіше чорне тіло — синіше');
+  console.assert(blue(shockColorFor(1e9)) > blue(shockColorFor(1e3)),
+    'гігабайт світиться гарячіше за кілобайт');
   const [dIn_, dOut_] = diskColors(3e-3);
   console.assert(blue(dIn_) > blue(dOut_), 'внутрішній край диска гарячіший за зовнішній');
   // віхи — предмети, а не астрономічні класи: класів досяжних лише чотири
