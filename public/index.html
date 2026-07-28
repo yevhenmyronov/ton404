@@ -250,6 +250,19 @@
   }
   @keyframes in { from { opacity: 0; transform: translateX(14px); } }
 
+  /* Вхід: прилади вмикаються по черзі, в такт формуванню діри (~3 с у скрипті).
+     Ліва колонка зверху вниз, права наздоганяє — як бортова панель, що
+     послідовно проходить самоперевірку. */
+  @keyframes boot { from { opacity: 0; transform: translateY(7px); } }
+  h1    { animation: boot .7s ease .2s both; }
+  .rank { animation: boot .7s ease .6s both; }
+  .hero { animation: boot .7s ease 1s both; }
+  .goal { animation: boot .7s ease 1.4s both; }
+  .tele { animation: boot .7s ease 1.8s both; }
+  .bot  { animation: boot .7s ease 2.1s both; }
+  .feed { animation: boot .7s ease 2.5s both; }
+  .about{ animation: boot .7s ease 2.8s both; }
+
   .hint { max-width: 330px; }
   .hint .act { font-size: 13.5px; line-height: 1.4; color: var(--hot); }
   .hint .act span { display: block; margin-top: 4px; font-size: 11px; color: var(--dim); }
@@ -325,6 +338,7 @@
   @media (prefers-reduced-motion: reduce) {
     .ui { transition: opacity .4s; }
     body.collapse .ui { transform: none; filter: none; opacity: .15; }
+    h1, .rank, .hero, .goal, .tele, .bot, .feed, .about { animation: none; }
   }
 
   @media (max-width: 820px), (max-height: 620px) {
@@ -399,6 +413,10 @@
 </head>
 <body>
 <canvas id="gl"></canvas>
+<!-- другий шар: іскри глядачів і приблудні зорі. Прозоре 2D-полотно поверх
+     шейдера — десятки точок тут коштують копійки, а в фрагментному шейдері
+     це були б ґауси на кожен піксель екрана. -->
+<canvas id="sp"></canvas>
 
 <div class="ui">
   <div id="quasar" data-t="quasar">квазар</div>
@@ -606,6 +624,8 @@ uk: {
           'часово-просторовий зліпок','застиглі коливання','скамʼяніла логіка',
           'мертві інструкції','застиглі гліфи','інформаційна ентропія'],
   kindUnknown: 'невідома матерія',
+  whispers: ['вона дивиться у відповідь', 'інформація не зникає',
+             'по той бік щось лічить', 'ентропія памʼятає все'],
 
   metre: 'м', metre2: 'м²', sec: 'с', years: 'років', clip: 'буфер.clip',
   empty: 'порожньо. вона голодна',
@@ -616,6 +636,8 @@ uk: {
      : s < 3600 ? `${Math.floor(s / 60)} хв тому`
      : s < 86400 ? `${Math.floor(s / 3600)} год тому` : `${Math.floor(s / 86400)} дн тому`,
   victims: n => `${n} ${plural(n, 'жертва', 'жертви', 'жертв')}`,
+  awayAte: (v, size) => `поки тебе не було, діра з'їла ${v} (${size})`,
+  awayEvap: s => `поки тебе не було, діра випарувала ${s}`,
   hotter: k => `у ${k} разів гарячіше за ядро Сонця`,
   bitsOn: b => `${b} бітів на горизонті`,
   goalLeft: (g, left) => `${g} — лишилось ${left}`,
@@ -701,6 +723,8 @@ en: {
           'a cast of spacetime','congealed vibrations','fossilised logic',
           'dead instructions','petrified glyphs','pure information entropy'],
   kindUnknown: 'matter of unknown kind',
+  whispers: ['it is looking back', 'information is never lost',
+             'something on the far side is counting', 'entropy remembers everything'],
 
   metre: 'm', metre2: 'm²', sec: 's', years: 'years', clip: 'clipboard.clip',
   empty: 'empty. it is hungry',
@@ -711,6 +735,8 @@ en: {
      : s < 3600 ? `${Math.floor(s / 60)}m ago`
      : s < 86400 ? `${Math.floor(s / 3600)}h ago` : `${Math.floor(s / 86400)}d ago`,
   victims: n => `${n} victim${n === 1 ? '' : 's'}`,
+  awayAte: (v, size) => `while you were away it swallowed ${v} (${size})`,
+  awayEvap: s => `while you were away it evaporated ${s}`,
   hotter: k => `${k}× hotter than the core of the Sun`,
   bitsOn: b => `${b} bits on the horizon`,
   goalLeft: (g, left) => `${g} — ${left} to go`,
@@ -1050,7 +1076,16 @@ function renderList() {
     return `<li><b>.${x.ext}</b> <span>${v} ${u}</span> · ${rel(x.ts)}<i>${kindOf(x.ext)}</i></li>`;
   }).join('') || `<li>${L.horizonClear}</li>`;
 }
-const render = () => { renderNumbers(); renderList(); };
+// Жива маса в заголовку — закріплена вкладка стає віджетом: видно, що діра
+// ворухнулась, не відкриваючи сторінку. titleFlash тимчасово перекриває масу
+// повідомленням про великий чужий кидок.
+let titleFlash = 0;
+function setTitle() {
+  if (Date.now() < titleFlash) return;
+  document.title = S.bytes > 0
+    ? fmtMass(massOf(S.bytes * 8), 4).join(' ') + ' — TON 404' : L.title;
+}
+const render = () => { renderNumbers(); renderList(); setTitle(); };
 
 // ─── таблиці в діалозі ─────────────────────────────────────────────────────
 // Рахуються з тих самих формул і меж, що й усе решта, а не переписуються
@@ -1078,13 +1113,29 @@ $('clsTable').innerHTML =
 
 // ─── випромінювання Гокінга: слід від останнього файлу ──────────────────────
 let seed = S.recent[0]?.sig || 0x811c9dc5, hawkBuf = '';
+// Рідко — в середньому раз на пів години споглядання — серед шуму проступає
+// фраза і спливає геть разом із потоком. Нічим не виділяється: той самий
+// шрифт і сірість, ніби це просто збіг у випромінюванні. Хто помітив — той
+// помітив. Пояснень немає ніде, і це навмисно.
+let whisper = null;
 function hawkTick() {
   if (document.hidden) return;   // rAF браузер приспить сам, setInterval — ні
   seed = (seed ^ (seed << 13)) >>> 0; seed = (seed ^ (seed >>> 17)) >>> 0; seed = (seed ^ (seed << 5)) >>> 0;
-  hawkBuf = (hawkBuf + seed.toString(16).padStart(8, '0').slice(0, 2)).slice(-140);
+  let chunk;
+  if (whisper) {
+    chunk = whisper.msg.slice(whisper.i, whisper.i + 2);
+    whisper.i += 2;
+    if (whisper.i >= whisper.msg.length) whisper = null;
+  } else if (S.bytes > 0 && Math.random() < 1 / 13500) {   // ~раз на 27 хв при 120 мс/такт
+    whisper = { msg: ' ' + L.whispers[Math.floor(Math.random() * L.whispers.length)] + ' ', i: 2 };
+    chunk = whisper.msg.slice(0, 2);
+  } else {
+    chunk = seed.toString(16).padStart(8, '0').slice(0, 2);
+  }
+  hawkBuf = (hawkBuf + chunk).slice(-140);
   $('hawking').textContent = S.bytes > 0 ? '↯ ' + hawkBuf : '';
 }
-setInterval(hawkTick, 90);
+setInterval(hawkTick, 120);
 
 // ─── поглинання ────────────────────────────────────────────────────────────
 // ponytail: FNV-1a по перших 64 КБ замість SHA-256 — це лише сіда для візуалу
@@ -1200,6 +1251,7 @@ async function swallow(files) {
   const total = batch.reduce((a, e) => a + e.bytes, 0);
   shockCol = shockColorFor(total);
   infall();
+  sparkFlash();                            // одна з іскор на орбіті — це ти
   shock = Math.max(shock, 0.3 + 0.12 * Math.min(1, Math.log10(1 + total) / 12));
   quasar = Math.min(1, quasar + 0.35);     // швидке годування → джети
   // Один запит на всю пачку — після того, як усі підписи пораховані
@@ -1258,6 +1310,26 @@ $('file').onchange = e => { swallow([...e.target.files]); e.target.value = ''; }
 // ─── синхронізація зі спільною дірою ───────────────────────────────────────
 // ponytail: свій кидок відрізняємо від чужого за 2.5-секундним вікном після POST.
 // При двох одночасних кидках можна проґавити чужий — не варте справжніх id.
+// ─── «поки тебе не було» ───────────────────────────────────────────────────
+// Знімок останнього візиту: маса, лічильник, час. Оновлюється на кожному
+// серверному знімку — це точніше за beforeunload, який на мобільних часто
+// не спрацьовує. Порівнюється рівно раз, із першим знімком нової сесії.
+const SKEY = 'blackhole.seen';
+let seenPrev = null, seenChecked = false;
+try { seenPrev = JSON.parse(localStorage.getItem(SKEY)); } catch {}
+function checkAway(bytes, count) {
+  if (seenChecked) return;
+  seenChecked = true;
+  const p = seenPrev;
+  if (!p || Date.now() - p.t < 3600e3) return;   // менше години — не варте слова
+  const df = count - p.c, db = bytes - p.b;
+  let msg = null;
+  if (df > 0) msg = L.awayAte(L.victims(df), fmtBytes(Math.max(0, db)).join(' '));
+  else if (db < -1e6) msg = L.awayEvap(fmtBytes(-db).join(' '));
+  // після формування діри, щоб не перебивати одометр; при reduced-motion одразу
+  if (msg) setTimeout(() => warn(msg), calm.matches ? 800 : 3300);
+}
+
 let lastTs = 0, justFed = 0, myVer = null;
 function applyServer(d) {
   // ponytail: id версії приїжджає від Durable Object, а він перезапускається
@@ -1271,8 +1343,15 @@ function applyServer(d) {
     const [v, u] = fmtBytes(top.bytes);
     warn(L.someoneFed(top.ext, `${v} ${u}`));
     infall();
+    sparkFlash();
     shockCol = shockColorFor(top.bytes);
     shock = Math.max(shock, 0.3);
+    // великий чужий кидок помітно навіть із фонової вкладки
+    if (top.bytes > 1e8) {
+      titleFlash = Date.now() + 5000;
+      document.title = `⚡ .${top.ext} ${v} ${u} — TON 404`;
+      setTimeout(setTitle, 5200);
+    }
   }
   if (top) lastTs = top.ts;
   S.bytes = d.bytes; S.count = d.count; S.recent = d.recent;
@@ -1283,6 +1362,8 @@ function applyServer(d) {
   // не зачіпав. Обрізання по серверній масі лікує і вже зіпсовані значення.
   if (MINE > S.bytes) { MINE = S.bytes; save(); }
   checkMilestone();                      // віха є віха, хто б її не продавив
+  checkAway(d.bytes, d.count);
+  try { localStorage.setItem(SKEY, JSON.stringify({ b: d.bytes, c: d.count, t: Date.now() })); } catch {}
   render();
 }
 let ws, retry = 1000, retryTimer, fails = 0;
@@ -1481,11 +1562,123 @@ if (gl) {
 // перезавантаження дешевше, а втрачати нема чого: стан лежить на сервері.
 cv.addEventListener('webglcontextlost', e => { e.preventDefault(); location.reload(); });
 
+// ─── другий шар: іскри глядачів і приблудні зорі ───────────────────────────
+const sp = $('sp'), sx = sp.getContext('2d');
+// детермінований хеш → [0,1): та сама іскра щокадру летить своєю орбітою
+const h32 = i => {
+  let x = Math.imul(i ^ 0x9e3779b9, 2246822507);
+  x = Math.imul(x ^ (x >>> 13), 3266489909);
+  return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
+};
+// центр і радіус діри в CSS-пікселях — та сама математика, що uv у шейдері,
+// разом із паралаксом: інакше при русі миші іскри відклеюються від сцени
+function holeC() {
+  const m = Math.min(innerWidth, innerHeight);
+  const px = calm.matches ? 0 : mx, py = calm.matches ? 0 : my;
+  return [innerWidth / 2 + px * 0.008 * m, innerHeight / 2 - py * 0.008 * m, visRadius() * m];
+}
+
+// Кожен глядач — іскра на орбіті довкола діри. Кидок (свій чи чужий) —
+// випадкова іскра на секунду розгоряється: хтось із присутніх щойно годував.
+// За горизонт ніхто не пірнає: глядачі спостерігають, а не падають.
+const SPARKS = 60;             // стеля показу: далі окремих точок все одно не видно
+let flashI = -1, flashT = -9;
+const sparkFlash = () => {
+  flashI = Math.floor(Math.random() * Math.max(1, Math.min(SPARKS, S.watching | 0)));
+  flashT = performance.now() / 1000;
+};
+
+function drawSparks(now) {
+  const n = Math.min(SPARKS, S.watching | 0);
+  if (!n) return;
+  const [cx, cy, R] = holeC();
+  const t = calm.matches ? 0 : now;        // reduced-motion: орбіти завмирають
+  for (let i = 0; i < n; i++) {
+    const a = h32(i), b = h32(i + 977), c = h32(i + 1901);
+    const k = 2.35 + 1.3 * a;                       // орбіта за зовнішнім краєм диска
+    const ang = b * 6.2832 + t * 1.15 * Math.pow(k, -1.5);   // кеплер: далі — повільніше
+    const x = cx + Math.cos(ang) * R * k;
+    const y = cy + Math.sin(ang) * R * k * 0.30;    // та сама сплюснутість, що в диска
+    const far = Math.sin(ang) < 0;                  // верхня дуга — дальній бік
+    if (far && Math.hypot(x - cx, y - cy) < R * 1.06) continue;   // сховалась за діру
+    const tw = calm.matches ? 0.45 : 0.30 + 0.22 * Math.sin(now * (0.5 + c) + c * 40);
+    let al = tw * (far ? 0.55 : 1), sz = 1.1;
+    if (i === flashI) {
+      const f = Math.max(0, 1 - (now - flashT) / 1.1);
+      al += 1.1 * f * f; sz += 1.8 * f;
+    }
+    sx.shadowBlur = 8; sx.shadowColor = 'rgba(255,200,140,.8)';
+    sx.fillStyle = `rgba(255,228,190,${Math.min(1, al).toFixed(3)})`;
+    sx.beginPath(); sx.arc(x, y, sz, 0, 6.2832); sx.fill();
+  }
+  sx.shadowBlur = 0;
+}
+
+// ─── припливне руйнування зорі (TDE) ───────────────────────────────────────
+// Справжній клас транзієнтів: зоря підходить заблизько, приплив розтягує її
+// в потік, і найяскравіший момент — перицентр. Подія детермінована від
+// настінного годинника, тож усі відкриті вкладки світу бачать ту саму зорю
+// тієї самої миті — нуль байтів синхронізації.
+const TDE_EVERY = 420, TDE_DUR = 9;      // секунди: вікно і тривалість прольоту
+let tdeFlared = 0;
+function tdeNow(sec) {
+  const w = Math.floor(sec / TDE_EVERY), h = h32(w);
+  if (h < 0.45) return null;             // у це вікно ніхто не заблукав
+  const start = w * TDE_EVERY + h32(w + 7) * (TDE_EVERY - TDE_DUR - 30);
+  const p = (sec - start) / TDE_DUR;
+  return p >= 0 && p <= 1
+    ? { p, ang: h32(w + 13) * 6.2832, side: h32(w + 29) < 0.5 ? 1 : -1, id: w } : null;
+}
+function drawTDE(sec) {
+  if (calm.matches) return;
+  const e = tdeNow(sec);
+  if (!e) return;
+  const [cx, cy, R] = holeC();
+  const D = Math.max(innerWidth, innerHeight) * 0.75;
+  const q = R * 1.75 * e.side;           // перицентр — за фотонним кільцем
+  const ca = Math.cos(e.ang), sa = Math.sin(e.ang);
+  const P = (lx, ly) => [cx + lx * ca - ly * sa, cy + lx * sa + ly * ca];
+  const [x0, y0] = P(D, q * 2.6), [x1, y1] = P(0, q * 0.62), [x2, y2] = P(-D * 0.9, -q * 2.2);
+  const bez = u => { const v = 1 - u;
+    return [v * v * x0 + 2 * v * u * x1 + u * u * x2, v * v * y0 + 2 * v * u * y1 + u * u * y2]; };
+  // темп по smoothstep: повільний під'їзд, максимум швидкості в перицентрі.
+  // Слід із точок позаду при цьому природно видовжується — це і є приплив.
+  const U = pp => pp * pp * (3 - 2 * pp);
+  const bright = Math.exp(-(((e.p - 0.5) / 0.16) ** 2));
+  let prev = null;
+  for (let k = 13; k >= 0; k--) {
+    const pp = e.p - k * 0.011;
+    if (pp < 0) { prev = null; continue; }
+    const pt = bez(U(pp));
+    if (prev && Math.hypot(pt[0] - cx, pt[1] - cy) > R * 1.02) {
+      sx.strokeStyle = `rgba(255,235,205,${((0.10 + 0.70 * bright) * (1 - k / 14)).toFixed(3)})`;
+      sx.lineWidth = 1 + 2.2 * bright * (1 - k / 14);
+      sx.beginPath(); sx.moveTo(prev[0], prev[1]); sx.lineTo(pt[0], pt[1]); sx.stroke();
+    }
+    prev = pt;
+  }
+  const [hx, hy] = bez(U(e.p));
+  sx.shadowBlur = 12; sx.shadowColor = 'rgba(255,220,170,.9)';
+  sx.fillStyle = `rgba(255,240,215,${(0.45 + 0.55 * bright).toFixed(3)})`;
+  sx.beginPath(); sx.arc(hx, hy, 1.3 + 1.8 * bright, 0, 6.2832); sx.fill();
+  sx.shadowBlur = 0;
+  // перицентр: діра ледь відгукується теплом — та сама мить у всіх вкладках
+  if (e.p > 0.5 && tdeFlared !== e.id) {
+    tdeFlared = e.id;
+    shockCol = [1, 0.9, 0.75];
+    shock = Math.max(shock, 0.16);
+  }
+}
+
 function resize() {
   // на великих екранах опускаємо стелю: кадр удвічі дешевший, різниця майже не видна
   const dpr = Math.min(devicePixelRatio || 1, innerWidth > 1800 ? 1.5 : 2);
   cv.width = innerWidth * dpr | 0; cv.height = innerHeight * dpr | 0;
   if (gl) gl.viewport(0, 0, cv.width, cv.height);
+  sp.width = innerWidth * dpr | 0; sp.height = innerHeight * dpr | 0;
+  // зміна розміру полотна скидає стан контексту — транформ і lineCap щоразу
+  sx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  sx.lineCap = 'round';
 }
 addEventListener('resize', resize); resize();
 
@@ -1511,6 +1704,11 @@ addEventListener('pointermove', e => {
 let hotT = 99, hotA = 0;
 function infall() { hotT = 0; hotA = Math.random() * 6.2832; }
 
+// Вхід: діра не стоїть готова, а формується — маса відлічується з нуля до
+// серверної за ~3 с по smoothstep, одометром. Якщо за 6 с маси так і немає
+// (порожня діра, локальний режим, впалий сокет) — інтро тихо знімається.
+let intro = !calm.matches, introT0 = 0;
+
 let shock = 0, quasar = 0, last = 0;
 function frame(t) {
   const dt = Math.min((t - last) / 1000, 0.05); last = t;
@@ -1521,8 +1719,15 @@ function frame(t) {
   mx += (tmx - mx) * Math.min(1, dt * 3);
   my += (tmy - my) * Math.min(1, dt * 3);
 
+  if (intro && t > 6000) intro = false;
+  if (intro && S.bytes > 0) {
+    if (!introT0) introT0 = t;
+    const p = Math.min(1, (t - introT0) / 3000);
+    shown = S.bytes * p * p * (3 - 2 * p);
+    renderNumbers();
+    if (p === 1) intro = false;
   // числа й діра докручуються до нового значення, а не стрибають
-  if (shown !== S.bytes) {
+  } else if (shown !== S.bytes) {
     shown = Math.abs(S.bytes - shown) < Math.max(1, S.bytes * 1e-9)
       ? S.bytes : shown + (S.bytes - shown) * Math.min(1, dt * 3.2);
     renderNumbers();
@@ -1552,6 +1757,10 @@ function frame(t) {
   gl.uniform3fv(U('dOut'), dOut);
   gl.uniform3fv(U('shockCol'), shockCol);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
+  // другий шар: іскри йдуть за часом анімації, TDE — за настінним (синхронна)
+  sx.clearRect(0, 0, innerWidth, innerHeight);
+  drawSparks(t / 1000);
+  drawTDE(Date.now() / 1000);
   requestAnimationFrame(frame);
 }
 if (gl) requestAnimationFrame(frame);
@@ -1597,7 +1806,7 @@ if (location.search.includes('test')) {
     console.assert(!bad.length, 'у розмітці є data-t без відповідника в словнику', bad);
     console.assert($('clsTable').rows.length === 7 && $('massTable').rows.length === 5,
       'таблиці в діалозі згенерувались');
-    for (const k of ['classes', 'classNotes', 'gram', 'byte', 'scales', 'objects', 'kinds'])
+    for (const k of ['classes', 'classNotes', 'gram', 'byte', 'scales', 'objects', 'kinds', 'whispers'])
       console.assert(TXT.uk[k].length === TXT.en[k].length, 'різна довжина масиву ' + k);
   }
   // диск: T ∝ M^(−1/4) — важча діра холодніша, отже червоніша
@@ -1607,6 +1816,10 @@ if (location.search.includes('test')) {
   console.assert(blue(bbColor(20000)) > blue(bbColor(2000)), 'гарячіше чорне тіло — синіше');
   console.assert(blue(shockColorFor(1e9)) > blue(shockColorFor(1e3)),
     'гігабайт світиться гарячіше за кілобайт');
+  console.assert(h32(42) === h32(42) && h32(42) >= 0 && h32(42) < 1, 'h32 детермінований');
+  // одна й та сама зоря в один і той самий час — основа синхронності TDE
+  console.assert(JSON.stringify(tdeNow(1234567)) === JSON.stringify(tdeNow(1234567)),
+    'TDE однакова в усіх вкладках');
   const [dIn_, dOut_] = diskColors(3e-3);
   console.assert(blue(dIn_) > blue(dOut_), 'внутрішній край диска гарячіший за зовнішній');
   // віхи — предмети, а не астрономічні класи: класів досяжних лише чотири
