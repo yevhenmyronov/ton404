@@ -162,20 +162,13 @@
   .goal .bar:not(.season) { height: 4px; background: rgba(255,255,255,.05); }
   #goalTxt { color: var(--txt); font-size: 11.5px; }
 
-  /* The season sits under it as the frame. Drawn AS the ladder — one cell per
-     rung — instead of a smooth percentage: thirty discrete cells say "this is a
-     long climb, and you have taken 26" at a glance, which no continuous bar can.
-     Quieter than the rung bar above, because it moves once per milestone and
-     must not look like the thing you are currently pushing. Cell count comes
-     from --rungs, set from SEASON_RUNGS. */
-  .bar.season { height: 6px; margin: 14px 0 5px; position: relative; background: rgba(255,255,255,.06); }
-  .bar.season i { background: var(--amber); box-shadow: none; opacity: .62; }
-  .bar.season::after {
-    content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: repeating-linear-gradient(90deg,
-      transparent 0 calc(100% / var(--rungs) - 2px),
-      #000 calc(100% / var(--rungs) - 2px) calc(100% / var(--rungs)));
-  }
+  /* The season sits under it as the frame: same shape as the rung bar, just
+     quieter. It was drawn segmented, one cell per rung — the idea reads well in
+     theory, but the unfilled cells came out as a picket fence of thin ticks and
+     the whole strip looked like noise. The rung count is already in the caption
+     right underneath, which is where a number belongs. */
+  .bar.season { height: 4px; margin: 14px 0 5px; background: rgba(255,255,255,.05); }
+  .bar.season i { box-shadow: none; opacity: .55; }
   #seasonTxt { margin-bottom: 12px; }
 
   /* Telemetry is secondary by size, not by opacity: dimming it to 34% and
@@ -2127,9 +2120,6 @@ const TARGET_BYTES = bytesFor(1e5 * SUN);
 // one rung past it (the Moon's orbit, 2.3 PB) as headroom. Derived, not written
 // down: inserting a milestone must never leave this counting the wrong total.
 const SEASON_RUNGS = MILES.findIndex(m => m[2] >= TARGET_BYTES) + 1;
-// The season bar is drawn as one cell per rung, and CSS must not hardcode the
-// count — inserting a milestone would silently leave the cells out of step.
-document.documentElement.style.setProperty('--rungs', SEASON_RUNGS);
 const T_FLOOR = 3;                                     // log₁₀ bytes, i.e. 1 KB
 const massT = bytes => Math.min(1, Math.max(0,
   (Math.log10(1 + bytes) - T_FLOOR) / (Math.log10(1 + TARGET_BYTES) - T_FLOOR)));
@@ -2307,12 +2297,6 @@ if (location.search.includes('test')) {
     'the ladder keeps headroom past the season finale', SEASON_RUNGS, MILES.length);
   console.assert($('seasonTxt').textContent.includes(String(SEASON_RUNGS)),
     'the season caption names the total number of rungs', $('seasonTxt').textContent);
-  // The bar is drawn as one cell per rung from this custom property. If it ever
-  // stops matching, the cells quietly disagree with the caption above them.
-  console.assert(
-    +getComputedStyle(document.documentElement).getPropertyValue('--rungs') === SEASON_RUNGS,
-    'the season bar draws exactly one cell per rung',
-    getComputedStyle(document.documentElement).getPropertyValue('--rungs'), SEASON_RUNGS);
   console.assert(document.querySelectorAll('.tele .eq').length === 2
     && $('eqTgl').textContent === (tele.classList.contains('eqOn') ? L.hideEq : L.showEq),
     'the formula toggle matches its own state', $('eqTgl').textContent);
