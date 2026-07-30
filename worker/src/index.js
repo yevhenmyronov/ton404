@@ -58,8 +58,13 @@ export class BlackHole {
     const now = Date.now();
     if (!this.d.t) { this.d.t = now; return; }
     const days = (now - this.d.t) / DAY;
-    if (days > 0.01 && this.d.bytes > 0) {
-      this.d.bytes *= Math.pow(0.99, days) ** 2;
+    // The clock must advance even on an empty hole. With `bytes > 0` guarding
+    // the whole block, idle time on a zeroed hole piled up unspent — and since
+    // decay() runs at the top of fetch(), BEFORE the bytes land, the very next
+    // request billed the first throw for that whole idle stretch. A year of
+    // quiet ate 84% of it. Same hazard after any /rollback down to zero.
+    if (days > 0.01) {
+      if (this.d.bytes > 0) this.d.bytes *= Math.pow(0.99, days) ** 2;
       this.d.t = now;
     }
   }
