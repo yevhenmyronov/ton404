@@ -21,7 +21,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TON 404">
 <meta property="og:title" content="TON 404 — one black hole, fed with files">
-<meta property="og:description" content="Throw anything in. A gigabyte weighs as much as 18,000 Earths and its event horizon is 159 metres across. Grow it from a stellar hole to a supermassive one. One hole, shared by everyone.">
+<meta property="og:description" content="Throw anything in. A gigabyte weighs as much as 18,000 Earths and its event horizon has a radius of 159 metres. Grow it from a stellar hole to a supermassive one. One hole, shared by everyone.">
 <meta property="og:url" content="https://nohair.dev">
 <!-- summary_large_image, not summary: without a full-width image the link
      looks like a dead gray rectangle in Telegram/Twitter, and this whole
@@ -602,7 +602,7 @@ const RAZ = n => {
 // each language has its own grammar, and gluing it externally produces calques.
 const TXT = {
 uk: {
-  name: 'українська', other: 'English',
+  other: 'English',
   title: 'TON 404 — чорна діра, яку годують файлами',
   quasar: 'квазар', quasarMax: 'квазар · ліміт еддінгтона',
   update: 'вийшло оновлення — перезавантажити',
@@ -631,7 +631,7 @@ uk: {
     'такі могли утворитися в перші секунди після Великого вибуху',
     'холодніша за реліктове тло — тепер вона поглинає більше, ніж випромінює',
     'важить як планета, а горизонт менший за сантиметр',
-    'у цій вазі природа робить білі карлики й нейтронні зорі, а не чорні діри',
+    'занадто важка для планети й занадто легка, щоб чорна діра такої маси могла народитися з зорі',
     'важча за межу Оппенгеймера — ніщо інше такої маси існувати не може',
     'найрідкісніший клас, астрономи досі сперечаються про них',
     'як Стрілець A* у центрі нашої галактики'],
@@ -665,7 +665,7 @@ uk: {
     neptune:    ['Нептун', 'маса Нептуна'],
     mHoriz:     ['Горизонт — метр', 'завбільшки з людину'],
     jupiter:    ['Юпітер', 'маса найважчої планети Сонячної системи'],
-    deuterium:  ['Межа горіння дейтерію', '13 мас Юпітера — нижче цього не запалюється навіть дейтерій, і обʼєкт лишається планетою'],
+    deuterium:  ['Межа горіння дейтерію', '13.6 маси Юпітера — нижче цього не запалюється навіть дейтерій, і обʼєкт лишається планетою'],
     brownDwarf: ['Межа запалювання зорі', '0.08 маси Сонця — нижче цього водень не горить, і зоря не народжується взагалі'],
     kmHoriz:    ['Горизонт — кілометр', 'уже помітна на карті'],
     sun:        ['Сонце', 'рівно одна маса Сонця, а горизонт лише 2.95 км'],
@@ -734,16 +734,16 @@ uk: {
   pFile2: 'Імені файлу тут немає — і сервер його не прийме, навіть якщо надіслати. Люди кидають у діру <code>скан_паспорта.jpg</code>, і жодне з цих слів не має покидати їхній пристрій. Далі перших 64 КБ файл не читається взагалі.',
   hMass: 'Звідки береться маса',
   pMass1: 'Тут одна вигадка, і вона оголошена великим шрифтом: <b>один байт важить 10²⁰ кілограмів</b>. Це і є TON 404 — машина, що перетворює інформацію в матерію. Від кількості байтів N маса виходить прямо:',
-  pMass2: 'Маса лінійна в байтах, тому 18.5 ГБ дають рівно одну масу Сонця. Складність живе не у формулі, а у віхах: наступний клас щоразу в десятки разів далі за попередній.',
+  pMass2: 'Маса лінійна в байтах, тому 18.5 ГБ дають рівно одну масу Сонця. Складність живе не у формулі, а у віхах: наступний клас лежить від сотень до тисяч разів далі за попередній.',
   thSwallowed: 'Поглинуто', thMass: 'Маса', rowByte: '1 байт', rowDvd: '4.4 ГБ — один DVD',
   hHorizon: 'Горизонт, температура, час життя',
-  pHorizon: 'Далі — жодної вигадки. Гігабайт дає горизонт подій 159 метрів, і це справжній радіус Шварцшильда для такої маси. Температура Гокінга при цьому 1.14 мікрокельвіна — у два з половиною мільйони разів <b>холодніше</b> за реліктове тло Всесвіту, і саме тому така діра не випаровується, а росте.',
+  pHorizon: 'Далі — жодної вигадки. Гігабайт дає горизонт подій 159 метрів, і це справжній радіус Шварцшильда для такої маси. Температура Гокінга при цьому 1.14 мікрокельвіна — у 2.4 мільйона разів <b>холодніше</b> за реліктове тло Всесвіту, і саме тому така діра не випаровується, а росте.',
   hCheat: 'Де ми жульничаємо',
   pCheat0: 'Чотири рази, і всі чотири свідомо.',
   pCheat1: '<b>Сама маса.</b> Один байт не важить 10²⁰ кілограмів. Справжня межа Бекенштейна каже протилежне: горизонт масою в кілограм вмістив би кілька петабайтів. Ми граємо навпаки, бо інакше вся ця сторінка показувала б кілька грамів і нічого більше.',
   pCheat2: '<b>Розсіювання.</b> Діра втрачає 0.5% маси за добу — це ігрова механіка, а не фізика: справжнє випаровування такої маси триває 10⁶⁷ років, у 10⁵⁷ разів довше за вік Всесвіту. Єдиний чесний залишок: поки в дірі менше за 450 байтів, вона справді гарячіша за реліктове тло і справді зменшується.',
   pCheat3: '<b>Масштаб на екрані.</b> Радіус росте як √(log₁₀ байтів), а не прямо: справжній закон дав би мільярдну різницю між одним байтом і одним гігабайтом, і діра була б або невидимою, або на весь екран.',
-  pCheat4: '<b>Колір диска.</b> Температура падає як T ∝ M<sup>−1/4</sup> — це справжня модель тонкого диска, через яку діри зоряних мас світять у рентгені, а надмасивні у видимому. Але справжні числа тут від мільйона до десяти мільярдів кельвінів: це рентген, око такого не бачить. Тому справжню температуру лінійно за логарифмом перекладено у видимий діапазон — так само фарбують знімки телескопів. Порядок збережено: гарячіше досі синіше.',
+  pCheat4: '<b>Колір диска.</b> Температура падає як T ∝ M<sup>−1/4</sup> — це справжня модель тонкого диска, через яку діри зоряних мас світять у рентгені, а надмасивні у видимому. Але справжні числа тут від сотень тисяч до мільярдів кельвінів: це рентген і крайній ультрафіолет, око такого не бачить. Тому справжню температуру лінійно за логарифмом перекладено у видимий діапазон — так само фарбують знімки телескопів. Порядок збережено: гарячіше досі синіше.',
   pCheat5: 'Решта — справжня фізика: радіус Шварцшильда, межа Еддінгтона, доплерівське підсилення диска й джети.',
   hClasses: 'Класи',
   thClass: 'Клас', thReached: 'Досягається на',
@@ -753,7 +753,7 @@ uk: {
   foot: 'Фан-проєкт. Один HTML-файл, один фрагментний шейдер, один Durable Object.',
 },
 en: {
-  name: 'English', other: 'українська',
+  other: 'українська',
   title: 'TON 404 — one black hole, fed with files',
   quasar: 'quasar', quasarMax: 'quasar · eddington limit',
   update: 'new version shipped — reload',
@@ -781,8 +781,8 @@ en: {
   classNotes: ['nothing swallowed yet. it is hungry',
     'these could have formed in the first seconds after the Big Bang',
     'colder than the cosmic background — it now absorbs more than it radiates',
-    'as heavy as a planet, with a horizon under a centimetre across',
-    'at this weight nature makes white dwarfs and neutron stars, not black holes',
+    'as heavy as a planet, with a horizon under a centimetre',
+    'too heavy for a planet and too light for a black hole of this mass to be born from a star',
     'past the Oppenheimer limit — nothing else of this mass can exist',
     'the rarest class; astronomers still argue about them',
     'like Sagittarius A* at the centre of our galaxy'],
@@ -811,10 +811,10 @@ en: {
     neptune:    ['Neptune', 'the mass of Neptune'],
     mHoriz:     ['Horizon: one metre', 'about the size of a person'],
     jupiter:    ['Jupiter', 'the mass of the heaviest planet in the solar system'],
-    deuterium:  ['Deuterium-burning limit', '13 Jupiter masses — below this not even deuterium ignites, and the object stays a planet'],
+    deuterium:  ['Deuterium-burning limit', '13.6 Jupiter masses — below this not even deuterium ignites, and the object stays a planet'],
     brownDwarf: ['Stellar ignition limit', '0.08 solar masses — below this hydrogen never burns and no star is ever born'],
     kmHoriz:    ['Horizon: one kilometre', 'big enough to show up on a map'],
-    sun:        ['The Sun', 'exactly one solar mass, with a horizon just 2.95 km across'],
+    sun:        ['The Sun', 'exactly one solar mass, with a horizon just 2.95 km'],
     chandra:    ['Chandrasekhar limit', '1.4 solar masses — no heavier white dwarf can exist in nature; it collapses'],
     tov:        ['Oppenheimer limit', '2.17 solar masses — no heavier neutron star exists. From here on it can only be a black hole'],
     gw170817:   ['Lightest known hole', 'about 2.7 solar masses — the remnant of the neutron-star merger GW170817'],
@@ -828,9 +828,9 @@ en: {
     m82x1:      ['M82 X-1', 'around 400 solar masses, in the Cigar Galaxy'],
     earthRad:   ['Horizon: Earth’s radius', 'the shadow of the hole is now the size of our planet'],
     omegaCen:   ['Omega Centauri', '8200 solar masses — found in 2024 from the speed of stars in the cluster’s core'],
-    jupRad:     ['Horizon: Jupiter’s radius', 'seventy thousand kilometres across'],
+    jupRad:     ['Horizon: Jupiter’s radius', 'seventy thousand kilometres'],
     rgg118:     ['RGG 118', '50,000 solar masses — the smallest supermassive black hole known to astronomers'],
-    smbh:       ['SUPERMASSIVE', '100,000 solar masses. The official supermassive class, and the finale of Season I. Its horizon is one light-second across'],
+    smbh:       ['SUPERMASSIVE', '100,000 solar masses. The official supermassive class, and the finale of Season I. Its horizon is one light-second'],
     moonOrbit:  ['Horizon: the Moon’s orbit', 'the horizon now reaches out to where the Moon circles the Earth'],
   },
   kinds: ['bureaucratic matter','frozen photons','ultradense folded matter',
@@ -877,16 +877,16 @@ en: {
   pFile2: 'The filename is not in there — and the server would refuse it even if you sent it. People throw <code>passport_scan.jpg</code> into this thing, and not one of those words should ever leave their device. Past the first 64 KB the file is not read at all.',
   hMass: 'Where the mass comes from',
   pMass1: 'There is one invented number here, and it is declared in bold: <b>one byte weighs 10²⁰ kilograms</b>. That is what TON 404 is — a machine that turns information into matter. From a count of N bytes the mass follows directly:',
-  pMass2: 'Mass is linear in bytes, so 18.5 GB makes exactly one solar mass. The difficulty lives in the milestones, not the formula: each next class sits tens of times further out than the last.',
+  pMass2: 'Mass is linear in bytes, so 18.5 GB makes exactly one solar mass. The difficulty lives in the milestones, not the formula: each next class sits hundreds to thousands of times further out than the last.',
   thSwallowed: 'Swallowed', thMass: 'Mass', rowByte: '1 byte', rowDvd: '4.4 GB — one DVD',
   hHorizon: 'Horizon, temperature, lifetime',
-  pHorizon: 'From here on, nothing is invented. A gigabyte gives an event horizon of 159 metres — the real Schwarzschild radius for that mass. Its Hawking temperature is 1.14 microkelvin, two and a half million times <b>colder</b> than the cosmic background, which is precisely why a hole like this does not evaporate but grows.',
+  pHorizon: 'From here on, nothing is invented. A gigabyte gives an event horizon of 159 metres — the real Schwarzschild radius for that mass. Its Hawking temperature is 1.14 microkelvin, 2.4 million times <b>colder</b> than the cosmic background, which is precisely why a hole like this does not evaporate but grows.',
   hCheat: 'Where we cheat',
   pCheat0: 'Four times, and all four on purpose.',
   pCheat1: '<b>The mass itself.</b> A byte does not weigh 10²⁰ kilograms. The real Bekenstein bound says the opposite: a horizon weighing one kilogram could hold several petabytes. We run it backwards, because otherwise this whole page would read a few grams and nothing else.',
   pCheat2: '<b>Dissipation.</b> The hole loses 0.5% of its mass a day — a game mechanic, not physics: real evaporation at this mass takes 10⁶⁷ years, 10⁵⁷ times longer than the universe has existed. One honest remnant survives: while the hole holds under 450 bytes it really is hotter than the cosmic background, and really does shrink.',
   pCheat3: '<b>Scale on screen.</b> The radius grows as √(log₁₀ bytes), not directly: the real law would put a factor of a billion between one byte and one gigabyte, and the hole would be either invisible or the entire screen.',
-  pCheat4: '<b>Disc colour.</b> Its temperature falls as T ∝ M<sup>−1/4</sup> — the real thin-disc model, and the reason stellar-mass holes shine in X-rays while supermassive ones shine in visible light. But the real numbers run from a million to ten billion kelvin: that is X-ray, and the eye sees none of it. So the real temperature is mapped log-linearly into the visible band, exactly the way telescope images are false-coloured. Order survives: hotter is still bluer.',
+  pCheat4: '<b>Disc colour.</b> Its temperature falls as T ∝ M<sup>−1/4</sup> — the real thin-disc model, and the reason stellar-mass holes shine in X-rays while supermassive ones shine in visible light. But the real numbers run from hundreds of thousands to billions of kelvin: that is X-ray and extreme ultraviolet, and the eye sees none of it. So the real temperature is mapped log-linearly into the visible band, exactly the way telescope images are false-coloured. Order survives: hotter is still bluer.',
   pCheat5: 'Everything else is real physics: the Schwarzschild radius, the Eddington limit, Doppler boosting of the disc, and the jets.',
   hClasses: 'Classes',
   thClass: 'Class', thReached: 'Reached at',
@@ -942,8 +942,9 @@ const eddOf    = m => 1.26e31 * m / SUN;
 const LP2      = HBAR * G / C ** 3;
 const bitsCap  = m => areaOf(m) / (4 * LP2 * LN2);
 
-// Classes by real mass, and every boundary above the first is also a milestone
-// below — so the rank and the ladder can never contradict each other.
+// Classes by real mass, and every boundary above the second is also a milestone
+// below — so the rank and the ladder can never contradict each other. CLASSES[1]
+// is one byte, which is not a rung, and that is why the assert takes slice(2).
 // Boundaries here, names in the dictionary — per language.
 const CLASSES = [0, KG_PER_BYTE, M_CMB, M_EARTH, 0.013 * SUN, 2.17 * SUN,
                  100 * SUN, 1e5 * SUN]
@@ -1024,6 +1025,10 @@ function fmtBytes(b) {
 const LEN_UNITS = [1e-9, 1e-6, 1e-3, 1e-2, 1, 1e3];
 function fmtLen(m) {
   if (m <= 0) return ['0', L.len[4]];
+  // The table bottoms out at nanometres, so anything smaller rounded to a bare
+  // "0 nm" — reachable on every load, since the intro eases the hole up from
+  // nothing and its horizon spends those frames well below a nanometre.
+  if (m < LEN_UNITS[0]) return [sci(m), L.len[4]];
   let i = 0;
   while (i < LEN_UNITS.length - 1 && m >= LEN_UNITS[i + 1]) i++;
   const v = m / LEN_UNITS[i];
@@ -1031,8 +1036,11 @@ function fmtLen(m) {
 }
 function sci(x, d = 2) {
   if (x === 0) return '0';
-  const e = Math.floor(Math.log10(Math.abs(x)));
-  const m = (x / 10 ** e).toFixed(d);
+  let e = Math.floor(Math.log10(Math.abs(x)));
+  let m = (x / 10 ** e).toFixed(d);
+  // Rounding can push the mantissa up to a full ten — 9.999e6 printed as
+  // "10.00·10⁶" instead of "1.00·10⁷". Reachable for #temp and #bits.
+  if (Math.abs(+m) >= 10) { e++; m = (x / 10 ** e).toFixed(d); }
   return m + '·10' + String(e).replace(/[-\d]/g, c => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(c)]);
 }
 // Horizon sizes worth comparing against. The reachable range is now 1.5e-7 m
@@ -1066,11 +1074,12 @@ function cmpMass(kg) {
 // light. Anchored at ~1e7 K for a solar-mass hole accreting near 10% Eddington,
 // which is the textbook figure, not a tuned constant.
 const discT = kg => kg > 0 ? 1e7 * Math.pow(kg / SUN, -0.25) : 0;
-// ponytail: false colour. The real disc runs 1e6–1e10 K across our range — hard
-// UV and X-ray, which the eye cannot see at all, and bbColor below is only
-// valid 1000–40000 K. So five decades of real temperature are mapped
-// log-linearly onto the 1.6 decades the eye has, exactly the way telescope
-// images are false-coloured. Order survives: hotter is still bluer, and the
+// ponytail: false colour. Over the reachable range — one byte up to the season
+// target — the real disc runs 5.6e5–3.8e9 K: hard UV and X-ray, which the eye
+// cannot see at all, and bbColor below is only valid 1000–40000 K. So 3.8
+// decades of real temperature are mapped log-linearly onto the 1.6 decades the
+// eye has, exactly the way telescope images are
+// false-coloured. Order survives: hotter is still bluer, and the
 // disc visibly cools as the hole grows.
 const diskT = kg => kg <= 0 ? 30000 : Math.min(40000, Math.max(1000,
   1000 * Math.pow(40, (Math.log10(discT(kg)) - 5) / 5)));
@@ -1212,7 +1221,7 @@ let shown = 0;   // mass eases toward S.bytes instead of jumping
 
 // numbers — every frame while the easing runs
 function renderNumbers() {
-  const m = massOf(shown), r = radiusOf(m), Th = tempOf(m);
+  const m = massOf(shown), r = radiusOf(m);
   const [mv, mu] = fmtMass(m, 6), [bv, bu] = fmtBytes(shown);
   const rTxt = r > 0 ? fmtLen(r).join(' ') : '0 ' + L.len[4];
   // Luminosity spans single Suns to billions, so it needs both formats: sci()
@@ -1321,15 +1330,15 @@ const render = () => {
 };
 
 // ─── dialog tables ─────────────────────────────────────────────────────────
-// Computed from the same formulas and boundaries as everything else, not
-// hand-written. The switch immediately fixed two stale numbers: the asteroid
-// hole is really 4.8·10³⁹ bytes, not 10⁴⁰, and the stellar one 1.7·10⁷⁷.
+// Computed from the same formulas and boundaries as everything else, never
+// hand-written — that is what keeps the dialog from drifting away from the code
+// every time a constant moves.
 const atBytes = b => b < 1024 ? +b.toFixed(1) + ' ' + L.byte[0]
                    : b < 1024 ** 6 ? fmtBytes(b).join(' ')
                    : sci(b, 1) + ' ' + L.byte[0];
 
 $('massTable').innerHTML =
-  `<tr><th>${L.thSwallowed}</th><th>${L.thMass}</th></tr>` +
+  `<tr><th scope="col">${L.thSwallowed}</th><th scope="col">${L.thMass}</th></tr>` +
   [[L.rowByte, massOf(1)],
    ['1 ' + L.byte[3], massOf(1024 ** 3)],
    [L.rowDvd, massOf(4.4 * 1024 ** 3)],
@@ -1339,7 +1348,7 @@ $('massTable').innerHTML =
   .map(([what, m]) => `<tr><td>${what}</td><td>${fmtMass(m).join(' ')}</td></tr>`).join('');
 
 $('clsTable').innerHTML =
-  `<tr><th>${L.thClass}</th><th>${L.thReached}</th></tr>` +
+  `<tr><th scope="col">${L.thClass}</th><th scope="col">${L.thReached}</th></tr>` +
   CLASSES.slice(1).map(([m, name]) =>
     `<tr><td>${name}</td><td>${atBytes(bytesFor(m))}</td></tr>`).join('');
 
@@ -1350,7 +1359,7 @@ $('clsTable').innerHTML =
 function renderMileTable() {
   const done = milesPassed(S.bytes);
   $('mileTable').innerHTML =
-    `<tr><th>${L.thMile}</th><th>${L.thReached}</th></tr>` +
+    `<tr><th scope="col">${L.thMile}</th><th scope="col">${L.thReached}</th></tr>` +
     MILES.map(([id, kind, b], i) => {
       const [name, note] = L.miles[id];
       return `<tr><td>${i < done ? '✓ ' : ''}${name}<i>${note}</i></td>` +
@@ -1962,7 +1971,7 @@ addEventListener('resize', resize); resize();
 
 // ponytail: on-screen radius is √(log₁₀ bytes), not the real radius. Mass is
 // linear in bytes now, so r_s is too — a 10⁹× gap between 1 B and 1 GB, and the
-// hole would be invisible or the whole screen. /16 spans 1 B to ~1 EB, leaving
+// hole would be invisible or the whole screen. /16 spans 1 B to ~8.9 PB, leaving
 // headroom above the season target. On narrow screens the hole shrinks by a
 // third; that's about the disc, not the hole: it reaches 3.2 radii and at full
 // size covers the whole phone, putting text on bright pixels. On desktop the
@@ -2063,9 +2072,10 @@ if (location.search.includes('test')) {
   eq(bytesFor(massOf(1024 ** 3)), 1024 ** 3, 'bytesFor inverts massOf');
   // This number IS the alibi for calling the decay a game mechanic, not physics.
   eq(evapOf(SUN) / 3.156e7, 2.10e67, 'a solar-mass hole would live 2e67 years');
-  // 1 GB is 0.054 solar masses — already past the deuterium-burning limit, so
-  // sub-stellar, not planetary. Recount if a class boundary ever moves.
-  console.assert(classOf(massOf(1024 ** 3))[1] === L.classes[4], 'class for 1 GB is sub-stellar');
+  // 1 GB is 0.054 solar masses — past the deuterium-burning limit but far below
+  // Oppenheimer, so it lands in the "impossible" class, not the planetary one.
+  // Recount if a class boundary ever moves.
+  console.assert(classOf(massOf(1024 ** 3))[1] === L.classes[4], 'class for 1 GB is the impossible one');
   console.assert(classOf(M_EARTH)[1] === L.classes[3], 'Earth mass is planetary');
   console.assert(classOf(0)[1] === L.classes[0], 'class for an empty hole');
   console.assert(classOf(2e5 * SUN)[1] === L.classes[7], 'past 1e5 suns it is supermassive');
@@ -2089,8 +2099,30 @@ if (location.search.includes('test')) {
   // that is exactly why it gets six significant digits
   console.assert(fmtMass(massOf(43.5e9), 6)[0] !== fmtMass(massOf(43.5e9 + 6e6), 6)[0],
     '6 MB must move the mass on 43.5 GB');
-  console.assert(fmtMass(3 * SUN, 6)[0].length === fmtMass(9 * SUN, 6)[0].length,
-    'headline width is constant — otherwise it jitters on every throw');
+  // A decade crossing is where a naive formatter changes width: "9.99000" and
+  // "10.0000" lay their digits out differently and must still occupy the same
+  // room. Comparing 3 vs 9 suns proved nothing — same shape by construction.
+  console.assert(fmtMass(9.99 * SUN, 6)[0].length === fmtMass(10 * SUN, 6)[0].length,
+    'headline width survives a decade crossing — otherwise it jitters on every throw',
+    fmtMass(9.99 * SUN, 6), fmtMass(10 * SUN, 6));
+  // atBytes feeds all three dialog tables and the goal caption, and had no
+  // assert at all — including at its own two branch edges.
+  console.assert(atBytes(999) === '999 ' + L.byte[0] && atBytes(1024).endsWith(L.byte[1]),
+    'atBytes at the sub-kilobyte edge', atBytes(999), atBytes(1024));
+  console.assert(atBytes(1024 ** 6).includes('·10'),
+    'past exabytes atBytes falls back to scientific notation', atBytes(1024 ** 6));
+  console.assert(atBytes(bytesFor(SUN)) === '18.5 ' + L.byte[3],
+    'atBytes on the headline figure', atBytes(bytesFor(SUN)));
+  // The "past the last rung" branch is what this change added, and nothing
+  // exercised it: milesPassed returns MILES.length, MILES[i] is undefined, and
+  // the bar must read 100% with the goalDone caption instead of crashing.
+  console.assert(milesPassed(MILES[MILES.length - 1][2]) === MILES.length
+    && MILES[milesPassed(Infinity)] === undefined,
+    'past the last milestone there is no next rung', milesPassed(Infinity));
+  // fmtLen bottoms out during the intro animation, when the hole is still
+  // microscopic — it must not print a bare "0".
+  console.assert(fmtLen(1e-12)[0] !== '0' && fmtLen(0)[0] === '0',
+    'fmtLen below a nanometre', fmtLen(1e-12), fmtLen(0));
   // MILES values are COMPUTED from physics, so a mis-ordered rung is invisible
   // to the eye and would silently corrupt milesPassed. This is the load-bearing
   // assert of the whole ladder.
@@ -2190,11 +2222,11 @@ if (location.search.includes('test')) {
   eq(1 / (1 - DECAY), 200, 'the hole tops out at 200x its daily inflow');
   console.assert(11.1 * 1024 ** 4 / (1 - DECAY) > bytesFor(1e5 * SUN),
     'the season target must sit below the ceiling');
-  // area is plain geometry now: r_s ∝ mass, so the area goes as mass²
-  eq(areaOf(SUN), 4 * Math.PI * radiusOf(SUN) ** 2, 'A = 4πr_s²');
+  // area is plain geometry now: r_s ∝ mass, so the area goes as mass². Asserting
+  // A = 4πr² here would just restate the body of areaOf; this is the real claim.
   eq(areaOf(massOf(2e9)) / areaOf(massOf(1e9)), 4, 'horizon area grows as bytes²');
   // the real Bekenstein bound dwarfs what we feed it — that is the honest number
-  console.assert(bitsCap(massOf(1e15)) > 1e15 * 8 * 1e60, 'capacity dwarfs the data fed in');
+  console.assert(bitsCap(massOf(1e15)) > 1e15 * 8, 'capacity dwarfs the data fed in');
   console.assert(cmpMass(SUN) === L.cmpSame(L.objects[8]), 'cmpMass exact', cmpMass(SUN));
   console.assert(cmpMass(4 * SUN) === L.cmpDiff(4, L.objects[8], true),
     'cmpMass multiplier', cmpMass(4 * SUN));

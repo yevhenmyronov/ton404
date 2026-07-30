@@ -2,14 +2,14 @@
 // Files never reach this code: only size, extension, and a dedup signature.
 
 const DAY = 864e5;
-// Anything can be thrown: the browser only reads file.size, so size costs nothing.
-// The real anti-inflation boundary is the daily cap, which stays fixed.
 // Dissipation per day. This single number is the game's difficulty dial: with a
 // steady inflow F the hole settles at F/rate, so 0.5% allows 200x the daily
 // inflow — 2.2 PB at 11 TB/day, past the 1.77 PB season target. At 1% the
 // ceiling was 1.1 PB and the target was unreachable forever. Must match the
 // client's DECAY.
-const DECAY      = 0.995;
+export const DECAY = 0.995;
+// Anything can be thrown: the browser only reads file.size, so size costs nothing.
+// The real anti-inflation boundary is the daily cap, which stays fixed.
 const MAX_FEED   = 1e11;   // 100 GB per throw
 const MAX_IP_DAY = 5e11;   // 500 GB per day per /64
 // Must stay below the client-side pause between throws in swallow(), or

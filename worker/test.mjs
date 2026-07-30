@@ -2,7 +2,8 @@
 // The limits are all that stands between the hole and inflation, so they stay
 // tested even when nobody touches the rest of the code.
 import assert from 'node:assert';
-import { BlackHole } from './src/index.js';
+import { readFileSync } from 'node:fs';
+import { BlackHole, DECAY } from './src/index.js';
 
 // platform class; only needed so the constructor doesn't crash
 globalThis.WebSocketRequestResponsePair = class {
@@ -296,6 +297,36 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
   await feed(h, { bytes: 1, ext: 'a', sig: 72 }, '7.7.7.7');
   assert.ok(h.d.bytes > 0.99e11,
     'a year of empty quiet must not eat the first throw', h.d.bytes);
+}
+
+// ── the daily cap per address ─────────────────────────────────────────────
+// Never had a test. The cooldown case above looks like it covers this, but both
+// its requests land in the same counter through a different branch. A batch is
+// the only way to cross the cap in one request: items share one cooldown and
+// each is judged on its own, so the ones past the ceiling come back rejected
+// while the earlier ones are still swallowed.
+{
+  h = await hole();
+  const per = 1e11;                                   // MAX_FEED, 100 GB a throw
+  const n = 6;                                        // 600 GB > the 500 GB cap
+  const r = await feed(h, {
+    items: Array.from({ length: n }, (_, i) => ({ bytes: per, ext: 'iso', sig: 200 + i })),
+  }, '8.8.8.8');
+  const body = await r.json();
+  assert.equal(body.rejected.length, 1, 'exactly the throw past the cap is refused');
+  assert.equal(body.rejected[0].error, 'daily cap');
+  assert.equal(h.d.bytes, 5 * per, 'everything up to the cap was still swallowed');
+}
+
+// ── the two copies of DECAY must not drift ────────────────────────────────
+// The rate is written twice by hand — here and in the client — and nothing
+// compared them, so one side could be retuned alone and the page would quietly
+// disagree with the server about how fast mass leaves.
+{
+  const page = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  const m = page.match(/^const DECAY = ([\d.]+);/m);
+  assert.ok(m, 'client DECAY not found — did the declaration move?');
+  assert.equal(Number(m[1]), DECAY, 'client and worker DECAY must match');
 }
 
 // ── unknown paths never wake the Durable Object ───────────────────────────
