@@ -233,6 +233,29 @@ h.d.log.push({ t: Date.now() - 48 * 864e5, b: 9e9, e: 'old', s: 53 }); // two da
   assert.equal(snap.record.ext, 'iso');
 }
 
+// ── dissipation ───────────────────────────────────────────────────────────
+// Mass is linear in bytes now, so -0.5% of mass is -0.5% of bytes, applied
+// once. It used to be squared (bytes ∝ mass² under the old entropy law) and
+// nothing here tested it, so the change would have gone through unnoticed.
+{
+  h = await hole();
+  h.d.bytes = 1e12;
+  h.d.t = Date.now() - 10 * 864e5;
+  h.decay();
+  assert.ok(Math.abs(h.d.bytes / (1e12 * 0.995 ** 10) - 1) < 1e-9,
+    '0.5% of bytes per day, compounded once', h.d.bytes);
+  // A steady inflow settles at F/(1-rate): the ceiling the season target must
+  // sit under. At 0.5% that is 200x the daily inflow.
+  const ceiling = 11.1 * 1024 ** 4 / 0.005;
+  assert.ok(ceiling > 1.77 * 1024 ** 5, 'the ceiling must clear the season target');
+
+  // A quiet hole must not drift: under the threshold decay is a no-op.
+  h.d.bytes = 1e12;
+  h.d.t = Date.now();
+  h.decay();
+  assert.equal(h.d.bytes, 1e12, 'no decay applied for a near-zero interval');
+}
+
 // ── rollback ──────────────────────────────────────────────────────────────
 h = await hole();
 await feed(h, { bytes: GB, ext: 'a', sig: 31 });
