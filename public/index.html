@@ -155,23 +155,28 @@
     box-shadow: 0 0 10px var(--amber);
     transition: width .9s cubic-bezier(.2,.8,.2,1);
   }
-  /* The season bar is the game, so it leads. Drawn AS the ladder — one cell per
+  /* The rung bar leads: it is the only thing on the page that answers a throw
+     immediately, so it carries the height and the glow. */
+  /* darker track than the default: at 4px the empty groove was reading louder
+     than the fill inside it, which inverts the very emphasis this is for */
+  .goal .bar:not(.season) { height: 4px; background: rgba(255,255,255,.05); }
+  #goalTxt { color: var(--txt); font-size: 11.5px; }
+
+  /* The season sits under it as the frame. Drawn AS the ladder — one cell per
      rung — instead of a smooth percentage: thirty discrete cells say "this is a
-     long climb, and you just took one" at a glance, which is exactly the
-     mechanic. A continuous bar says nothing you cannot already read in the
-     caption. Cell count comes from --rungs, set from SEASON_RUNGS. */
-  .bar.season { height: 8px; margin: 11px 0 5px; position: relative; background: rgba(255,255,255,.07); }
-  .bar.season i { background: var(--amber); box-shadow: 0 0 14px rgba(255,200,128,.6); opacity: 1; }
+     long climb, and you have taken 26" at a glance, which no continuous bar can.
+     Quieter than the rung bar above, because it moves once per milestone and
+     must not look like the thing you are currently pushing. Cell count comes
+     from --rungs, set from SEASON_RUNGS. */
+  .bar.season { height: 6px; margin: 14px 0 5px; position: relative; background: rgba(255,255,255,.06); }
+  .bar.season i { background: var(--amber); box-shadow: none; opacity: .62; }
   .bar.season::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: repeating-linear-gradient(90deg,
       transparent 0 calc(100% / var(--rungs) - 2px),
       #000 calc(100% / var(--rungs) - 2px) calc(100% / var(--rungs)));
   }
-  #seasonTxt { color: var(--txt); font-size: 11.5px; margin-bottom: 12px; }
-  /* the next-rung bar is now the fine detail underneath: it twitches on every
-     throw, so it must not compete with the thing that moves once per milestone */
-  .goal .bar:not(.season) i { opacity: .6; box-shadow: none; }
+  #seasonTxt { margin-bottom: 12px; }
 
   /* Telemetry is secondary by size, not by opacity: dimming it to 34% and
      hiding labels under max-height was simply unreadable. */
@@ -496,14 +501,19 @@
     </div>
 
     <div class="goal">
-      <div class="k" data-t="goalLabel">Глобальна ціль</div>
+      <div class="k" data-t="goalLabel">Наступна віха</div>
+      <!-- The rung leads because it is the feedback loop: it moves on every
+           single throw, it names its target, and its distance is in units you
+           are holding — "11.4 MB to go" is a file you have. The season below is
+           the frame, not the loop: it moves once per rung, so a newcomer could
+           throw ten files and watch it sit still. -->
+      <div class="bar"><i id="goalFill"></i></div>
+      <div class="sub" id="goalTxt"></div>
       <!-- Season progress counts RUNGS, not bytes: bytes are spread over
            fifteen orders of magnitude and a linear bar across them is useless —
            it would sit near zero for the entire first half of the season. -->
       <div class="bar season"><i id="seasonFill"></i></div>
       <div class="sub" id="seasonTxt"></div>
-      <div class="bar"><i id="goalFill"></i></div>
-      <div class="sub" id="goalTxt"></div>
       <!-- Dissipation used to be silent bookkeeping: live since day one, seen
            by no one. But it's the very reason to come back tomorrow — the
            hole shrinks overnight. -->
@@ -658,7 +668,7 @@ uk: {
   update: 'вийшло оновлення — перезавантажити',
   tagline: 'кинь у неї будь-що',
   rankLabel: 'Клас обʼєкта', massLabel: 'Маса',
-  goalLabel: 'Глобальна ціль', teleLabel: 'Телеметрія',
+  goalLabel: 'Наступна віха', teleLabel: 'Телеметрія',
   teleRadius: 'радіус горизонту', teleArea: 'площа горизонту',
   teleLum: 'світність', teleTemp: 'температура диска',
   teleEvap: 'повне випаровування',
@@ -815,7 +825,7 @@ en: {
   update: 'new version shipped — reload',
   tagline: 'throw anything into it',
   rankLabel: 'Object class', massLabel: 'Mass',
-  goalLabel: 'Global goal', teleLabel: 'Telemetry',
+  goalLabel: 'Next milestone', teleLabel: 'Telemetry',
   teleRadius: 'horizon radius', teleArea: 'horizon area',
   teleLum: 'luminosity', teleTemp: 'disc temperature',
   teleEvap: 'full evaporation',
