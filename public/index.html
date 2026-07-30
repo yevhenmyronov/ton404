@@ -67,7 +67,9 @@
     display: flex; flex-direction: column; justify-content: space-between; min-height: 0;
   }
   .left  { width: 312px; }
-  .right { width: 280px; text-align: right; }
+  /* wider than before: it now carries the action block too, and the buttons
+     need a line they don't wrap on */
+  .right { width: 330px; text-align: right; }
 
   .top, .bot, .feed, .about, #quasar, #upd { pointer-events: auto; }
 
@@ -307,7 +309,10 @@
   .feed { animation: boot .7s ease 2.5s both; }
   .about{ animation: boot .7s ease 2.8s both; }
 
-  .hint { max-width: 330px; }
+  /* The action sits under the primer in the same corner block, separated by a
+     rule rather than by distance — one unit, two beats. */
+  .hint { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.06); }
+  .ctl { justify-content: flex-end; }
   .hint .act { font-size: 13.5px; line-height: 1.4; color: var(--hot); }
   .hint .act span { display: block; margin-top: 4px; font-size: 11px; color: var(--dim); }
   .hint p { font-size: 10.5px; line-height: 1.8; color: var(--dim); }
@@ -339,13 +344,15 @@
   }
   .about button:hover { opacity: 1; text-shadow: 0 0 14px rgba(255,178,87,.6); }
 
-  /* the Hawking stream dissolves to the right instead of cutting mid-line */
+  /* The stream dissolves towards the LEFT now: the block is right-aligned, so
+     the fade has to run away from the edge the text is anchored to, or it eats
+     the newest characters instead of the oldest. */
   #hawking {
-    margin-bottom: 14px;
+    margin-top: 16px;
     font-size: 9.5px; color: #8a8175; letter-spacing: .2em;
-    white-space: nowrap; overflow: hidden;
-    -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent);
-    mask-image: linear-gradient(90deg, #000 55%, transparent);
+    white-space: nowrap; overflow: hidden; direction: rtl;
+    -webkit-mask-image: linear-gradient(270deg, #000 55%, transparent);
+    mask-image: linear-gradient(270deg, #000 55%, transparent);
   }
 
   body.dragging::after {
@@ -436,14 +443,25 @@
     .tele { display: none; }
 
     /* The main action is a real button, not a 10-pixel link. Dragging a file
-       is impossible on a phone, so all traffic goes here. */
-    .ctl { gap: 12px 18px; margin: 4px 0 10px; }
+       is impossible on a phone, so all traffic goes here.
+
+       Pinned to the viewport, not left in the flow. The primer and the action
+       are one block now, and that block lives below the fold — which on a phone
+       would mean the only way to feed the hole is off screen with nothing to
+       hint at it. Pinned, it is reachable at every scroll position instead of
+       only at the top, which is strictly better than what it replaced. */
+    .ctl { gap: 12px 18px; margin: 4px 0 10px; justify-content: flex-start; }
     #pick {
-      order: -1; width: 100%; padding: 15px 12px; text-align: center;
+      position: fixed; left: 16px; right: 16px; z-index: 5;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      padding: 15px 12px; text-align: center;
       border: 1px solid rgba(255,178,87,.45); border-radius: 3px;
+      background: rgba(8,6,10,.82); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
       font-size: 12px; opacity: 1;
     }
     #pick::before { content: none; }
+    /* room for the pinned button, so it never covers the last line of text */
+    .ui { padding-bottom: calc(74px + env(safe-area-inset-bottom)); }
     .hint p { font-size: 11px; opacity: .75; }
     /* The list sits below the fold with room to spare — show everything,
        including the matter kind (#recent li i) that used to be cut */
@@ -538,18 +556,6 @@
    </div>
    </div>
 
-   <div class="bot">
-    <div id="hawking"></div>
-    <div class="hint">
-      <div class="act" data-t="dropHere">Перетягни файл сюди<span data-t="orPaste"></span></div>
-      <div class="ctl">
-        <button id="pick" data-t="pickFile">обрати файл</button>
-        <button id="share" data-t="share">затягни друга</button>
-        <button id="lang" data-t="other">English</button>
-      </div>
-      <p data-t="privacy">Файл не покидає твій пристрій.</p>
-    </div>
-   </div>
   </div>
 
   <div class="col right">
@@ -559,12 +565,29 @@
       <ul id="recent"></ul>
     </div>
 
-    <div class="about">
-      <div class="k" data-t="aboutLabel">Як це працює</div>
-      <div class="f" data-t="eqMass">M = N · 10²⁰ кг</div>
-      <p data-th="aboutP1"></p>
-      <p data-t="aboutP2"></p>
-      <button id="what" data-t="expand">Розгорнути ↗</button>
+    <!-- One block in the corner: what this is, then what to do about it. They
+         used to sit in opposite bottom corners, which made the explanation and
+         the action look like two unrelated things. Reading order ends on the
+         call to action, which is where it belongs. -->
+    <div class="bot">
+      <div class="about">
+        <div class="k" data-t="aboutLabel">Як це працює</div>
+        <div class="f" data-t="eqMass">M = N · 10²⁰ кг</div>
+        <p data-th="aboutP1"></p>
+        <p data-t="aboutP2"></p>
+        <button id="what" data-t="expand">Розгорнути ↗</button>
+      </div>
+
+      <div id="hawking"></div>
+      <div class="hint">
+        <div class="act" data-t="dropHere">Перетягни файл сюди<span data-t="orPaste"></span></div>
+        <div class="ctl">
+          <button id="pick" data-t="pickFile">обрати файл</button>
+          <button id="share" data-t="share">затягни друга</button>
+          <button id="lang" data-t="other">English</button>
+        </div>
+        <p data-t="privacy">Файл не покидає твій пристрій.</p>
+      </div>
     </div>
   </div>
 </div>
