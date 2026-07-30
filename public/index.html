@@ -118,6 +118,22 @@
     text-shadow: 0 0 20px #4b9fff; opacity: 0; transition: opacity .5s;
   }
 
+  /* What this is, before any number: it sets the goal and says it is shared */
+  /* Formulas are opt-in; the values they explain are always on screen. */
+  .tele .eq { display: none; }
+  .tele.eqOn .eq { display: inline; }
+  #eqTgl {
+    background: none; border: 0; padding: 0; margin-left: 10px; cursor: pointer;
+    font: inherit; font-size: 9px; letter-spacing: .16em; color: var(--amber);
+    opacity: .6; text-transform: none;
+  }
+  #eqTgl:hover { opacity: 1; }
+
+  .mission {
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--amber); opacity: .72; margin: 0 0 18px;
+  }
+
   .rank { border-left: 1px solid #2a2620; padding-left: 12px; margin: 0 0 26px -13px; }
   #rankName { font-size: 15px; letter-spacing: .05em; color: var(--amber); margin-top: 3px; }
 
@@ -139,6 +155,10 @@
     box-shadow: 0 0 10px var(--amber);
     transition: width .9s cubic-bezier(.2,.8,.2,1);
   }
+  /* The season bar is the quieter of the two: it moves once per rung, while the
+     one below it moves on every throw. Same shape, less shout. */
+  .bar.season { height: 3px; margin-top: 10px; }
+  .bar.season i { background: var(--hot); box-shadow: none; opacity: .5; }
 
   /* Telemetry is secondary by size, not by opacity: dimming it to 34% and
      hiding labels under max-height was simply unreadable. */
@@ -441,6 +461,11 @@
     <h1>TON 404<small data-t="tagline">кинь у неї будь-що</small></h1>
 
     <div class="stats">
+    <!-- The big picture, which the first screen never had: what this is, that
+         it is collective, and that the road is long. The bar underneath is the
+         next rung; this one is the season. -->
+    <div class="mission" id="mission" data-t="mission">Сезон I · разом вирощуємо надмасивну чорну діру</div>
+
     <div class="rank">
       <div class="k" data-t="rankLabel">Клас обʼєкта</div>
       <div id="rankName">—</div>
@@ -456,6 +481,11 @@
 
     <div class="goal">
       <div class="k" data-t="goalLabel">Глобальна ціль</div>
+      <!-- Season progress counts RUNGS, not bytes: bytes are spread over
+           fifteen orders of magnitude and a linear bar across them is useless —
+           it would sit near zero for the entire first half of the season. -->
+      <div class="bar season"><i id="seasonFill"></i></div>
+      <div class="sub" id="seasonTxt"></div>
       <div class="bar"><i id="goalFill"></i></div>
       <div class="sub" id="goalTxt"></div>
       <!-- Dissipation used to be silent bookkeeping: live since day one, seen
@@ -466,11 +496,15 @@
     </div>
 
     <div class="tele">
-      <div class="k" style="margin-bottom:4px" data-t="teleLabel">Телеметрія</div>
+      <!-- the button is a sibling of the label, never a child: the language pass
+           assigns textContent to every [data-t] node and would wipe it out -->
+      <div class="k" style="margin-bottom:4px"><span data-t="teleLabel">Телеметрія</span><button id="eqTgl" aria-expanded="false">показати формули</button></div>
       <div class="t"><span data-t="teleRadius">радіус горизонту</span><b id="radius">—</b><i id="radiusCmp"></i></div>
-      <div class="t"><span data-t="teleLum">світність</span><b id="lum">—</b><i>L = 1.26·10³¹ · M/M<sub>☉</sub> — <span data-t="lumNote"></span></i></div>
+      <!-- The formula is folded away by default: it is the answer to "how", and
+           a first-time visitor has not yet asked "what". The value stays. -->
+      <div class="t"><span data-t="teleLum">світність</span><b id="lum">—</b><i><span class="eq">L = 1.26·10³¹ · M/M<sub>☉</sub> — </span><span data-t="lumNote"></span></i></div>
       <div class="t"><span data-t="teleTemp">температура диска</span><b id="temp">—</b><i id="tempCmp"></i></div>
-      <div class="t"><span data-t="teleEvap">повне випаровування</span><b id="evap">—</b><i>t = 5120πG²M³/ħc⁴ — <span data-t="evapNote"></span></i></div>
+      <div class="t"><span data-t="teleEvap">повне випаровування</span><b id="evap">—</b><i><span class="eq">t = 5120πG²M³/ħc⁴ — </span><span data-t="evapNote"></span></i></div>
       <div class="t"><span data-t="teleInfo">поглинуто</span><b id="info">—</b><i id="bits"></i></div>
       <div class="t"><span data-t="teleRecord">рекорд доби</span><b id="record">—</b></div>
     </div>
@@ -713,6 +747,12 @@ uk: {
   capacity: b => `горизонт вмістив би ${b} бітів`,
   goalLeft: (g, left) => `${g} — лишилось ${left}`,
   goalDone: 'усі віхи взято',
+  mission: 'Сезон I · разом вирощуємо надмасивну чорну діру',
+  showEq: 'показати формули', hideEq: 'сховати формули',
+  // The rung count says the road is long without any extra words; the second
+  // half names what the season is actually for.
+  season: (i, n, left) => `щабель ${i} з ${n} · до надмасивної лишилось ${left}`,
+  seasonDone: n => `усі ${n} щаблів узято · надмасивну зібрано`,
   // BYTES, not the percent: people care how much to bring back to hold the line
   decay: v => `тане на ${v} за добу`,
   alone: 'ти сам на сам із нею', watchers: n => `за нею спостерігає ${n}`,
@@ -857,6 +897,10 @@ en: {
   capacity: b => `the horizon could hold ${b} bits`,
   goalLeft: (g, left) => `${g} — ${left} to go`,
   goalDone: 'every milestone taken',
+  mission: 'Season I · growing a supermassive black hole, together',
+  showEq: 'show formulas', hideEq: 'hide formulas',
+  season: (i, n, left) => `rung ${i} of ${n} · ${left} to supermassive`,
+  seasonDone: n => `all ${n} rungs taken · supermassive reached`,
   decay: v => `losing ${v} a day`,
   alone: 'you are alone with it', watchers: n => `${n} watching it`,
   yours: (v, pct) => `your contribution: ${v}` + (pct ? ` · ${pct}% of the mass` : ''),
@@ -1005,9 +1049,15 @@ const save = () => {
 // one solar mass as a 28-digit count of tonnes.
 function fmtMass(kg, sig = 0) {
   if (kg <= 0) return ['0', L.mSun(0)];
-  const num = v => sig ? v.toPrecision(sig)
-    // +'' via Number, not a regex: a regex would also strip zeros in "100"
-    : +v.toFixed(v < 10 ? 2 : v < 100 ? 1 : 0) + '';
+  // toPrecision is not usable here: once the integer part outgrows `sig` it
+  // flips to exponential — 332982 Earth masses came out as "3.33e+5", which is
+  // not a headline. Same digit count, always plain decimals, so a big number
+  // rounds off its tail instead ("333000") rather than growing an exponent.
+  const num = v => {
+    if (!sig) return +v.toFixed(v < 10 ? 2 : v < 100 ? 1 : 0) + '';
+    const d = sig - 1 - Math.floor(Math.log10(Math.abs(v)));
+    return d >= 0 ? v.toFixed(d) : (Math.round(v / 10 ** -d) * 10 ** -d).toFixed(0);
+  };
   // The unit agrees with the number as printed, so the rounded string is what
   // gets declined — 17980.34 shows as "17980" and must read «мас Землі».
   if (kg >= SUN)     { const s = num(kg / SUN);     return [s, L.mSun(s)]; }
@@ -1222,7 +1272,10 @@ let shown = 0;   // mass eases toward S.bytes instead of jumping
 // numbers — every frame while the easing runs
 function renderNumbers() {
   const m = massOf(shown), r = radiusOf(m);
-  const [mv, mu] = fmtMass(m, 6), [bv, bu] = fmtBytes(shown);
+  // Three significant digits, not six. Six was a theatre of precision: at Earth
+  // masses it rendered "332982", which is noise, not information — and nobody
+  // reads the sixth digit of a number that is a shared, decaying estimate.
+  const [mv, mu] = fmtMass(m, 3), [bv, bu] = fmtBytes(shown);
   const rTxt = r > 0 ? fmtLen(r).join(' ') : '0 ' + L.len[4];
   // Luminosity spans single Suns to billions, so it needs both formats: sci()
   // alone printed "4.6·10⁰ Suns" early on, which is a silly way to write 4.6.
@@ -1274,6 +1327,15 @@ function renderNumbers() {
   $('goalTxt').textContent = next
     ? L.goalLeft(L.miles[next[0]][0], atBytes(next[2] - shown)) : L.goalDone;
 
+  // The season, above the rung. Counted in RUNGS: the target is fifteen orders
+  // of magnitude away in bytes, so a byte-linear bar would read as empty for
+  // most of the season and tell a newcomer nothing about how far along we are.
+  $('seasonFill').style.width =
+    Math.min(100, i / SEASON_RUNGS * 100).toFixed(2) + '%';
+  $('seasonTxt').textContent = shown >= TARGET_BYTES
+    ? L.seasonDone(SEASON_RUNGS)
+    : L.season(i, SEASON_RUNGS, atBytes(TARGET_BYTES - shown));
+
   // Mass is linear in bytes now, so a 0.5% mass loss is a 0.5% byte loss.
   // Show bytes: people don't care about the percent, they care how much to
   // bring just to keep the hole where it is.
@@ -1287,7 +1349,10 @@ function renderList() {
     ? (S.watching === 1 ? L.alone : L.watchers(S.watching)) : '';
 
   if (MINE > 0) {
-    const [pv, pu] = fmtBytes(MINE);
+    // In the same units as the headline, not in bytes: "0.12 solar masses"
+    // lands as a share of the thing on screen, while "2.4 GB" is a different
+    // quantity the reader has to convert before it means anything.
+    const [pv, pu] = fmtMass(massOf(MINE), 3);
     $('mine').textContent = L.yours(`${pv} ${pu}`,
       API && S.bytes > 0 ? +Math.min(100, MINE / S.bytes * 100).toFixed(2) : 0);
   } else $('mine').textContent = '';
@@ -1569,6 +1634,22 @@ $('what').onclick = () => {
 };
 // clicking the backdrop closes too: for ::backdrop the event target is the <dialog>
 $('about').onclick = e => { if (e.target === $('about')) $('about').close(); };
+
+// Formulas fold away by default — see the markup. The choice sticks, because
+// someone who asked for them once is the kind of visitor who wants them again.
+const EQKEY = 'blackhole.eq';
+const tele = document.querySelector('.tele');
+const setEq = on => {
+  tele.classList.toggle('eqOn', on);
+  $('eqTgl').textContent = on ? L.hideEq : L.showEq;
+  $('eqTgl').setAttribute('aria-expanded', on);
+};
+setEq(localStorage.getItem(EQKEY) === '1');
+$('eqTgl').onclick = () => {
+  const on = !tele.classList.contains('eqOn');
+  setEq(on);
+  try { localStorage.setItem(EQKEY, on ? '1' : '0'); } catch {}
+};
 
 // Manual choice overrides detection: a Ukrainian browser abroad and an English
 // one in Ukraine both happen. Reload rather than in-place translation: half
@@ -2010,6 +2091,10 @@ const TARGET_BYTES = bytesFor(1e5 * SUN);
 // dropped photo — and leaves 61% for everything from there to a petabyte. That
 // is the exact mistake the radius already makes, and the reason these channels
 // exist at all. Below a kilobyte the hole simply sits at the fast, dim end.
+// The season ends at the supermassive rung, and the ladder deliberately carries
+// one rung past it (the Moon's orbit, 2.3 PB) as headroom. Derived, not written
+// down: inserting a milestone must never leave this counting the wrong total.
+const SEASON_RUNGS = MILES.findIndex(m => m[2] >= TARGET_BYTES) + 1;
 const T_FLOOR = 3;                                     // log₁₀ bytes, i.e. 1 KB
 const massT = bytes => Math.min(1, Math.max(0,
   (Math.log10(1 + bytes) - T_FLOOR) / (Math.log10(1 + TARGET_BYTES) - T_FLOOR)));
@@ -2164,16 +2249,33 @@ if (location.search.includes('test')) {
     fmtMass(massOf(1024 ** 3)), fmtMass(17980 * M_EARTH));
   console.assert(fmtLen(159.4).join(' ') === '159 ' + L.len[4]
     && fmtLen(2954).join(' ') === '2.95 ' + L.len[5], 'fmtLen', fmtLen(2954));
-  // the headline number must stir from megabytes on a tens-of-GB hole —
-  // that is exactly why it gets six significant digits
-  console.assert(fmtMass(massOf(43.5e9), 6)[0] !== fmtMass(massOf(43.5e9 + 6e6), 6)[0],
-    '6 MB must move the mass on 43.5 GB');
+  // The headline is three significant digits and must never grow an exponent:
+  // toPrecision would have turned 332982 Earth masses into "3.33e+5".
+  console.assert(!/e/i.test(fmtMass(332982 * M_EARTH, 3)[0])
+    && !/e/i.test(fmtMass(1e5 * SUN, 3)[0]),
+    'the headline never falls back to exponential notation',
+    fmtMass(332982 * M_EARTH, 3), fmtMass(1e5 * SUN, 3));
+  console.assert(fmtMass(332982 * M_EARTH, 3)[0].replace(/0+$/, '').length <= 3,
+    'the headline carries three significant digits, not six',
+    fmtMass(332982 * M_EARTH, 3));
   // A decade crossing is where a naive formatter changes width: "9.99000" and
   // "10.0000" lay their digits out differently and must still occupy the same
   // room. Comparing 3 vs 9 suns proved nothing — same shape by construction.
   console.assert(fmtMass(9.99 * SUN, 6)[0].length === fmtMass(10 * SUN, 6)[0].length,
     'headline width survives a decade crossing — otherwise it jitters on every throw',
     fmtMass(9.99 * SUN, 6), fmtMass(10 * SUN, 6));
+  // The season layer: the rung bar must be readable at both ends, and the
+  // formula toggle must actually hide the formulas it claims to hide.
+  console.assert(milesPassed(0) === 0 && milesPassed(TARGET_BYTES) === SEASON_RUNGS,
+    'taking every season rung is exactly what reaches the target',
+    milesPassed(TARGET_BYTES), SEASON_RUNGS);
+  console.assert(SEASON_RUNGS < MILES.length,
+    'the ladder keeps headroom past the season finale', SEASON_RUNGS, MILES.length);
+  console.assert($('seasonTxt').textContent.includes(String(SEASON_RUNGS)),
+    'the season caption names the total number of rungs', $('seasonTxt').textContent);
+  console.assert(document.querySelectorAll('.tele .eq').length === 2
+    && $('eqTgl').textContent === (tele.classList.contains('eqOn') ? L.hideEq : L.showEq),
+    'the formula toggle matches its own state', $('eqTgl').textContent);
   // The whole point of the mass-driven channels: the screen radius only grows
   // 26% across the season, so if these stop moving, growth stops being visible
   // and nothing else would tell us. A big hole must turn markedly slower and
