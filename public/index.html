@@ -582,6 +582,7 @@ const LANG = localStorage.getItem(LKEY)
 
 // Ukrainian plural forms — without them the counter reads machine-made
 const plural = (n, one, few, many) => {
+  if (n % 1) return few;              // «4.4 Сонця», same rule as RAZ below
   const t = n % 100, u = n % 10;
   return t > 10 && t < 20 ? many : u === 1 ? one : u >= 2 && u <= 4 ? few : many;
 };
@@ -693,7 +694,9 @@ uk: {
   awayEvap: s => `поки тебе не було, діра випарувала ${s}`,
   cmpRadSame: n => `завбільшки з ${n}`,
   discCmp: k => `у ${k} ${RAZ(k)} гарячіше за поверхню Сонця`,
-  lumVal: n => `як ${n} Сонць`,
+  // v is the raw number, or null when n is already in scientific notation —
+  // «10⁹» cannot be declined, and large values take the genitive plural anyway
+  lumVal: (n, v) => `як ${n} ${v === null ? 'Сонць' : plural(v, 'Сонце', 'Сонця', 'Сонць')}`,
   capacity: b => `горизонт вмістив би ${b} бітів`,
   goalLeft: (g, left) => `${g} — лишилось ${left}`,
   goalDone: 'усі віхи взято',
@@ -1193,7 +1196,14 @@ function renderNumbers() {
   const m = massOf(shown), r = radiusOf(m), Th = tempOf(m);
   const [mv, mu] = fmtMass(m, 6), [bv, bu] = fmtBytes(shown);
   const rTxt = r > 0 ? fmtLen(r).join(' ') : '0 ' + L.len[4];
-  const lum  = m > 0 ? L.lumVal(sci(eddOf(m) / L_SUN, 1)) : '—';
+  // Luminosity spans single Suns to billions, so it needs both formats: sci()
+  // alone printed "4.6·10⁰ Suns" early on, which is a silly way to write 4.6.
+  const lsun = eddOf(m) / L_SUN;
+  const lum  = m > 0
+    ? (lsun < 1e4
+        ? (v => L.lumVal(v, v))(lsun < 10 ? +lsun.toFixed(1) : Math.round(lsun))
+        : L.lumVal(sci(lsun, 1), null))
+    : '—';
 
   $('mass').innerHTML = mv + '<em>' + mu + '</em>';
   $('massCmp').textContent = cmpMass(m);
