@@ -500,7 +500,7 @@
 
     <div class="about">
       <div class="k" data-t="aboutLabel">Як це працює</div>
-      <div class="f">M = N · 10²⁰ кг</div>
+      <div class="f" data-t="eqMass">M = N · 10²⁰ кг</div>
       <p data-th="aboutP1"></p>
       <p data-t="aboutP2"></p>
       <button id="what" data-t="expand">Розгорнути ↗</button>
@@ -524,7 +524,7 @@
 
     <h3 data-n="02" data-t="hMass"></h3>
     <p data-th="pMass1"></p>
-    <div class="eq">M = N · 10²⁰ кг</div>
+    <div class="eq" data-t="eqMass">M = N · 10²⁰ кг</div>
     <p data-t="pMass2"></p>
     <table id="massTable"></table>
 
@@ -582,7 +582,11 @@ const LANG = localStorage.getItem(LKEY)
 
 // Ukrainian plural forms — without them the counter reads machine-made
 const plural = (n, one, few, many) => {
-  if (n % 1) return few;              // «4.4 Сонця», same rule as RAZ below
+  // «4.4 Сонця», same rule as RAZ below. Tested on the string as rendered, not
+  // just the value: callers pass an already-rounded display string, and 17980.3
+  // shown as "17980" must take the plural of a whole number, while "1.00000"
+  // stays a decimal even though it parses back to exactly 1.
+  if (n % 1 || String(n).includes('.')) return few;
   const t = n % 100, u = n % 10;
   return t > 10 && t < 20 ? many : u === 1 ? one : u >= 2 && u <= 4 ? few : many;
 };
@@ -631,7 +635,16 @@ uk: {
     'важча за межу Оппенгеймера — ніщо інше такої маси існувати не може',
     'найрідкісніший клас, астрономи досі сперечаються про них',
     'як Стрілець A* у центрі нашої галактики'],
-  kg: 'кг', mEarth: 'мас Землі', mSun: 'мас Сонця',
+  // Declined by the value, like victims/lumVal above: a fixed genitive plural
+  // rendered the headline as «1 мас Сонця» and the table as «1 мас Землі».
+  kg: 'кг',
+  // The headline formula, in both the sidebar and the dialog. It carries a unit,
+  // so leaving it out of the dictionary showed an English visitor «кг» in the
+  // two most prominent places on the page — and the parity self-check cannot
+  // catch that: it only validates keys that markup already asks for.
+  eqMass: 'M = N · 10²⁰ кг',
+  mEarth: v => plural(v, 'маса Землі', 'маси Землі', 'мас Землі'),
+  mSun:   v => plural(v, 'маса Сонця', 'маси Сонця', 'мас Сонця'),
   byte: ['Б','КБ','МБ','ГБ','ТБ','ПБ','ЕБ'],
   len: ['нм','мкм','мм','см','м','км'],
   scales: ['довжину хвилі світла','клітину крові','піщинку','метр','нейтронну зорю',
@@ -773,7 +786,11 @@ en: {
     'past the Oppenheimer limit — nothing else of this mass can exist',
     'the rarest class; astronomers still argue about them',
     'like Sagittarius A* at the centre of our galaxy'],
-  kg: 'kg', mEarth: 'Earth masses', mSun: 'solar masses',
+  kg: 'kg',
+  eqMass: 'M = N · 10²⁰ kg',
+  // exactly "1", not 1.00 — a printed decimal stays plural in English too
+  mEarth: v => String(v) === '1' ? 'Earth mass' : 'Earth masses',
+  mSun:   v => String(v) === '1' ? 'solar mass' : 'solar masses',
   byte: ['B','KB','MB','GB','TB','PB','EB'],
   len: ['nm','µm','mm','cm','m','km'],
   scales: ['a wavelength of light','a blood cell','a grain of sand','a metre','a neutron star',
@@ -986,12 +1003,14 @@ const save = () => {
 // planet, then Earths, then Suns. Without this the headline number rendered
 // one solar mass as a 28-digit count of tonnes.
 function fmtMass(kg, sig = 0) {
-  if (kg <= 0) return ['0', L.mSun];
+  if (kg <= 0) return ['0', L.mSun(0)];
   const num = v => sig ? v.toPrecision(sig)
     // +'' via Number, not a regex: a regex would also strip zeros in "100"
     : +v.toFixed(v < 10 ? 2 : v < 100 ? 1 : 0) + '';
-  if (kg >= SUN)     return [num(kg / SUN), L.mSun];
-  if (kg >= M_EARTH) return [num(kg / M_EARTH), L.mEarth];
+  // The unit agrees with the number as printed, so the rounded string is what
+  // gets declined — 17980.34 shows as "17980" and must read «мас Землі».
+  if (kg >= SUN)     { const s = num(kg / SUN);     return [s, L.mSun(s)]; }
+  if (kg >= M_EARTH) { const s = num(kg / M_EARTH); return [s, L.mEarth(s)]; }
   return [sci(kg, sig ? 4 : 2), L.kg];
 }
 const BYTE_UNITS = L.byte;
@@ -1272,7 +1291,10 @@ function renderList() {
         .reduce((a, b) => b.bytes > (a?.bytes || 0) ? b : a, null);
   $('record').textContent = top ? `${fmtBytes(top.bytes).join(' ')} · .${top.ext}` : L.nothing;
 
-  $('sgr').textContent = L.sgr(sci(bytesFor(4.3e6 * SUN) - S.bytes, 1));
+  // through atBytes like every other byte figure: bare sci() printed a raw
+  // mantissa with no unit and on a scale nobody reads — «треба ще 8.4·10¹⁶»
+  // instead of «треба ще 75.96 ПБ».
+  $('sgr').textContent = L.sgr(atBytes(bytesFor(4.3e6 * SUN) - S.bytes));
 
   $('recent').innerHTML = S.recent.slice(0, 6).map(x => {
     const [v, u] = fmtBytes(x.bytes);
@@ -1321,13 +1343,11 @@ $('clsTable').innerHTML =
   CLASSES.slice(1).map(([m, name]) =>
     `<tr><td>${name}</td><td>${atBytes(bytesFor(m))}</td></tr>`).join('');
 
-// The ladder. Rendered once when the dialog first opens, not per frame: thirty
-// rows of innerHTML during the mass easing is pure waste, and a stale checkmark
-// for one modal session is invisible.
-let mileTableDone = false;
+// The ladder. Rebuilt on every open, not per frame: thirty rows of innerHTML
+// during the mass easing would be waste, but once per dialog is free. It used
+// to be built once per page load behind a flag that never reset, so the ✓ marks
+// froze at whatever S.bytes was the first time the dialog was ever opened.
 function renderMileTable() {
-  if (mileTableDone) return;
-  mileTableDone = true;
   const done = milesPassed(S.bytes);
   $('mileTable').innerHTML =
     `<tr><th>${L.thMile}</th><th>${L.thReached}</th></tr>` +
@@ -1383,12 +1403,17 @@ let warnTimer;
 // closes that hole for good at the same cost.
 function warn(msg, sub) {
   const w = $('warn');
-  w.textContent = msg;
+  // One mutation, not two. #warn is role="status": setting textContent and then
+  // appending made a screen reader announce the headline first and the whole
+  // thing again a tick later. Still text nodes, never innerHTML — warn() also
+  // carries a server-supplied file extension (see someoneFed).
+  const parts = [msg];
   if (sub) {
     const i = document.createElement('i');
     i.textContent = sub;
-    w.append(i);
+    parts.push(i);
   }
+  w.replaceChildren(...parts);
   w.style.opacity = '1';
   clearTimeout(warnTimer);
   // Clearing the text matters as much as fading it: #warn is role="status", and
@@ -2046,8 +2071,18 @@ if (location.search.includes('test')) {
   console.assert(classOf(2e5 * SUN)[1] === L.classes[7], 'past 1e5 suns it is supermassive');
   // fmtMass bands: kg while lighter than a planet, then Earths, then Suns.
   // Before this the headline rendered one solar mass as 28 digits of tonnes.
-  console.assert(fmtMass(SUN)[1] === L.mSun && fmtMass(M_EARTH)[1] === L.mEarth
+  console.assert(fmtMass(SUN)[1] === L.mSun(1) && fmtMass(M_EARTH)[1] === L.mEarth(1)
     && fmtMass(1e21)[1] === L.kg, 'fmtMass picks the right band');
+  // Regression: the unit was a frozen genitive plural, so the table row for one
+  // Earth mass read «1 мас Землі» and the headline «1.00410 мас Сонця».
+  console.assert(fmtMass(M_EARTH)[1] !== fmtMass(5 * M_EARTH)[1],
+    'the mass unit declines with the number', fmtMass(M_EARTH), fmtMass(5 * M_EARTH));
+  // And it must agree with the number as PRINTED: 1 GB is 17980.34 Earths, shown
+  // as "17980", so the unit is the one for a round 17980 — declining the raw
+  // ratio instead gave «17980 маси Землі».
+  console.assert(fmtMass(massOf(1024 ** 3))[1] === fmtMass(17980 * M_EARTH)[1],
+    'the unit follows the rounded number, not the raw ratio',
+    fmtMass(massOf(1024 ** 3)), fmtMass(17980 * M_EARTH));
   console.assert(fmtLen(159.4).join(' ') === '159 ' + L.len[4]
     && fmtLen(2954).join(' ') === '2.95 ' + L.len[5], 'fmtLen', fmtLen(2954));
   // the headline number must stir from megabytes on a tens-of-GB hole —
