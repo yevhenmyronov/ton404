@@ -282,6 +282,22 @@ const out = await (await roll('secret')).json();
 assert.equal(out.removed, 1, 'exactly the fresh event removed');
 assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
 
+// ── an idle empty hole must not bill the first throw for its quiet ────────
+// The clock used to stand still while bytes were 0, so idle time accumulated
+// unspent. decay() runs at the top of fetch(), before the bytes land, so the
+// whole backlog hit the request AFTER the first throw: a year of quiet turned
+// 1 TB into 160 GB. Any /rollback down to zero re-armed it.
+{
+  h = await hole();
+  h.d.bytes = 0;
+  h.d.t = Date.now() - 365 * 864e5;          // empty and untouched for a year
+  await feed(h, { bytes: 1e11, ext: 'iso', sig: 71 }, '7.7.7.7');
+  await new Promise(r => setTimeout(r, 200));
+  await feed(h, { bytes: 1, ext: 'a', sig: 72 }, '7.7.7.7');
+  assert.ok(h.d.bytes > 0.99e11,
+    'a year of empty quiet must not eat the first throw', h.d.bytes);
+}
+
 // ── unknown paths never wake the Durable Object ───────────────────────────
 const worker = (await import('./src/index.js')).default;
 let woke = false;

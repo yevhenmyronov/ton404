@@ -1288,7 +1288,15 @@ function setTitle() {
   document.title = S.bytes > 0
     ? fmtMass(massOf(S.bytes), 4).join(' ') + ' — TON 404' : L.title;
 }
-const render = () => { renderNumbers(); renderList(); setTitle(); };
+// `shown` is eased toward S.bytes inside frame(), and frame() only ever starts
+// when there is a GL context. Without one it stayed at 0 forever, so every
+// number renderNumbers() derives from it read as an empty hole — mass, class,
+// next milestone — on a page that had swallowed petabytes. The promise is that
+// mass, the list and feeding all work without the hole being drawn.
+const render = () => {
+  if (!gl) shown = S.bytes;
+  renderNumbers(); renderList(); setTitle();
+};
 
 // ─── dialog tables ─────────────────────────────────────────────────────────
 // Computed from the same formulas and boundaries as everything else, not
@@ -1383,7 +1391,14 @@ function warn(msg, sub) {
   }
   w.style.opacity = '1';
   clearTimeout(warnTimer);
-  warnTimer = setTimeout(() => w.style.opacity = '0', 3800);
+  // Clearing the text matters as much as fading it: #warn is role="status", and
+  // a message left in the DOM keeps reading as current to a screen reader long
+  // after it went invisible. Emptied only once the .45s fade is over, and only
+  // if no newer message claimed the slot meanwhile — that one set opacity back.
+  warnTimer = setTimeout(() => {
+    w.style.opacity = '0';
+    setTimeout(() => { if (w.style.opacity === '0') w.textContent = ''; }, 500);
+  }, 3800);
 }
 
 // A throw shows immediately, before the server answers — otherwise it feels
@@ -1475,7 +1490,11 @@ async function swallow(files) {
   if (!batch.length) return;
   justFed = Date.now();
   seed = batch[batch.length - 1].sig;
-  checkMilestone();
+  // Only once the first snapshot has seeded `mile`. Throwing something before
+  // the socket opens used to seed it from your own handful of bytes; the
+  // snapshot then jumped to global mass and fired the whole ladder at a
+  // first-time visitor. In local mode `mile` is never null, so nothing is lost.
+  if (mile !== null) checkMilestone();
   // One animation for the whole batch, not one per file: a hundred files is
   // one falling object, not a strobe. The glow color carries the batch size.
   const total = batch.reduce((a, e) => a + e.bytes, 0);
@@ -2044,7 +2063,11 @@ if (location.search.includes('test')) {
     'MILES must be strictly increasing', MILES.map(m => m[0]));
   // Regression: a contribution can't exceed the whole hole. It drifted two
   // ways — server-rejected throws and rollbacks — and showed "2593% of mass".
-  console.assert(MINE <= S.bytes || !API, 'contribution never exceeds hole mass', MINE, S.bytes);
+  // `|| !S.bytes`: this block runs synchronously, and in shared mode the first
+  // snapshot has not arrived yet — S.bytes is still 0 while MINE comes straight
+  // from localStorage. Without it the check failed for everyone who ever fed.
+  console.assert(MINE <= S.bytes || !API || !S.bytes,
+    'contribution never exceeds hole mass', MINE, S.bytes);
   // The classic i18n breakage: a key forgotten in one dictionary and the user
   // sees undefined. Cheaper to catch here than by eye on the live site.
   {
