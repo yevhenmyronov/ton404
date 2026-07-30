@@ -519,12 +519,20 @@
            assigns textContent to every [data-t] node and would wipe it out -->
       <div class="k" style="margin-bottom:4px"><span data-t="teleLabel">Телеметрія</span><button id="eqTgl" aria-expanded="false">показати формули</button></div>
       <div class="t"><span data-t="teleRadius">радіус горизонту</span><b id="radius">—</b><i id="radiusCmp"></i></div>
+      <!-- What a telescope would actually measure. Lensing makes the dark patch
+           larger than the horizon: √27·GM/c² across, i.e. 2.6 Schwarzschild
+           radii, and that is the number the EHT images are quoted in. -->
+      <div class="t"><span data-t="teleShadow">діаметр тіні</span><b id="shadow">—</b><i><span class="eq">d = √27·GM/c² — </span><span id="shadowCmp"></span></i></div>
       <!-- The formula is folded away by default: it is the answer to "how", and
            a first-time visitor has not yet asked "what". The value stays. -->
       <div class="t"><span data-t="teleLum">світність</span><b id="lum">—</b><i><span class="eq">L = 1.26·10³¹ · M/M<sub>☉</sub> — </span><span data-t="lumNote"></span></i></div>
       <div class="t"><span data-t="teleTemp">температура диска</span><b id="temp">—</b><i id="tempCmp"></i></div>
       <div class="t"><span data-t="teleEvap">повне випаровування</span><b id="evap">—</b><i><span class="eq">t = 5120πG²M³/ħc⁴ — </span><span data-t="evapNote"></span></i></div>
       <div class="t"><span data-t="teleInfo">поглинуто</span><b id="info">—</b><i id="bits"></i></div>
+      <!-- The map scale. The on-screen radius is log-compressed (cheat #3), so
+           without this the picture has no scale at all; with it the compression
+           stops being a lie and becomes the legend on a map. -->
+      <div class="t"><span data-t="teleScale">масштаб</span><b id="scale">—</b><i data-t="scaleNote"></i></div>
       <div class="t"><span data-t="teleRecord">рекорд доби</span><b id="record">—</b></div>
     </div>
    </div>
@@ -657,12 +665,23 @@ const TXT = {
 uk: {
   other: 'English',
   title: 'TON 404 — чорна діра, яку годують файлами',
-  quasar: 'квазар', quasarMax: 'квазар · ліміт еддінгтона',
+  // The real ratio, not a claim about a limit: at these masses every throw is
+  // millions of times over Eddington, and saying so is more honest and more
+  // interesting than pretending there is a threshold being watched.
+  quasar: 'квазар', quasarMax: n => `квазар · ${n}× над Едінгтоном`,
   update: 'вийшло оновлення — перезавантажити',
   tagline: 'кинь у неї будь-що',
   rankLabel: 'Клас обʼєкта', massLabel: 'Маса',
   goalLabel: 'Наступна віха', teleLabel: 'Телеметрія',
   teleRadius: 'радіус горизонту', teleArea: 'площа горизонту',
+  teleShadow: 'діаметр тіні',
+  teleScale: 'масштаб', scaleNote: 'екранний радіус стиснено логарифмічно — це легенда мапи',
+  scaleVal: v => `1 піксель = ${v}`,
+  // M87* is the first black hole ever photographed — the obvious yardstick for
+  // a shadow, and the comparison is what makes the number mean anything.
+  // v is null when n is already scientific — «10¹³» cannot be declined, and at
+  // that size the genitive plural is the only correct form anyway (see lumVal)
+  shadowCmp: (n, v) => `тінь M87* у ${n} ${v === null ? 'разів' : RAZ(v)} більша`,
   teleLum: 'світність', teleTemp: 'температура диска',
   teleEvap: 'повне випаровування',
   teleInfo: 'поглинуто', teleRecord: 'рекорд доби', teleDecay: 'розсіюється за добу',
@@ -801,7 +820,7 @@ uk: {
   pCheat0: 'Чотири рази, і всі чотири свідомо.',
   pCheat1: '<b>Сама маса.</b> Один байт не важить 10²⁰ кілограмів. Справжня межа Бекенштейна каже протилежне: горизонт масою в кілограм вмістив би кілька петабайтів. Ми граємо навпаки, бо інакше вся ця сторінка показувала б кілька грамів і нічого більше.',
   pCheat2: '<b>Розсіювання.</b> Діра втрачає 0.5% маси за добу — це ігрова механіка, а не фізика: справжнє випаровування такої маси триває 10⁶⁷ років, у 10⁵⁷ разів довше за вік Всесвіту. Єдиний чесний залишок: поки в дірі менше за 450 байтів, вона справді гарячіша за реліктове тло і справді зменшується.',
-  pCheat3: '<b>Масштаб на екрані.</b> Радіус росте як √(log₁₀ байтів), а не прямо: справжній закон дав би мільярдну різницю між одним байтом і одним гігабайтом, і діра була б або невидимою, або на весь екран.',
+  pCheat3: '<b>Масштаб на екрані.</b> Радіус росте як √(log₁₀ байтів), а не прямо: справжній закон дав би мільярдну різницю між одним байтом і одним гігабайтом, і діра була б або невидимою, або на весь екран. Але масштаб не прихований: у телеметрії стоїть рядок «масштаб» — скільки метрів у одному пікселі просто зараз. Це вже не підміна, а легенда мапи.',
   pCheat4: '<b>Колір диска.</b> Температура падає як T ∝ M<sup>−1/4</sup> — це справжня модель тонкого диска, через яку діри зоряних мас світять у рентгені, а надмасивні у видимому. Але справжні числа тут від сотень тисяч до мільярдів кельвінів: це рентген і крайній ультрафіолет, око такого не бачить. Тому справжню температуру лінійно за логарифмом перекладено у видимий діапазон — так само фарбують знімки телескопів. Порядок збережено: гарячіше досі синіше.',
   pCheat5: 'Решта — справжня фізика: радіус Шварцшильда, межа Еддінгтона, доплерівське підсилення диска й джети.',
   hClasses: 'Класи',
@@ -814,12 +833,16 @@ uk: {
 en: {
   other: 'українська',
   title: 'TON 404 — one black hole, fed with files',
-  quasar: 'quasar', quasarMax: 'quasar · eddington limit',
+  quasar: 'quasar', quasarMax: n => `quasar · ${n}× over Eddington`,
   update: 'new version shipped — reload',
   tagline: 'throw anything into it',
   rankLabel: 'Object class', massLabel: 'Mass',
   goalLabel: 'Next milestone', teleLabel: 'Telemetry',
   teleRadius: 'horizon radius', teleArea: 'horizon area',
+  teleShadow: 'shadow diameter',
+  teleScale: 'scale', scaleNote: 'the on-screen radius is log-compressed — this is the map legend',
+  scaleVal: v => `1 pixel = ${v}`,
+  shadowCmp: n => `M87*’s shadow is ${n}× wider`,
   teleLum: 'luminosity', teleTemp: 'disc temperature',
   teleEvap: 'full evaporation',
   teleInfo: 'swallowed', teleRecord: 'record of the day', teleDecay: 'dissipates per day',
@@ -948,7 +971,7 @@ en: {
   pCheat0: 'Four times, and all four on purpose.',
   pCheat1: '<b>The mass itself.</b> A byte does not weigh 10²⁰ kilograms. The real Bekenstein bound says the opposite: a horizon weighing one kilogram could hold several petabytes. We run it backwards, because otherwise this whole page would read a few grams and nothing else.',
   pCheat2: '<b>Dissipation.</b> The hole loses 0.5% of its mass a day — a game mechanic, not physics: real evaporation at this mass takes 10⁶⁷ years, 10⁵⁷ times longer than the universe has existed. One honest remnant survives: while the hole holds under 450 bytes it really is hotter than the cosmic background, and really does shrink.',
-  pCheat3: '<b>Scale on screen.</b> The radius grows as √(log₁₀ bytes), not directly: the real law would put a factor of a billion between one byte and one gigabyte, and the hole would be either invisible or the entire screen.',
+  pCheat3: '<b>Scale on screen.</b> The radius grows as √(log₁₀ bytes), not directly: the real law would put a factor of a billion between one byte and one gigabyte, and the hole would be either invisible or the entire screen. The scale is not hidden, though: the telemetry carries a "scale" row — how many metres one pixel is worth right now. That makes it a map legend rather than a sleight of hand.',
   pCheat4: '<b>Disc colour.</b> Its temperature falls as T ∝ M<sup>−1/4</sup> — the real thin-disc model, and the reason stellar-mass holes shine in X-rays while supermassive ones shine in visible light. But the real numbers run from hundreds of thousands to billions of kelvin: that is X-ray and extreme ultraviolet, and the eye sees none of it. So the real temperature is mapped log-linearly into the visible band, exactly the way telescope images are false-coloured. Order survives: hotter is still bluer.',
   pCheat5: 'Everything else is real physics: the Schwarzschild radius, the Eddington limit, Doppler boosting of the disc, and the jets.',
   hClasses: 'Classes',
@@ -1000,6 +1023,20 @@ const evapOf   = m => 5120 * Math.PI * G * G * m ** 3 / (HBAR * C ** 4);
 const areaOf   = m => 4 * Math.PI * radiusOf(m) ** 2;
 // Eddington limit — the brightest a hole of this mass can shine, in watts
 const eddOf    = m => 1.26e31 * m / SUN;
+// The same limit expressed as an accretion rate, in BYTES per second under our
+// mass law: Ṁ = L_Edd / (η c²) at the standard 10% radiative efficiency.
+// It comes out at 1.4e-5 B/s for a solar-mass hole — so a single 5 MB throw is
+// already 3.6e11 times over Eddington, and there is no feeding rate here that
+// is not. That is why the jets are driven by how fast you feed rather than by
+// this threshold: gating on the real limit would leave them permanently on.
+// The label states the true ratio instead of claiming a limit it never checks.
+const eddBps   = m => eddOf(m) / (0.1 * C ** 2) / KG_PER_BYTE;
+// The dark patch a telescope actually sees is bigger than the horizon: light
+// bending wraps the shadow out to √27 · GM/c² across — 2.598 Schwarzschild
+// radii, not one. This is the quantity the Event Horizon Telescope images are
+// quoted in, so it is the only one comparable to a real photograph.
+const shadowOf = m => Math.sqrt(27) * G * m / (C * C);
+const M87 = 6.5e9 * SUN;                 // first black hole ever photographed
 // The real Bekenstein bound: how much information this horizon could hold. Now
 // a different question from how much we fed it, and the answer dwarfs it.
 const LP2      = HBAR * G / C ** 3;
@@ -1310,6 +1347,14 @@ function renderNumbers() {
   $('eaten').textContent = S.count ? L.victims(S.count) + ' · ' + bv + ' ' + bu : '';
   $('radius').textContent = rTxt;
   $('radiusCmp').textContent = cmpRadius(r);
+  const sh = shadowOf(m);
+  $('shadow').textContent = m > 0 ? fmtLen(sh).join(' ') : '—';
+  // the ratio spans 10¹³ down to single digits over the season, so it needs the
+  // same two formats as luminosity: a plain number while it is one, then sci()
+  const shx = shadowOf(M87) / sh;
+  const shv = shx < 1e4 ? +shx.toPrecision(3) : null;
+  $('shadowCmp').textContent = m > 0
+    ? L.shadowCmp(shv === null ? sci(shx, 1) : shv, shv) : '';
   $('lum').textContent = lum;
   // This row is about the DISC, so its caption must be about the disc too. The
   // hole's own Hawking temperature is a different number entirely (and now far
@@ -1318,6 +1363,13 @@ function renderNumbers() {
   $('tempCmp').textContent = m > 0 ? L.discCmp(Math.round(discT(m) / 5772)) : '';
   $('evap').textContent = m > 0 ? fmtTime(evapOf(m)) : '—';
   $('info').textContent = bv + ' ' + bu;
+  // Metres per CSS pixel, straight from the same visRadius() the shader draws
+  // with — the shader normalises by the SHORTER side, so that is the divisor.
+  // Derived, never a second constant: retune the radius curve and the legend
+  // follows by itself.
+  const px = visRadius() * Math.min(innerWidth, innerHeight);
+  $('scale').textContent = m > 0 && px > 0
+    ? L.scaleVal(fmtLen(r / px).join(' ')) : '—';
   $('bits').textContent = m > 0 ? L.capacity(sci(bitsCap(m), 1)) : '';
 
   // The same set in the dialog — only while it's open, otherwise it's a
@@ -1621,6 +1673,9 @@ async function swallow(files) {
   sparkFlash();                            // one of the orbiting sparks is you
   shock = Math.max(shock, 0.3 + 0.12 * Math.min(1, Math.log10(1 + total) / 12));
   quasar = Math.min(1, quasar + 0.35);     // fast feeding → jets
+  // How far over Eddington this throw actually is, taking the batch as arriving
+  // over the one second the animation lasts. Real number, and a big one.
+  eddX = total / eddBps(massOf(S.bytes));
   // one request for the whole batch — after all signatures are computed
   if (API) sendFeed(batch);
   save(); render();
@@ -1710,7 +1765,12 @@ function checkAway(bytes, count) {
   const df = count - p.c, db = bytes - p.b;
   let msg = null;
   if (df > 0) msg = L.awayAte(L.victims(df), fmtBytes(Math.max(0, db)).join(' '));
-  else if (db < -1e6) msg = L.awayEvap(fmtBytes(-db).join(' '));
+  // Relative, not a flat megabyte. Dissipation is 0.5% of mass a day, so on a
+  // 138 GB hole an hour away already loses 29 MB and the notice fired on every
+  // single return; at the season target it would be 9 TB a day. 0.1% of mass is
+  // the point where the loss is actually worth a word, with a 1 MB floor so a
+  // tiny hole doesn't report a handful of bytes.
+  else if (db < -Math.max(1e6, bytes * 0.001)) msg = L.awayEvap(fmtBytes(-db).join(' '));
   // after the hole finishes forming, so it doesn't cut into the odometer;
   // with reduced-motion, right away
   if (msg) setTimeout(() => warn(msg), calm.matches ? 800 : 3300);
@@ -2170,6 +2230,7 @@ function infall() { hotT = 0; hotA = Math.random() * 6.2832; }
 let intro = !calm.matches, introT0 = 0;
 
 let shock = 0, quasar = 0, last = 0;
+let eddX = 0;                    // how far over Eddington the last throw was
 function frame(t) {
   const dt = Math.min((t - last) / 1000, 0.05); last = t;
   // 0.7/s: a throw's peak holds ~half a second and smolders for another —
@@ -2195,7 +2256,7 @@ function frame(t) {
   quasar = Math.max(0, quasar - dt * 0.13);            // ~8 s until the jets fade
   const q = $('quasar');
   q.style.opacity = quasar > 0.5 ? '1' : '0';
-  q.textContent = quasar > 0.92 ? L.quasarMax : L.quasar;
+  q.textContent = quasar > 0.92 && eddX > 0 ? L.quasarMax(sci(eddX, 0)) : L.quasar;
   const hourAgo = Date.now() - 36e5;
   const act = Math.min(1, S.recent.filter(x => x.ts > hourAgo).length / 6);
   gl.uniform2f(U('res'), cv.width, cv.height);
@@ -2297,9 +2358,30 @@ if (location.search.includes('test')) {
     'the ladder keeps headroom past the season finale', SEASON_RUNGS, MILES.length);
   console.assert($('seasonTxt').textContent.includes(String(SEASON_RUNGS)),
     'the season caption names the total number of rungs', $('seasonTxt').textContent);
-  console.assert(document.querySelectorAll('.tele .eq').length === 2
-    && $('eqTgl').textContent === (tele.classList.contains('eqOn') ? L.hideEq : L.showEq),
-    'the formula toggle matches its own state', $('eqTgl').textContent);
+  // Asserted on what the toggle DOES, not on how many formulas there are —
+  // counting them meant adding a row to the telemetry broke this check.
+  {
+    const on = tele.classList.contains('eqOn'), eqs = [...document.querySelectorAll('.tele .eq')];
+    console.assert(eqs.length > 0 && eqs.every(el =>
+      (getComputedStyle(el).display !== 'none') === on),
+      'the formula toggle actually hides every formula', on, eqs.length);
+    console.assert($('eqTgl').textContent === (on ? L.hideEq : L.showEq),
+      'the toggle label matches its own state', $('eqTgl').textContent);
+  }
+  // The jets are a feeding-rate mechanic on purpose, and this is the number that
+  // justifies it: the real Eddington rate is so tiny under our mass law that no
+  // throw a human can make is anywhere near it. If this ever stops holding, the
+  // label — and the decision not to gate on the limit — both need revisiting.
+  console.assert(eddBps(SUN) < 1e-4 && 5e6 / eddBps(SUN) > 1e10,
+    'any real throw is astronomically super-Eddington',
+    eddBps(SUN), 5e6 / eddBps(SUN));
+  console.assert(typeof L.quasarMax === 'function' && L.quasarMax('X').includes('X'),
+    'the quasar label reports a computed ratio, it does not claim a limit');
+  // The shadow is what a telescope sees, and it is NOT the horizon: √27·GM/c²
+  // is 2.598 Schwarzschild radii across. Getting this wrong by the factor of two
+  // between radius and diameter is the classic error here.
+  eq(shadowOf(SUN) / radiusOf(SUN), 2.598, 'the shadow is 2.6 horizon radii across');
+  eq(shadowOf(M87), 4.99e13, 'M87* casts a shadow about 5e13 m across');
   // The whole point of the mass-driven channels: the screen radius only grows
   // 26% across the season, so if these stop moving, growth stops being visible
   // and nothing else would tell us. A big hole must turn markedly slower and
