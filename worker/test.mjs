@@ -3,7 +3,7 @@
 // tested even when nobody touches the rest of the code.
 import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
-import { BlackHole, DECAY } from './src/index.js';
+import { BlackHole } from './src/index.js';
 
 // platform class; only needed so the constructor doesn't crash
 globalThis.WebSocketRequestResponsePair = class {
@@ -322,11 +322,21 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
 // The rate is written twice by hand — here and in the client — and nothing
 // compared them, so one side could be retuned alone and the page would quietly
 // disagree with the server about how fast mass leaves.
+// Both sides are read from source rather than imported: the worker must NOT
+// export the constant. Workers treats every named export of the entrypoint as a
+// service binding and rejects anything that is not a function or handler, so
+// `export const DECAY` takes the whole site down at startup.
 {
-  const page = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  const m = page.match(/^const DECAY = ([\d.]+);/m);
-  assert.ok(m, 'client DECAY not found — did the declaration move?');
-  assert.equal(Number(m[1]), DECAY, 'client and worker DECAY must match');
+  const rate = (path, what) => {
+    const src = readFileSync(new URL(path, import.meta.url), 'utf8');
+    const m = src.match(/^(?:export )?const DECAY *= *([\d.]+);/m);
+    assert.ok(m, `${what} DECAY not found — did the declaration move?`);
+    assert.ok(!/^export const DECAY/m.test(src) || what !== 'worker',
+      'the worker must not export DECAY — Workers refuses a non-function export');
+    return Number(m[1]);
+  };
+  assert.equal(rate('../public/index.html', 'client'), rate('./src/index.js', 'worker'),
+    'client and worker DECAY must match');
 }
 
 // ── unknown paths never wake the Durable Object ───────────────────────────

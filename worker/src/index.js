@@ -7,7 +7,11 @@ const DAY = 864e5;
 // inflow — 2.2 PB at 11 TB/day, past the 1.77 PB season target. At 1% the
 // ceiling was 1.1 PB and the target was unreachable forever. Must match the
 // client's DECAY.
-export const DECAY = 0.995;
+// NOT exported: the Workers runtime reads every named export of the entrypoint
+// as a service binding and refuses anything that is not a function or handler —
+// `export const DECAY` kills the worker at startup with "Incorrect type for map
+// entry". The test compares this against the client by reading both sources.
+const DECAY = 0.995;
 // Anything can be thrown: the browser only reads file.size, so size costs nothing.
 // The real anti-inflation boundary is the daily cap, which stays fixed.
 const MAX_FEED   = 1e11;   // 100 GB per throw
