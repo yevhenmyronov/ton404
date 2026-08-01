@@ -551,6 +551,15 @@
            without this the picture has no scale at all; with it the compression
            stops being a lie and becomes the legend on a map. -->
       <div class="t"><span data-t="teleScale">масштаб</span><b id="scale">—</b><i data-t="scaleNote"></i></div>
+      <!-- The gap, not two clock faces. Two clocks showing near-identical times
+           read as a bug; the distance between them is the whole story, and it
+           only ever grows. The rate is a constant — Schwarzschild geometry is
+           self-similar — so mass enters through the orbit's duration instead. -->
+      <div class="t"><span data-t="teleDilate">уповільнення часу</span><b id="dilate">—</b><i><span class="eq">dτ = dt·√(1−3GM/rc²) — </span><span id="dilateCmp"></span></i></div>
+      <!-- The counterweight to every other row: this one gets SMALLER as the
+           hole grows. Real, and the reason falling into a supermassive hole is
+           survivable while a stellar one is not. -->
+      <div class="t"><span data-t="teleTide">приливне розтягнення</span><b id="tide">—</b><i><span class="eq">Δa = L·c⁶/4G²M² — </span><span id="tideCmp"></span></i></div>
       <div class="t"><span data-t="teleRecord">рекорд доби</span><b id="record">—</b></div>
     </div>
    </div>
@@ -708,6 +717,14 @@ uk: {
   teleLum: 'світність', teleTemp: 'температура диска',
   teleEvap: 'повне випаровування',
   teleInfo: 'поглинуто', teleRecord: 'рекорд доби', teleDecay: 'розсіюється за добу',
+  teleDilate: 'уповільнення часу', teleTide: 'приливне розтягнення',
+  // The gap since the page opened — its own formatter, because fmtTime prints
+  // «1.90·10² с» for three minutes and L.ago drags a «тому» that makes no sense
+  // for a distance between two clocks.
+  dilGap: (m, s) => m ? `ти на ${m} хв ${s} с попереду` : `ти на ${s} с попереду`,
+  dilOrbit: (you, there) => `оберт диска: ${you} у тебе · ${there} для речовини`,
+  tideSafe: 'горизонт можна перетнути цілим',
+  tideKills: d => `розірве вже за ${d} від центра`,
   lumNote: 'межа Еддінгтона — яскравіше така діра світити не може',
   evapNote: 'справжня цифра, і саме тому ми жульничаємо',
   dropHere: 'Перетягни файл сюди', orPaste: 'або встав із буфера',
@@ -869,6 +886,11 @@ en: {
   teleLum: 'luminosity', teleTemp: 'disc temperature',
   teleEvap: 'full evaporation',
   teleInfo: 'swallowed', teleRecord: 'record of the day', teleDecay: 'dissipates per day',
+  teleDilate: 'time dilation', teleTide: 'tidal stretch',
+  dilGap: (m, s) => m ? `you are ${m}m ${s}s ahead` : `you are ${s}s ahead`,
+  dilOrbit: (you, there) => `one disc orbit: ${you} for you · ${there} for the matter`,
+  tideSafe: 'the horizon can be crossed intact',
+  tideKills: d => `it tears you apart ${d} from the centre`,
   lumNote: 'the Eddington limit — no hole this size can shine brighter',
   evapNote: 'the real figure, and exactly why we cheat',
   dropHere: 'Drag a file here', orPaste: 'or paste from the clipboard',
@@ -1064,6 +1086,32 @@ const M87 = 6.5e9 * SUN;                 // first black hole ever photographed
 // a different question from how much we fed it, and the answer dwarfs it.
 const LP2      = HBAR * G / C ** 3;
 const bitsCap  = m => areaOf(m) / (4 * LP2 * LN2);
+
+// Gravitational time dilation for matter on a circular orbit at k Schwarzschild
+// radii: dτ/dt = √(1 − 3GM/rc²), which folds in both the gravity and the orbital
+// speed. Note what it does NOT contain: mass. Schwarzschild geometry is
+// self-similar in r/r_s, so at any fixed multiple of the radius the rate is the
+// same constant for a hole of any weight — a byte and a supermassive one dilate
+// identically. Only durations scale with mass (see iscoPeriod), never rates.
+const orbitDil = k => Math.sqrt(1 - 1.5 / k);
+const ISCO_RS  = 3;                      // innermost stable orbit: 6GM/c² = 3 r_s
+const DIL      = orbitDil(ISCO_RS);      // exactly 1/√2 — the disc's inner edge ages √2 slower
+
+// Tidal stretch: the difference in pull between your head and your feet, which
+// is what actually tears you apart. Δa = 2GML/r³, evaluated at the horizon
+// (r = r_s) it collapses to L·c⁶/4G²M² — falling as M⁻². This is the one number
+// here that gets GENTLER as the hole grows, and the reason a supermassive hole
+// can be crossed intact while a stellar one shreds you thousands of km out.
+const L_BODY  = 1.7;                     // a person, head to feet, in metres
+const G_EARTH = 9.81;
+const tideAt  = m => m > 0 ? L_BODY * C ** 6 / (4 * G * G * m * m) : Infinity;
+// ponytail: the survivability threshold is the only number in this block that is
+// not derived — human tissue has no single tearing figure. 10 g of stretch is
+// "rough but survivable"; retune freely, nothing else depends on it.
+const TIDE_OK = 10;
+// Where the stretch drops to that threshold: 2GML/r³ = TIDE_OK·g. Beyond this
+// radius you are fine, inside it you are not.
+const spagR   = m => Math.cbrt(2 * G * m * L_BODY / (TIDE_OK * G_EARTH));
 
 // Classes by real mass, and every boundary above the second is also a milestone
 // below — so the rank and the ladder can never contradict each other. CLASSES[1]
@@ -1395,6 +1443,26 @@ function renderNumbers() {
     ? L.scaleVal(fmtLen(r / px).join(' ')) : '—';
   $('bits').textContent = m > 0 ? L.capacity(sci(bitsCap(m), 1)) : '';
 
+  // The dilation VALUE is ticked by its own interval (dilTick) — it moves on
+  // wall-clock time, not on mass. Only the note belongs here: one orbit of the
+  // inner edge, which is the mass-dependent half of the row. Both numbers grow
+  // together, their ratio pinned at DIL.
+  const per = m > 0 ? iscoPeriod(m) : 0;
+  $('dilateCmp').textContent = per > 0
+    ? L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '';
+  // Tidal stretch in g — the unit a body actually feels. Falls as M⁻², so over
+  // a season this row travels twelve orders of magnitude downward.
+  // Same two formats as luminosity and the shadow ratio, for the same reason:
+  // the row ends the season in single digits, and "1.79·10⁻¹ g" is a silly way
+  // to write 0.18 — which is precisely the number the whole row builds toward.
+  const tide = m > 0 ? tideAt(m) / G_EARTH : 0;
+  const tideTxt = tide < 1e4 ? +tide.toPrecision(3) : sci(tide, 2);
+  $('tide').textContent = m > 0 ? tideTxt + ' g' : '—';
+  // Below the threshold the spaghettification radius sits inside the horizon —
+  // there is no "you get torn apart here" left to report, which IS the news.
+  $('tideCmp').textContent = m <= 0 ? ''
+    : tide <= TIDE_OK ? L.tideSafe : L.tideKills(fmtLen(spagR(m)).join(' '));
+
   // The same set in the dialog — only while it's open, otherwise it's a
   // wasted innerHTML every frame during the mass easing
   if ($('about').open) $('teleDlg').innerHTML = [
@@ -1404,6 +1472,8 @@ function renderNumbers() {
     [L.teleTemp,   m > 0 ? sci(discT(m)) + ' K' : '—'],
     [L.teleEvap,   m > 0 ? fmtTime(evapOf(m)) : '—'],
     [L.teleInfo,   bv + ' ' + bu],
+    [L.teleDilate, per > 0 ? L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '—'],
+    [L.teleTide,   m > 0 ? tideTxt + ' g' : '—'],
     [L.teleDecay,  fmtBytes(shown * (1 - DECAY)).join(' ')],
   ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
 
@@ -1552,6 +1622,18 @@ function hawkTick() {
   $('hawking').textContent = S.bytes > 0 ? '↯ ' + hawkBuf : '';
 }
 setInterval(hawkTick, 120);
+
+// ─── the gap between two clocks ────────────────────────────────────────────
+// renderNumbers() only runs while the mass is easing, and the 15 s render tick
+// is far too coarse for something meant to be watched drifting. Its own second,
+// touching one text node: the gap widens by 0.293 s every second, so a minute
+// on the page already puts you 17.6 s ahead of the disc's inner edge.
+const openedAt = Date.now();
+function dilTick() {
+  const gap = (Date.now() - openedAt) / 1000 * (1 - DIL);
+  $('dilate').textContent = L.dilGap(Math.floor(gap / 60), Math.floor(gap % 60));
+}
+setInterval(dilTick, 1000); dilTick();
 
 // ─── swallowing ────────────────────────────────────────────────────────────
 // ponytail: FNV-1a over the first 64 KB instead of SHA-256 — it's a dedup and
@@ -1707,10 +1789,18 @@ async function swallow(files) {
 // clipboard text / dragged text is information too
 const asFile = txt => new File([txt], L.clip, { type: 'text/plain' });
 
-addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('dragging'); });
+addEventListener('dragover', e => {
+  e.preventDefault(); document.body.classList.add('dragging');
+  // Re-armed on every event, and dragover fires continuously while the cursor
+  // is over the window — so frame() decaying it is the whole reset mechanism.
+  // No dragleave bookkeeping, and a drag abandoned outside the window (which
+  // dragleave's relatedTarget===null never catches) settles by itself.
+  pull = 1;
+});
 addEventListener('dragleave', e => { if (e.relatedTarget === null) document.body.classList.remove('dragging'); });
 addEventListener('drop', e => {
   e.preventDefault(); document.body.classList.remove('dragging');
+  ripple = 1;
   const fs = [...e.dataTransfer.files];
   const txt = fs.length ? '' : e.dataTransfer.getData('text');
   swallow(fs.length ? fs : txt ? [asFile(txt)] : []);
@@ -2235,6 +2325,13 @@ const lookAt = bytes => {
   return o;
 };
 
+// While a file hangs over the window the hole leans toward the cursor, and on
+// release a wave runs through the frame. Both ride uniforms that already exist:
+// `mouse` (parallax) amplified, and `lens` (deflection strength) oscillated —
+// warping the picture in and out is exactly what a passing wave looks like. No
+// new uniform, no line of GLSL.
+let pull = 0, ripple = 0;
+
 // parallax cursor — with inertia, or the background twitches
 let mx = 0, my = 0, tmx = 0, tmy = 0;
 addEventListener('pointermove', e => {
@@ -2260,6 +2357,11 @@ function frame(t) {
   // slow heat instead of the old 1.6/s flash
   shock = Math.max(0, shock - dt * 0.7);
   hotT = Math.min(99, hotT + dt);
+  // 4/s: the lean drops within ~250 ms of the drag stopping — dragover fires far
+  // faster than that while the cursor is still over the window.
+  pull = Math.max(0, pull - dt * 4);
+  ripple = Math.max(0, ripple - dt * 1.1);          // ~0.9 s of wave
+
   mx += (tmx - mx) * Math.min(1, dt * 3);
   my += (tmy - my) * Math.min(1, dt * 3);
 
@@ -2293,7 +2395,12 @@ function frame(t) {
   gl.uniform1f(U('act'), act);
   gl.uniform1f(U('shock'), shock);
   gl.uniform1f(U('qsr'), quasar);
-  gl.uniform2f(U('mouse'), calm.matches ? 0 : mx, calm.matches ? 0 : my);
+  // 2.5× at full pull: enough that the disc visibly follows the file, not so
+  // much that the hole leaves the frame. Both effects are motion, so both go
+  // away under reduced-motion, the same as the parallax they ride on.
+  const drag = calm.matches ? 0 : pull;
+  const par = 1 + 1.5 * drag;
+  gl.uniform2f(U('mouse'), calm.matches ? 0 : mx * par, calm.matches ? 0 : my * par);
   gl.uniform1f(U('hot'), hotT);
   gl.uniform1f(U('hotA'), hotA);
   const [dIn, dOut] = diskColors(massOf(shown));
@@ -2306,6 +2413,10 @@ function frame(t) {
   // applying it twice would leave the disc at a ninth of its speed.
   gl.uniform1f(U('spin'), spinOf(shown));
   const look = lookAt(shown);
+  // A decaying oscillation on the deflection strength: the image bends out and
+  // settles back, ~2 cycles over the second the ripple lasts.
+  if (ripple > 0 && !calm.matches)
+    look.lens *= 1 + 0.35 * ripple * Math.sin(t / 1000 * 14);
   for (const k in look) gl.uniform1f(U(k), look[k]);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   // second layer: sparks run on animation time, TDE on wall clock (synchronized)
@@ -2329,6 +2440,24 @@ if (location.search.includes('test')) {
   eq(massOf(1), 1e20, 'one byte weighs 1e20 kg');
   eq(radiusOf(massOf(1024 ** 3)), 159.4, 'r_s for 1 GB is 159 m');
   eq(radiusOf(SUN * 1), 2954, 'r_s of one solar mass is 2.95 km');
+  // The disc's inner edge ages exactly 1/√2 slower — and the same for any mass,
+  // which is the claim the row is built on. A regression here would be a rate
+  // that drifts with weight, i.e. the physics error the row exists to avoid.
+  eq(DIL, 0.70711, 'ISCO orbit dilates by 1/√2');
+  // The split the row depends on: duration scales with mass, rate never does.
+  eq(iscoPeriod(1e5 * SUN) / iscoPeriod(SUN), 1e5, 'orbit duration is linear in mass');
+  eq(iscoPeriod(1e5 * SUN), 45.5, 'the season target turns once every 45 s');
+  // Tidal stretch: the textbook figure for a solar-mass hole, and the payoff at
+  // the season target — the same hole, gentle enough to cross.
+  eq(tideAt(SUN), 1.751e10, 'a solar-mass horizon stretches a person by 1.8e10 m/s²');
+  eq(tideAt(SUN) / G_EARTH, 1.785e9, 'which is 1.8 billion g');
+  eq(tideAt(1e5 * SUN) / G_EARTH, 0.1785, 'at the season target it is a fifth of a g');
+  console.assert(tideAt(1e5 * SUN) / G_EARTH < TIDE_OK
+    && tideAt(SUN) / G_EARTH > TIDE_OK, 'the season must cross the survivable threshold');
+  // Below the threshold the "you die here" radius has sunk inside the horizon,
+  // which is exactly why the row switches to tideSafe instead of printing it.
+  console.assert(spagR(1e5 * SUN) < radiusOf(1e5 * SUN),
+    'a survivable hole has no spaghettification radius outside its horizon');
   console.assert(fmtBytes(1536)[0] === '1.50', 'fmtBytes', fmtBytes(1536));
   console.assert(sci(4.74e-4) === '4.74·10⁻⁴', 'sci', sci(4.74e-4));
   eq(bytesFor(massOf(1024 ** 3)), 1024 ** 3, 'bytesFor inverts massOf');
