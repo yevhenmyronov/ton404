@@ -618,7 +618,17 @@
     <p data-t="pMass2"></p>
     <table id="massTable"></table>
 
-    <h3 data-n="03" data-t="hHorizon"></h3>
+    <!-- The rules live inside "how this works" rather than in a modal of their
+         own: a second entry point would make the reader guess which of the two
+         windows holds their answer, and the rules ARE how it works. Placed
+         third — after the mass they act on, before the physics they don't. -->
+    <h3 data-n="03" data-t="hRules"></h3>
+    <p data-t="pRules1"></p>
+    <table id="ruleTable"></table>
+    <p data-th="pRules2"></p>
+    <p data-t="pRules3"></p>
+
+    <h3 data-n="04" data-t="hHorizon"></h3>
     <div class="eq">r<sub>s</sub> = 2GM/c² &nbsp;&nbsp;·&nbsp;&nbsp; T = ℏc³/8πGMk &nbsp;&nbsp;·&nbsp;&nbsp; t = 5120πG²M³/ℏc⁴</div>
     <p data-t="pHorizon"></p>
     <!-- Live values of the same telemetry as the left column. On phones that
@@ -627,7 +637,7 @@
          the most interesting physics at all. -->
     <table id="teleDlg"></table>
 
-    <h3 data-n="04" data-t="hCheat"></h3>
+    <h3 data-n="05" data-t="hCheat"></h3>
     <p data-t="pCheat0"></p>
     <p data-th="pCheat1"></p>
     <p data-th="pCheat2"></p>
@@ -635,13 +645,13 @@
     <p data-th="pCheat4"></p>
     <p data-t="pCheat5"></p>
 
-    <h3 data-n="05" data-t="hClasses"></h3>
+    <h3 data-n="06" data-t="hClasses"></h3>
     <!-- rows are generated from the same CLASSES as the rank on the left:
          otherwise the dialog caption and the real boundary drift apart on the
          very first edit -->
     <table id="clsTable"></table>
 
-    <h3 data-n="06" data-t="hMiles"></h3>
+    <h3 data-n="07" data-t="hMiles"></h3>
     <p data-t="pMiles"></p>
     <table id="mileTable" class="miles"></table>
 
@@ -841,9 +851,12 @@ uk: {
   refused: 'діра відмовилась',
   refusal: { 'already swallowed': 'вона це вже ковтала',
              'cooldown': 'надто швидко — дай їй ковтнути',
-             'daily cap': 'на сьогодні з тебе досить',
+             // The rule is worth more than the joke at the moment it bites.
+             // Spelled out, not computed: the dictionary is built before the
+             // formatters exist. The drift test keeps these honest.
+             'daily cap': 'на сьогодні досить — 500 ГБ на добу з мережі',
              'too fast': 'її годують швидше, ніж вона ковтає — спробуй за хвилину',
-             'bytes out of range': 'завеликий шматок' },
+             'bytes out of range': 'завеликий шматок — не більше 100 ГБ за раз' },
   sgr: need => `щоб дорівнятися Стрільцю A* (4.3·10⁶ мас Сонця), треба ще ${need}`
      + ' — у сорок три рази більше за ціль цього сезону',
 
@@ -855,6 +868,13 @@ uk: {
   pMass1: 'Тут одна вигадка, і вона оголошена великим шрифтом: <b>один байт важить 10²⁰ кілограмів</b>. Це і є TON 404 — машина, що перетворює інформацію в матерію. Від кількості байтів N маса виходить прямо:',
   pMass2: 'Маса лінійна в байтах, тому 18.5 ГБ дають рівно одну масу Сонця. Складність живе не у формулі, а у віхах: наступний клас лежить від сотень до тисяч разів далі за попередній.',
   thSwallowed: 'Поглинуто', thMass: 'Маса', rowByte: '1 байт', rowDvd: '4.4 ГБ — один DVD',
+  hRules: 'Правила',
+  pRules1: 'Діра одна на всіх, і сезон має тривати півроку — інакше перший, у кого широкий канал, забере його за вечір, і решті лишиться дивитися. Тому в діри є апетит, і він обмежений:',
+  thRule: 'Обмеження', thLimit: 'Скільки',
+  ruleThrow: 'За один кидок', ruleDay: 'З однієї мережі за добу',
+  ruleAll: 'Уся діра за добу', ruleDecay: 'Розсіюється', rulePerDay: 'за добу',
+  pRules2: 'Останній рядок — головний. Перші два рахуються на мережу, а мереж можна знайти скільки завгодно; третій не рахує нікого окремо, тому його не обійти взагалі. Навіть з тисячею адрес надмасивну не зібрати швидше ніж за сорок діб безперервного годування. При цьому діра ще й <b>тане</b>: якщо її не годувати, вона щодня втрачає пів відсотка маси, тож сезон — це марафон, а не спринт.',
+  pRules3: 'Що ще варто знати: той самий файл вдруге не рахується — діра памʼятає останні кинуті й повертає їх назад. Ліміт доби рахується на мережу, а не на людину: якщо ви в гуртожитку чи офісі за спільним інтернетом, ви ділите його на всіх. І нарешті — розмір файлу ніхто не перевіряє на чесність, бо перевіряти нічого: браузер бачить справжній файл на твоєму диску, а на сервер летять лише його байти.',
   hHorizon: 'Горизонт, температура, час життя',
   pHorizon: 'Далі — жодної вигадки. Гігабайт дає горизонт подій 159 метрів, і це справжній радіус Шварцшильда для такої маси. Температура Гокінга при цьому 1.14 мікрокельвіна — у 2.4 мільйона разів <b>холодніше</b> за реліктове тло Всесвіту, і саме тому така діра не випаровується, а росте.',
   hCheat: 'Де ми жульничаємо',
@@ -1000,9 +1020,9 @@ en: {
   refused: 'the hole refused it',
   refusal: { 'already swallowed': 'it has swallowed this one already',
              'cooldown': 'too fast — let it swallow',
-             'daily cap': 'that is enough out of you today',
+             'daily cap': 'that is enough for today — 500 GB a day per network',
              'too fast': 'it is being fed faster than it can swallow — try in a minute',
-             'bytes out of range': 'too big a bite' },
+             'bytes out of range': 'too big a bite — 100 GB at most' },
   sgr: need => `to match Sagittarius A* (4.3·10⁶ solar masses) it needs ${need} more`
      + ' — forty-three times this season’s target',
 
@@ -1014,6 +1034,13 @@ en: {
   pMass1: 'There is one invented number here, and it is declared in bold: <b>one byte weighs 10²⁰ kilograms</b>. That is what TON 404 is — a machine that turns information into matter. From a count of N bytes the mass follows directly:',
   pMass2: 'Mass is linear in bytes, so 18.5 GB makes exactly one solar mass. The difficulty lives in the milestones, not the formula: each next class sits hundreds to thousands of times further out than the last.',
   thSwallowed: 'Swallowed', thMass: 'Mass', rowByte: '1 byte', rowDvd: '4.4 GB — one DVD',
+  hRules: 'The rules',
+  pRules1: 'There is one hole and everyone shares it, and a season is meant to last half a year — otherwise whoever has the fattest pipe takes it in an evening and everyone else just watches. So the hole has an appetite, and it is limited:',
+  thRule: 'Limit', thLimit: 'How much',
+  ruleThrow: 'Per throw', ruleDay: 'Per network, per day',
+  ruleAll: 'The whole hole, per day', ruleDecay: 'Dissipates', rulePerDay: 'a day',
+  pRules2: 'The last row is the one that matters. The first two are counted per network, and networks can be had by the thousand; the third counts nobody in particular, so there is no way around it at all. Even with a thousand addresses, supermassive cannot be reached in under forty days of nonstop feeding. And the hole <b>melts</b> meanwhile: left unfed it loses half a percent of its mass every day. A season is a marathon, not a sprint.',
+  pRules3: 'A few more things worth knowing. The same file does not count twice — the hole remembers what it recently swallowed and hands duplicates back. The daily limit is per network, not per person: share a dorm or an office connection and you share the limit. And nobody verifies that a file size is honest, because there is nothing to verify — your browser reads a real file off your own disk, and only its bytes ever reach the server.',
   hHorizon: 'Horizon, temperature, lifetime',
   pHorizon: 'From here on, nothing is invented. A gigabyte gives an event horizon of 159 metres — the real Schwarzschild radius for that mass. Its Hawking temperature is 1.14 microkelvin, 2.4 million times <b>colder</b> than the cosmic background, which is precisely why a hole like this does not evaporate but grows.',
   hCheat: 'Where we cheat',
@@ -1139,6 +1166,14 @@ S.count |= 0;                                  // state saved before the counter
 // target of 1.77 PB. Raise it and the target becomes unreachable forever.
 // Must match the worker's DECAY.
 const DECAY = 0.995;
+
+// The limits, for the rules section only — nothing here enforces them, the
+// worker does. They are written out so the page can state them in numbers
+// instead of vaguely, and drift-tested against the worker exactly like DECAY:
+// copy that quietly lies about a limit is worse than copy that omits it.
+const MAX_FEED   = 100 * 1024 ** 3;   // 100 GB per throw
+const MAX_IP_DAY = 500 * 1024 ** 3;   // 500 GB per day per network
+const GLOBAL_DAY = 50 * 1024 ** 4;    // 50 TB a day for the whole hole
 
 // The personal contribution is always yours, but it is part of the hole and
 // dissipates with it. Without this, "your contribution" grew past hundreds of
@@ -1583,6 +1618,20 @@ $('massTable').innerHTML =
    [atBytes(bytesFor(SUN)), SUN],
    [atBytes(bytesFor(1e5 * SUN)), 1e5 * SUN]]
   .map(([what, m]) => `<tr><td>${what}</td><td>${fmtMass(m).join(' ')}</td></tr>`).join('');
+
+// The limits, straight from the constants — a rules table that could disagree
+// with the server would be worse than no table at all. The unary + drops the
+// trailing zero fmtBytes leaves on round figures: these are rules, and "500 GB"
+// is how anyone would say one out loud.
+const round = b => { const [v, u] = fmtBytes(b); return +v + ' ' + u; };
+$('ruleTable').innerHTML =
+  `<tr><th scope="col">${L.thRule}</th><th scope="col">${L.thLimit}</th></tr>` +
+  [[L.ruleThrow, round(MAX_FEED)],
+   [L.ruleDay,   round(MAX_IP_DAY)],
+   [L.ruleAll,   round(GLOBAL_DAY)],
+   // +toFixed, or binary floating point prints 0.5000000000000004%
+   [L.ruleDecay, +((1 - DECAY) * 100).toFixed(3) + '% ' + L.rulePerDay]]
+  .map(([what, v]) => `<tr><td>${what}</td><td>${v}</td></tr>`).join('');
 
 $('clsTable').innerHTML =
   `<tr><th scope="col">${L.thClass}</th><th scope="col">${L.thReached}</th></tr>` +
@@ -2615,7 +2664,13 @@ if (location.search.includes('test')) {
     console.assert(!bad.length, 'markup has data-t without a dictionary entry', bad);
     renderMileTable();
     console.assert($('clsTable').rows.length === 8 && $('massTable').rows.length === 7
+      && $('ruleTable').rows.length === 5
       && $('mileTable').rows.length === MILES.length + 1, 'dialog tables generated');
+    // The rules table is the one place the page makes a promise about what the
+    // server accepts, so it must print the constants, not a rounded memory.
+    console.assert($('ruleTable').textContent.includes('500 ' + L.byte[3])
+      && $('ruleTable').textContent.includes('100 ' + L.byte[3]),
+      'the rules table states the real limits', $('ruleTable').textContent);
     for (const k of ['classes', 'classNotes', 'byte', 'len', 'scales', 'objects', 'kinds', 'whispers'])
       console.assert(TXT.uk[k].length === TXT.en[k].length, 'array length differs for ' + k);
     // The parity check above only sees top-level keys, so a server reason

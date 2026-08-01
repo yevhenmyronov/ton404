@@ -14,8 +14,11 @@ const DAY = 864e5;
 const DECAY = 0.995;
 // Anything can be thrown: the browser only reads file.size, so size costs nothing.
 // The real anti-inflation boundary is the daily cap, which stays fixed.
-const MAX_FEED   = 1e11;   // 100 GB per throw
-const MAX_IP_DAY = 5e11;   // 500 GB per day per /64
+// Binary, not decimal: the page prints every size through a 1024-based
+// formatter, so 5e11 would read "465.66 GB" in the rules table. Round numbers
+// in the units the reader actually sees are worth the 7% they cost.
+const MAX_FEED   = 100 * 1024 ** 3;   // 100 GB per throw
+const MAX_IP_DAY = 500 * 1024 ** 3;   // 500 GB per day per network
 // Must stay below the client-side pause between throws in swallow(), or
 // multi-file drags bounce off with 429s and the page rolls back mass it
 // already showed. The real limit is the daily cap, not this.
@@ -35,8 +38,9 @@ const IP_PREFIX  = 'ip:';  // one storage key per address, never inside the blob
 // ceiling. At 50 TB/day the season target still needs 40+ days of nonstop
 // feeding, against a design inflow of 11 TB/day — 4.5x headroom for real
 // traffic, and no single session can ever take the season.
-const GLOBAL_RATE  = 5e13 / DAY;   // bytes per ms — 50 TB/day sustained
-const GLOBAL_BURST = 5e12;         // 5 TB may land at once
+const GLOBAL_DAY   = 50 * 1024 ** 4;    // 50 TB/day sustained
+const GLOBAL_RATE  = GLOBAL_DAY / DAY;  // bytes per ms
+const GLOBAL_BURST = 5 * 1024 ** 4;     // 5 TB may land at once
 
 // No CORS on purpose: page and API share one origin, and a wildcard would let
 // any site feed the hole through its visitors' browsers.

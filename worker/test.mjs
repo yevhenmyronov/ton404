@@ -62,6 +62,17 @@ const feed = (h, body, ip = '1.2.3.4', headers = {}) => {
   }));
 };
 
+// Limits are declared as expressions (100 * 1024 ** 3), and several are written
+// twice — once here, once in the page. Reading them from source keeps the tests
+// honest about drift instead of re-stating the numbers a third time.
+const SRC = p => readFileSync(new URL(p, import.meta.url), 'utf8');
+const constIn = (text, name, where) => {
+  const m = text.match(new RegExp(`^const ${name} *= *([^;]+);`, 'm'));
+  assert.ok(m, `${name} not found in the ${where} — did the declaration move?`);
+  return Function(`return ${m[1]}`)();
+};
+const constOf = name => constIn(SRC('./src/index.js'), name, 'worker');
+
 const GB = 1024 ** 3;
 let h = await hole();
 
@@ -333,11 +344,13 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
 // it is the only thing standing between a proxy pool and the whole season.
 {
   h = await hole();
-  const per = 1e11;                                  // MAX_FEED, 100 GB a throw
-  // 60 throws of 100 GB = 6 TB, past the 5 TB burst — and each address is
-  // capped at 500 GB, so this needs 12 of them, exactly like a real attack.
+  // read from source so the test tracks the constant instead of copying it
+  const BURST = constOf('GLOBAL_BURST');
+  const per = 1e11;                                  // ~100 GB a throw
+  // 80 throws past the burst — and each address is capped at 500 GB, so this
+  // needs 16 of them, exactly the shape of a real proxy-pool attack.
   let accepted = 0, tooFast = 0;
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 16; i++) {
     const r = await feed(h, {
       items: Array.from({ length: 5 }, (_, j) => ({ bytes: per, ext: 'iso', sig: 900 + i * 5 + j })),
     }, `50.0.0.${i}`);
@@ -346,7 +359,7 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
     tooFast += body.rejected.filter(x => x.error === 'too fast').length;
   }
   assert.ok(tooFast > 0, 'the global bucket refuses once the burst is spent');
-  assert.ok(h.d.bytes <= 5e12, 'no address count can push past the burst', h.d.bytes);
+  assert.ok(h.d.bytes <= BURST, 'no address count can push past the burst', h.d.bytes);
   assert.equal(accepted * per, h.d.bytes, 'exactly the accepted throws landed');
 
   // and it refills over time, or the hole would be sealed for good
@@ -364,20 +377,20 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
   const st = fakeState();
   const h1 = new BlackHole(st, {});
   await st._ready;
-  const per = 1e11;
+  const cap = constOf('MAX_IP_DAY'), per = constOf('MAX_FEED');
   await feed(h1, {
-    items: Array.from({ length: 5 }, (_, i) => ({ bytes: per, ext: 'iso', sig: 400 + i })),
+    items: Array.from({ length: cap / per }, (_, i) => ({ bytes: per, ext: 'iso', sig: 400 + i })),
   }, '4.4.4.4');
-  assert.equal(h1.d.bytes, 5 * per, 'the cap was reached');
+  assert.equal(h1.d.bytes, cap, 'the cap was reached exactly');
   assert.equal(st._store.get('d').ips, undefined, 'still no counters inside the blob');
 
   const h2 = new BlackHole(st, {});                  // evicted and woken again
   await st._ready;
-  assert.equal(h2.ips.get('4.4.4.4').sum, 5 * per, 'the counter came back');
+  assert.equal(h2.ips.get('4.4.4.4').sum, cap, 'the counter came back');
   await new Promise(r => setTimeout(r, 200));        // past the restored cooldown
   const body = await (await feed(h2, { bytes: 1e9, ext: 'a', sig: 499 }, '4.4.4.4')).json();
   assert.equal(body.error, 'daily cap', 'a fresh instance still refuses');
-  assert.equal(h2.d.bytes, 5 * per, 'and nothing was swallowed');
+  assert.equal(h2.d.bytes, cap, 'and nothing was swallowed');
 
   // yesterday's rows are dropped on the way in, or storage grows forever
   st._store.set('ip:9.9.9.9', { t: 0, day: Date.now() - 2 * 864e5, sum: 5e11 });
@@ -419,6 +432,24 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
   };
   assert.equal(rate('../public/index.html', 'client'), rate('./src/index.js', 'worker'),
     'client and worker DECAY must match');
+}
+
+// ── the limits the page PRINTS must be the limits the worker ENFORCES ─────
+// The rules section states them in numbers, which is the whole point of it —
+// and a page that quietly overstates what it accepts is worse than a page that
+// says nothing. Same drift check as DECAY, for the same reason.
+{
+  const client = SRC('../public/index.html');
+  for (const name of ['MAX_FEED', 'MAX_IP_DAY', 'GLOBAL_DAY'])
+    assert.equal(constIn(client, name, 'client'), constOf(name),
+      `${name} differs between the page and the worker`);
+
+  // and the two hand-written figures in the refusal toasts, which cannot be
+  // computed there — the dictionary is built before the formatters exist
+  assert.ok(client.includes(`${constOf('MAX_IP_DAY') / GB} ГБ на добу`),
+    'the daily-cap refusal must quote the real cap');
+  assert.ok(client.includes(`не більше ${constOf('MAX_FEED') / GB} ГБ`),
+    'the too-big refusal must quote the real per-throw limit');
 }
 
 // ── every rejection reason has a line in the client ───────────────────────
