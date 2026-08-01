@@ -24,7 +24,19 @@ const LOG_KEEP   = 1000;
 const DEDUP      = 300;    // how many recent events to scan for duplicates
 const MAX_ITEMS  = 200;    // batch ceiling per request
 const MAX_BODY   = 16384;  // ~80 B per item × MAX_ITEMS plus headroom
-const MAX_IPS    = 20000;  // in-memory counter ceiling
+const MAX_IPS    = 20000;  // counter ceiling
+const IP_PREFIX  = 'ip:';  // one storage key per address, never inside the blob
+
+// The only limit that does not care how many addresses an attacker has. The
+// per-address cap is fairness, not protection: addresses are free — one home
+// IPv6 /48 holds 65536 /64s, and a rented proxy pool covers the ~4000 needed
+// to swallow the whole season in a single sitting.
+// Leaky bucket: BURST absorbs a viral spike whole, RATE is the sustained
+// ceiling. At 50 TB/day the season target still needs 40+ days of nonstop
+// feeding, against a design inflow of 11 TB/day — 4.5x headroom for real
+// traffic, and no single session can ever take the season.
+const GLOBAL_RATE  = 5e13 / DAY;   // bytes per ms — 50 TB/day sustained
+const GLOBAL_BURST = 5e12;         // 5 TB may land at once
 
 // No CORS on purpose: page and API share one origin, and a wildcard would let
 // any site feed the hole through its visitors' browsers.
@@ -43,11 +55,12 @@ export class BlackHole {
   constructor(state, env) {
     this.state = state;
     this.env = env;
-    // Rate-limit counters live in memory ONLY. In the blob they would grow
-    // with every new address and eventually exceed the 128 KB value limit —
-    // breaking all state writes forever. Losing them on restart is harmless:
-    // a reset cooldown costs nothing, and under a real attack the object
-    // never goes to sleep anyway.
+    // Counters are mirrored to storage under their own keys — never inside the
+    // blob, where they would grow with every address and burst the 128 KB value
+    // limit, breaking all state writes forever. Memory alone was not enough:
+    // the old comment argued a restart is harmless because "under a real attack
+    // the object never sleeps", which holds for a flood and fails for a PACED
+    // attacker — throw 500 GB, idle until eviction, come back to a fresh cap.
     this.ips = new Map();
     this.tCast = null;
     // Broadcasts happen only on events, so on a quiet hole a socket can sit
@@ -60,6 +73,18 @@ export class BlackHole {
     state.blockConcurrencyWhile(async () => {
       this.d = (await state.storage.get('d')) || { bytes: 0, count: 0, t: Date.now(), log: [] };
       delete this.d.ips;                      // legacy of the old format
+      // Hydrate the counters and drop yesterday's in the same pass — this is
+      // the only sweep they get, and it is enough: a stale row can only ever
+      // cost one wake-up's worth of memory.
+      // ponytail: capped at MAX_IPS rows; past that the least recent are not
+      // restored. A storage.sql query would lift the cap if it ever matters.
+      const now = Date.now();
+      const stale = [];
+      for (const [k, q] of await state.storage.list({ prefix: IP_PREFIX, limit: MAX_IPS })) {
+        if (now - q.day > DAY) stale.push(k);
+        else this.ips.set(k.slice(IP_PREFIX.length), q);
+      }
+      if (stale.length) await state.storage.delete(stale);
     });
   }
 
@@ -185,7 +210,10 @@ export class BlackHole {
         return json({ error: 'bad batch' }, 400);
 
       const ip = req.headers.get('cf-connecting-ip') || '0';
-      const key = ip.includes(':') ? ip.split(':').slice(0, 4).join(':') : ip;   // IPv6 → /64
+      // /48, not /64: a home connection is delegated a /56 or a /48, so the
+      // occupant owns every /64 inside it — 256 or 65536 free daily caps. The
+      // /48 is the smallest block a single subscriber cannot mint more of.
+      const key = ip.includes(':') ? ip.split(':').slice(0, 3).join(':') : ip;
       const now = Date.now();
       let q = this.ips.get(key);
       if (q) {
@@ -196,13 +224,22 @@ export class BlackHole {
         this.ips.delete(key);
         this.ips.set(key, q);
       } else {
-        if (this.ips.size >= MAX_IPS) this.ips.delete(this.ips.keys().next().value);
+        if (this.ips.size >= MAX_IPS) {
+          const old = this.ips.keys().next().value;
+          this.ips.delete(old);
+          await this.state.storage.delete(IP_PREFIX + old);
+        }
         this.ips.set(key, q = { t: 0, day: now, sum: 0 });
       }
 
       if (now - q.t < COOLDOWN) return json({ error: 'cooldown' }, 429);
       if (now - q.day > DAY) { q.day = now; q.sum = 0; }
       q.t = now;
+
+      // Leak the global bucket once per request — `now` is fixed for the whole
+      // batch anyway, so per-item leaking would change nothing.
+      this.d.gw = Math.max(0, (this.d.gw || 0) - (now - (this.d.gt || now)) * GLOBAL_RATE);
+      this.d.gt = now;
 
       // Every item is judged on its own; one rejection doesn't sink the rest.
       // The client gets the rejected list with reasons and rolls back exactly
@@ -221,23 +258,35 @@ export class BlackHole {
         if (sig && this.d.log.slice(0, DEDUP).some(x => x.s === sig)) {
           rejected.push({ sig, error: 'already swallowed' }); continue;
         }
+        // Last, so a duplicate never spends global budget.
+        if (this.d.gw + bytes > GLOBAL_BURST) {
+          rejected.push({ sig, error: 'too fast' }); continue;
+        }
         // Filenames are refused on principle — extension only.
         const ext = String(it.ext || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'bin';
         q.sum += bytes;
+        this.d.gw += bytes;
         this.d.bytes += bytes;
         this.d.count++;
         this.d.log.unshift({ t: now, b: bytes, e: ext, s: sig });
         taken++;
       }
 
-      if (taken) { await this.save(); this.broadcast(); }
+      // Only an accepted throw moves q.sum, and only q.sum is worth persisting:
+      // a cooldown reset on eviction costs nothing.
+      if (taken) {
+        await this.state.storage.put(IP_PREFIX + key, q);
+        await this.save();
+        this.broadcast();
+      }
 
       // A single throw answers the old way — via status and an error field.
       // Open tabs may still run the previous client, which reads exactly that.
       if (single && rejected.length) {
         const e = rejected[0].error;
         return json({ error: e },
-          e === 'already swallowed' ? 409 : e === 'daily cap' ? 429 : 400);
+          e === 'already swallowed' ? 409
+          : e === 'daily cap' || e === 'too fast' ? 429 : 400);
       }
       return json({ ...this.snapshot(), rejected });
     }

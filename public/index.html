@@ -842,6 +842,7 @@ uk: {
   refusal: { 'already swallowed': 'вона це вже ковтала',
              'cooldown': 'надто швидко — дай їй ковтнути',
              'daily cap': 'на сьогодні з тебе досить',
+             'too fast': 'її годують швидше, ніж вона ковтає — спробуй за хвилину',
              'bytes out of range': 'завеликий шматок' },
   sgr: need => `щоб дорівнятися Стрільцю A* (4.3·10⁶ мас Сонця), треба ще ${need}`
      + ' — у сорок три рази більше за ціль цього сезону',
@@ -1000,6 +1001,7 @@ en: {
   refusal: { 'already swallowed': 'it has swallowed this one already',
              'cooldown': 'too fast — let it swallow',
              'daily cap': 'that is enough out of you today',
+             'too fast': 'it is being fed faster than it can swallow — try in a minute',
              'bytes out of range': 'too big a bite' },
   sgr: need => `to match Sagittarius A* (4.3·10⁶ solar masses) it needs ${need} more`
      + ' — forty-three times this season’s target',
@@ -2616,6 +2618,11 @@ if (location.search.includes('test')) {
       && $('mileTable').rows.length === MILES.length + 1, 'dialog tables generated');
     for (const k of ['classes', 'classNotes', 'byte', 'len', 'scales', 'objects', 'kinds', 'whispers'])
       console.assert(TXT.uk[k].length === TXT.en[k].length, 'array length differs for ' + k);
+    // The parity check above only sees top-level keys, so a server reason
+    // added to one dictionary alone would silently fall back to L.refused.
+    console.assert(Object.keys(TXT.uk.refusal).sort().join()
+      === Object.keys(TXT.en.refusal).sort().join(), 'refusal reasons differ',
+      Object.keys(TXT.uk.refusal), Object.keys(TXT.en.refusal));
     // uk/en parity was checked; JS-constant vs dictionary alignment never was.
     // A short array renders `undefined` into the UI and nothing catches it.
     for (const [k, n] of [['classes', CLASSES.length], ['classNotes', CLASSES.length],

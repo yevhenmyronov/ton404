@@ -17,6 +17,15 @@ const fakeState = () => {
     storage: {
       get: async k => store.get(k),
       put: async (k, v) => void store.set(k, structuredClone(v)),
+      // list/delete carry the per-address counters, which must never live in
+      // the blob — the 128 KB value limit would burst on a busy day
+      list: async ({ prefix = '', limit = Infinity } = {}) => {
+        const out = new Map();
+        for (const [k, v] of store)
+          if (k.startsWith(prefix) && out.size < limit) out.set(k, structuredClone(v));
+        return out;
+      },
+      delete: async k => void [].concat(k).forEach(x => store.delete(x)),
     },
     // a real DO holds requests while the constructor loads state; here it's
     // just a promise the test awaits instead of the platform
@@ -318,6 +327,79 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
   assert.equal(h.d.bytes, 5 * per, 'everything up to the cap was still swallowed');
 }
 
+// ── the global growth limit ───────────────────────────────────────────────
+// The per-address cap is fairness, not protection: an attacker mints addresses
+// for free. This is the one limit that ignores where the bytes come from, so
+// it is the only thing standing between a proxy pool and the whole season.
+{
+  h = await hole();
+  const per = 1e11;                                  // MAX_FEED, 100 GB a throw
+  // 60 throws of 100 GB = 6 TB, past the 5 TB burst — and each address is
+  // capped at 500 GB, so this needs 12 of them, exactly like a real attack.
+  let accepted = 0, tooFast = 0;
+  for (let i = 0; i < 12; i++) {
+    const r = await feed(h, {
+      items: Array.from({ length: 5 }, (_, j) => ({ bytes: per, ext: 'iso', sig: 900 + i * 5 + j })),
+    }, `50.0.0.${i}`);
+    const body = await r.json();
+    accepted += 5 - body.rejected.length;
+    tooFast += body.rejected.filter(x => x.error === 'too fast').length;
+  }
+  assert.ok(tooFast > 0, 'the global bucket refuses once the burst is spent');
+  assert.ok(h.d.bytes <= 5e12, 'no address count can push past the burst', h.d.bytes);
+  assert.equal(accepted * per, h.d.bytes, 'exactly the accepted throws landed');
+
+  // and it refills over time, or the hole would be sealed for good
+  h.d.gt = Date.now() - 864e5;                       // a day of leaking
+  const r = await feed(h, { bytes: per, ext: 'iso', sig: 9999 }, '50.0.0.99');
+  assert.equal(r.status, 200, 'the bucket leaks back to empty');
+}
+
+// ── the daily cap survives eviction ───────────────────────────────────────
+// Counters used to live in memory only. The argument was that a real attack
+// keeps the object awake — true for a flood, false for a paced one: throw
+// 500 GB, idle until eviction, come back to a fresh cap. A new instance over
+// the same storage is exactly what eviction looks like from the inside.
+{
+  const st = fakeState();
+  const h1 = new BlackHole(st, {});
+  await st._ready;
+  const per = 1e11;
+  await feed(h1, {
+    items: Array.from({ length: 5 }, (_, i) => ({ bytes: per, ext: 'iso', sig: 400 + i })),
+  }, '4.4.4.4');
+  assert.equal(h1.d.bytes, 5 * per, 'the cap was reached');
+  assert.equal(st._store.get('d').ips, undefined, 'still no counters inside the blob');
+
+  const h2 = new BlackHole(st, {});                  // evicted and woken again
+  await st._ready;
+  assert.equal(h2.ips.get('4.4.4.4').sum, 5 * per, 'the counter came back');
+  await new Promise(r => setTimeout(r, 200));        // past the restored cooldown
+  const body = await (await feed(h2, { bytes: 1e9, ext: 'a', sig: 499 }, '4.4.4.4')).json();
+  assert.equal(body.error, 'daily cap', 'a fresh instance still refuses');
+  assert.equal(h2.d.bytes, 5 * per, 'and nothing was swallowed');
+
+  // yesterday's rows are dropped on the way in, or storage grows forever
+  st._store.set('ip:9.9.9.9', { t: 0, day: Date.now() - 2 * 864e5, sum: 5e11 });
+  const h3 = new BlackHole(st, {});
+  await st._ready;
+  assert.equal(h3.ips.get('9.9.9.9'), undefined, 'a stale counter is not restored');
+  assert.equal(st._store.get('ip:9.9.9.9'), undefined, 'and is swept from storage');
+}
+
+// ── IPv6 is keyed by /48, not /64 ─────────────────────────────────────────
+// A home connection is delegated a /56 or a /48, so its occupant owns every
+// /64 inside it — 256 or 65536 free daily caps from one subscription.
+{
+  h = await hole();
+  const a = '2001:db8:1234:1::1', b = '2001:db8:1234:ffff::9';   // same /48
+  await feed(h, { bytes: 1e9, ext: 'a', sig: 601 }, a);
+  await new Promise(r => setTimeout(r, 200));
+  await feed(h, { bytes: 1e9, ext: 'a', sig: 602 }, b);
+  assert.equal(h.ips.size, 1, 'both /64s share one counter');
+  assert.equal(h.ips.get('2001:db8:1234').sum, 2e9, 'and it accumulates across them');
+}
+
 // ── the two copies of DECAY must not drift ────────────────────────────────
 // The rate is written twice by hand — here and in the client — and nothing
 // compared them, so one side could be retuned alone and the page would quietly
@@ -337,6 +419,19 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
   };
   assert.equal(rate('../public/index.html', 'client'), rate('./src/index.js', 'worker'),
     'client and worker DECAY must match');
+}
+
+// ── every rejection reason has a line in the client ───────────────────────
+// The reasons cross a file boundary as bare strings. The client falls back to
+// a generic "the hole refused it", so adding one here and forgetting the
+// dictionary degrades quietly — exactly the drift nobody notices.
+{
+  const worker = readFileSync(new URL('./src/index.js', import.meta.url), 'utf8');
+  const client = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  const reasons = [...worker.matchAll(/rejected\.push\(\{ sig, error: '([^']+)'/g)].map(m => m[1]);
+  assert.ok(reasons.length >= 4, 'rejection reasons not found — did the shape change?');
+  for (const r of new Set(reasons))
+    assert.ok(client.includes(`'${r}':`), `no client string for the reason "${r}"`);
 }
 
 // ── unknown paths never wake the Durable Object ───────────────────────────
