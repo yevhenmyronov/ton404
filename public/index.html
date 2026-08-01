@@ -700,14 +700,14 @@ uk: {
   // The real ratio, not a claim about a limit: at these masses every throw is
   // millions of times over Eddington, and saying so is more honest and more
   // interesting than pretending there is a threshold being watched.
-  quasar: 'квазар', quasarMax: n => `квазар · ${n}× над Едінгтоном`,
+  quasar: 'квазар', quasarMax: n => `квазар · ${n}× над межею Еддінгтона`,
   update: 'вийшло оновлення — перезавантажити',
   tagline: 'кинь у неї будь-що',
   rankLabel: 'Клас обʼєкта', massLabel: 'Маса',
   goalLabel: 'Наступна віха', teleLabel: 'Телеметрія',
   teleRadius: 'радіус горизонту', teleArea: 'площа горизонту',
   teleShadow: 'діаметр тіні',
-  teleScale: 'масштаб', scaleNote: 'екранний радіус стиснено логарифмічно — це легенда мапи',
+  teleScale: 'масштаб', scaleNote: 'розмір на екрані умовний — цей рядок, як легенда мапи, повертає справжній',
   scaleVal: v => `1 піксель = ${v}`,
   // M87* is the first black hole ever photographed — the obvious yardstick for
   // a shadow, and the comparison is what makes the number mean anything.
@@ -723,7 +723,7 @@ uk: {
   dilClock: s => s < 60 ? `${s} с` : `${Math.floor(s / 60)} хв ${s % 60} с`,
   dilGap: (you, earth) => `біля діри ти ${you} · на Землі минуло ${earth}`,
   teleOrbit: 'оберт диска',
-  dilOrbit: (you, there) => `${you} у тебе · ${there} для речовини`,
+  dilOrbit: (you, there) => `${you} у тебе · ${there} для самої речовини`,
   tideSafe: 'горизонт можна перетнути цілим',
   tideKills: d => `розірве вже за ${d} від центра`,
   lumNote: 'межа Еддінгтона — яскравіше така діра світити не може',
@@ -874,14 +874,14 @@ uk: {
 en: {
   other: 'українська',
   title: 'TON 404 — one black hole, fed with files',
-  quasar: 'quasar', quasarMax: n => `quasar · ${n}× over Eddington`,
+  quasar: 'quasar', quasarMax: n => `quasar · ${n}× over the Eddington limit`,
   update: 'new version shipped — reload',
   tagline: 'throw anything into it',
   rankLabel: 'Object class', massLabel: 'Mass',
   goalLabel: 'Next milestone', teleLabel: 'Telemetry',
   teleRadius: 'horizon radius', teleArea: 'horizon area',
   teleShadow: 'shadow diameter',
-  teleScale: 'scale', scaleNote: 'the on-screen radius is log-compressed — this is the map legend',
+  teleScale: 'scale', scaleNote: 'the on-screen size is not to scale — like a map legend, this row restores the real one',
   scaleVal: v => `1 pixel = ${v}`,
   shadowCmp: n => `M87*’s shadow is ${n}× wider`,
   teleLum: 'luminosity', teleTemp: 'disc temperature',
@@ -891,7 +891,7 @@ en: {
   dilClock: s => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`,
   dilGap: (you, earth) => `${you} at the hole · ${earth} passed on Earth`,
   teleOrbit: 'disc orbit',
-  dilOrbit: (you, there) => `${you} for you · ${there} for the matter`,
+  dilOrbit: (you, there) => `${you} for you · ${there} for the matter itself`,
   tideSafe: 'the horizon can be crossed intact',
   tideKills: d => `it tears you apart ${d} from the centre`,
   lumNote: 'the Eddington limit — no hole this size can shine brighter',
