@@ -327,6 +327,8 @@
   }
   .ctl button:hover, .about button:hover { opacity: 1; text-shadow: 0 0 14px rgba(255,178,87,.6); }
   .ctl button::before { content: '→ '; opacity: .5; }
+  /* every button is borderless text — without this, keyboard users are blind */
+  button:focus-visible { outline: 1px solid var(--amber); outline-offset: 3px; }
 
   /* short primer in the corner — essentials readable, the rest behind a button */
   .about { margin-top: 26px; }
@@ -719,9 +721,11 @@ uk: {
   teleInfo: 'поглинуто', teleRecord: 'рекорд доби', teleDecay: 'розсіюється за добу',
   teleDilate: 'уповільнення часу', teleTide: 'приливне розтягнення',
   // Two wall clocks — their own formatter, because fmtTime prints «1.90·10² с»
-  // for three minutes, which is no way to read a clock.
-  dilClock: s => s < 60 ? `${s} с` : `${Math.floor(s / 60)} хв ${s % 60} с`,
-  dilGap: (you, earth) => `біля діри ти ${you} · на Землі минуло ${earth}`,
+  // for three minutes, which is no way to read a clock. NBSP inside each half:
+  // the row is wider than the column, and the only place a clock may break in
+  // two is at the separator — never inside «17 хв 43 с».
+  dilClock: s => s < 60 ? `${s} с` : `${Math.floor(s / 60)} хв ${s % 60} с`,
+  dilGap: (you, earth) => `біля діри ти ${you} · на Землі минуло ${earth}`,
   teleOrbit: 'оберт диска',
   dilOrbit: (you, there) => `${you} у тебе · ${there} для самої речовини`,
   tideSafe: 'горизонт можна перетнути цілим',
@@ -888,8 +892,8 @@ en: {
   teleEvap: 'full evaporation',
   teleInfo: 'swallowed', teleRecord: 'record of the day', teleDecay: 'dissipates per day',
   teleDilate: 'time dilation', teleTide: 'tidal stretch',
-  dilClock: s => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`,
-  dilGap: (you, earth) => `${you} at the hole · ${earth} passed on Earth`,
+  dilClock: s => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`,
+  dilGap: (you, earth) => `${you} at the hole · ${earth} passed on Earth`,
   teleOrbit: 'disc orbit',
   dilOrbit: (you, there) => `${you} for you · ${there} for the matter itself`,
   tideSafe: 'the horizon can be crossed intact',
@@ -1475,6 +1479,7 @@ function renderNumbers() {
     [L.teleTemp,   m > 0 ? sci(discT(m)) + ' K' : '—'],
     [L.teleEvap,   m > 0 ? fmtTime(evapOf(m)) : '—'],
     [L.teleInfo,   bv + ' ' + bu],
+    [L.teleDilate, `<span id="dlgDilate">${$('dilate').textContent}</span>`],
     [L.teleOrbit,  per > 0 ? L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '—'],
     [L.teleTide,   m > 0 ? tideTxt + ' g' : '—'],
     [L.teleDecay,  fmtBytes(shown * (1 - DECAY)).join(' ')],
@@ -1639,7 +1644,11 @@ function dilTick() {
   if (!document.hidden) nearMs += Math.min(now - lastTick, 2000);
   lastTick = now;
   const near = Math.floor(nearMs / 1000);
-  $('dilate').textContent = L.dilGap(L.dilClock(near), L.dilClock(Math.floor(near / DIL)));
+  const txt = L.dilGap(L.dilClock(near), L.dilClock(Math.floor(near / DIL)));
+  $('dilate').textContent = txt;
+  // The dialog mirror is the only live row in teleDlg. On phones the telemetry
+  // column is hidden entirely — the dialog is the only place the clocks exist.
+  const dlg = $('dlgDilate'); if (dlg) dlg.textContent = txt;
 }
 setInterval(dilTick, 1000); dilTick();
 
@@ -2457,8 +2466,8 @@ if (location.search.includes('test')) {
   eq(iscoPeriod(1e5 * SUN), 45.5, 'the season target turns once every 45 s');
   // The two clocks the row shows: Earth ages exactly √2 faster, for any hole.
   eq(1 / DIL, Math.SQRT2, 'Earth runs √2 ahead of the disc inner edge');
-  console.assert(TXT.uk.dilClock(84) === '1 хв 24 с' && TXT.en.dilClock(84) === '1m 24s'
-    && TXT.uk.dilClock(9) === '9 с', 'dilClock formats a clock', TXT.uk.dilClock(84));
+  console.assert(TXT.uk.dilClock(84) === '1 хв 24 с' && TXT.en.dilClock(84) === '1m 24s'
+    && TXT.uk.dilClock(9) === '9 с', 'dilClock formats a clock', TXT.uk.dilClock(84));
   console.assert(TXT.uk.dilGap('9 с', '12 с').includes('12 с')
     && TXT.en.dilGap('9s', '12s').includes('12s'), 'dilGap holds both clocks');
   // Tidal stretch: the textbook figure for a solar-mass hole, and the payoff at
