@@ -280,7 +280,6 @@
     font-size: 10.5px; line-height: 1.9; color: #4a443c;
   }
 
-
   #warn {
     position: fixed; left: 0; right: 0; top: 61%; text-align: center;
     font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
@@ -312,14 +311,16 @@
   /* The action sits under the primer in the same corner block, separated by a
      rule rather than by distance — one unit, two beats. */
   .hint { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.06); }
-  .ctl { justify-content: flex-end; }
   .hint .act { font-size: 13.5px; line-height: 1.4; color: var(--hot); }
   .hint .act span { display: block; margin-top: 4px; font-size: 11px; color: var(--dim); }
   .hint p { font-size: 10.5px; line-height: 1.8; color: var(--dim); }
 
   /* actions share one style in both bottom corners */
   /* three buttons — on a narrow screen they must wrap, not overflow */
-  .ctl { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 13px 0 12px; }
+  .ctl {
+    display: flex; flex-wrap: wrap; justify-content: flex-end;
+    gap: 12px 20px; margin: 13px 0 12px;
+  }
   .ctl button, .about button {
     background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
     font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
@@ -339,12 +340,8 @@
   }
   .about p { font-size: 10.5px; line-height: 1.8; color: var(--dim); margin-bottom: 7px; }
   .about p b { color: var(--txt); font-weight: 400; }
-  .about button {
-    background: none; border: 0; padding: 4px 0 0; cursor: pointer; font: inherit;
-    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--amber); opacity: .85;
-  }
-  .about button:hover { opacity: 1; text-shadow: 0 0 14px rgba(255,178,87,.6); }
+  /* the shared rule above does the rest */
+  .about button { padding-top: 4px; }
 
   /* The stream dissolves towards the LEFT now: the block is right-aligned, so
      the fade has to run away from the edge the text is anchored to, or it eats
@@ -465,9 +462,6 @@
     /* room for the pinned button, so it never covers the last line of text */
     .ui { padding-bottom: calc(74px + env(safe-area-inset-bottom)); }
     .hint p { font-size: 11px; opacity: .75; }
-    /* The list sits below the fold with room to spare — show everything,
-       including the matter kind (#recent li i) that used to be cut */
-    .hint { max-width: none; }
     #warn { top: auto; bottom: 30%; }
     dialog { max-height: 90vh; }
     dialog header { padding: 15px 18px; }
@@ -486,7 +480,8 @@
 <canvas id="sp"></canvas>
 
 <div class="ui">
-  <div id="quasar" data-t="quasar">квазар</div>
+  <!-- no data-t: the frame loop rewrites this node anyway -->
+  <div id="quasar">квазар</div>
   <div id="warn" role="status" aria-live="polite"></div>
   <button id="upd" hidden data-t="update">вийшло оновлення — перезавантажити</button>
 
@@ -498,7 +493,7 @@
     <!-- The big picture, which the first screen never had: what this is, that
          it is collective, and that the road is long. The bar underneath is the
          next rung; this one is the season. -->
-    <div class="mission" id="mission" data-t="mission">Сезон I · разом вирощуємо надмасивну чорну діру</div>
+    <div class="mission" data-t="mission">Сезон I · разом вирощуємо надмасивну чорну діру</div>
 
     <div class="rank">
       <div class="k" data-t="rankLabel">Клас обʼєкта</div>
@@ -597,7 +592,7 @@
           <button id="share" data-t="share">затягни друга</button>
           <button id="lang" data-t="other">English</button>
         </div>
-        <p data-t="privacy">Файл не покидає твій пристрій.</p>
+        <p data-t="privacy">Файл не покидає твій пристрій. Рахуються тільки байти — це і є горизонт подій.</p>
       </div>
     </div>
   </div>
@@ -1153,6 +1148,9 @@ let MINE = +localStorage.getItem(MKEY) || 0;
 }
 
 // (in shared mode the server does this)
+// ponytail: an idle open tab in shared mode never decays locally, so its mass
+// goes stale until the next broadcast — cosmetic at session scale; a local
+// re-decay tick would fix it if tabs ever live for days.
 const days = (Date.now() - S.t) / 864e5;
 if (!API && days > 0 && S.bytes > 0) S.bytes *= Math.pow(DECAY, days);
 S.t = Date.now();
@@ -1603,7 +1601,6 @@ function renderMileTable() {
              `<td>${atBytes(b)}<i>${L.mkind[kind]}</i></td></tr>`;
     }).join('');
 }
-
 
 // ─── Hawking radiation: a trace of the last file ───────────────────────────
 let seed = S.recent[0]?.sig || 0x811c9dc5, hawkBuf = '';
