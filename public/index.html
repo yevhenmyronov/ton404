@@ -8,7 +8,7 @@
      the language the link travels in. The user's own tab title is overridden
      by script in their language. -->
 <title>TON 404 — one black hole, fed with files</title>
-<meta name="description" content="A black hole you feed with files. Its mass follows the real Bekenstein–Hawking entropy: one gigabyte weighs 0.474 grams. Files are never uploaded — only the bytes are counted.">
+<meta name="description" content="A black hole you feed with files. One byte weighs 10²⁰ kilograms, so 18.5 GB makes a solar mass and 1.77 PB a supermassive hole. Files are never uploaded — only the bytes are counted.">
 <meta name="theme-color" content="#000000">
 <!-- Kills the white flash on every load: before CSS is parsed the browser
      paints its default (white) backdrop, and background:#000 applies too late.
@@ -21,7 +21,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TON 404">
 <meta property="og:title" content="TON 404 — one black hole, fed with files">
-<meta property="og:description" content="Throw anything in. A gigabyte of information weighs 0.474 grams and its event horizon is 10¹⁵ times smaller than a proton. One hole, shared by everyone.">
+<meta property="og:description" content="Throw anything in. A gigabyte weighs as much as 18,000 Earths and its event horizon has a radius of 159 metres. Grow it from a stellar hole to a supermassive one. One hole, shared by everyone.">
 <meta property="og:url" content="https://nohair.dev">
 <!-- summary_large_image, not summary: without a full-width image the link
      looks like a dead gray rectangle in Telegram/Twitter, and this whole
@@ -31,7 +31,7 @@
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="TON 404 — a black hole with its accretion disc, and its mass in grams">
+<meta property="og:image:alt" content="TON 404 — a black hole with its accretion disc, and its mass in solar masses">
 <!-- The old workers.dev address keeps working so links don't break, but only
      one URL is canonical — otherwise crawlers see two twin sites. -->
 <link rel="canonical" href="https://nohair.dev">
@@ -67,7 +67,9 @@
     display: flex; flex-direction: column; justify-content: space-between; min-height: 0;
   }
   .left  { width: 312px; }
-  .right { width: 280px; text-align: right; }
+  /* wider than before: it now carries the action block too, and the buttons
+     need a line they don't wrap on */
+  .right { width: 330px; text-align: right; }
 
   .top, .bot, .feed, .about, #quasar, #upd { pointer-events: auto; }
 
@@ -118,6 +120,22 @@
     text-shadow: 0 0 20px #4b9fff; opacity: 0; transition: opacity .5s;
   }
 
+  /* What this is, before any number: it sets the goal and says it is shared */
+  /* Formulas are opt-in; the values they explain are always on screen. */
+  .tele .eq { display: none; }
+  .tele.eqOn .eq { display: inline; }
+  #eqTgl {
+    background: none; border: 0; padding: 0; margin-left: 10px; cursor: pointer;
+    font: inherit; font-size: 9px; letter-spacing: .16em; color: var(--amber);
+    opacity: .6; text-transform: none;
+  }
+  #eqTgl:hover { opacity: 1; }
+
+  .mission {
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--amber); opacity: .72; margin: 0 0 18px;
+  }
+
   .rank { border-left: 1px solid #2a2620; padding-left: 12px; margin: 0 0 26px -13px; }
   #rankName { font-size: 15px; letter-spacing: .05em; color: var(--amber); margin-top: 3px; }
 
@@ -139,6 +157,21 @@
     box-shadow: 0 0 10px var(--amber);
     transition: width .9s cubic-bezier(.2,.8,.2,1);
   }
+  /* The rung bar leads: it is the only thing on the page that answers a throw
+     immediately, so it carries the height and the glow. */
+  /* darker track than the default: at 4px the empty groove was reading louder
+     than the fill inside it, which inverts the very emphasis this is for */
+  .goal .bar:not(.season) { height: 4px; background: rgba(255,255,255,.05); }
+  #goalTxt { color: var(--txt); font-size: 11.5px; }
+
+  /* The season sits under it as the frame: same shape as the rung bar, just
+     quieter. It was drawn segmented, one cell per rung — the idea reads well in
+     theory, but the unfilled cells came out as a picket fence of thin ticks and
+     the whole strip looked like noise. The rung count is already in the caption
+     right underneath, which is where a number belongs. */
+  .bar.season { height: 4px; margin: 14px 0 5px; background: rgba(255,255,255,.05); }
+  .bar.season i { box-shadow: none; opacity: .55; }
+  #seasonTxt { margin-bottom: 12px; }
 
   /* Telemetry is secondary by size, not by opacity: dimming it to 34% and
      hiding labels under max-height was simply unreadable. */
@@ -229,6 +262,13 @@
   dialog td { padding: 8px 0; border-top: 1px solid rgba(255,255,255,.05); font-variant-numeric: tabular-nums; }
   dialog th:last-child, dialog td:last-child { text-align: right; }
   dialog td:last-child { color: var(--amber); }
+  /* the ladder: each rung carries its science on a second line */
+  dialog table.miles { max-width: none; }
+  dialog table.miles td { vertical-align: top; }
+  dialog table.miles td i {
+    display: block; margin-top: 3px; font-size: 10px; line-height: 1.5;
+    font-style: normal; color: var(--dim);
+  }
 
   dialog pre {
     font-size: 11px; color: var(--amber); background: rgba(255,178,87,.05);
@@ -240,12 +280,18 @@
     font-size: 10.5px; line-height: 1.9; color: #4a443c;
   }
 
-
   #warn {
     position: fixed; left: 0; right: 0; top: 61%; text-align: center;
     font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
     color: var(--amber); text-shadow: 0 0 24px rgba(255,178,87,.7);
     opacity: 0; transition: opacity .45s; pointer-events: none; z-index: 6;
+  }
+  /* the science line under a milestone: same toast, but readable prose */
+  #warn i {
+    display: block; max-width: 30em; margin: 9px auto 0;
+    font-size: 10.5px; line-height: 1.6; letter-spacing: .04em;
+    text-transform: none; font-style: normal; color: var(--dim);
+    text-shadow: none;
   }
   @keyframes in { from { opacity: 0; transform: translateX(14px); } }
 
@@ -262,14 +308,19 @@
   .feed { animation: boot .7s ease 2.5s both; }
   .about{ animation: boot .7s ease 2.8s both; }
 
-  .hint { max-width: 330px; }
+  /* The action sits under the primer in the same corner block, separated by a
+     rule rather than by distance — one unit, two beats. */
+  .hint { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.06); }
   .hint .act { font-size: 13.5px; line-height: 1.4; color: var(--hot); }
   .hint .act span { display: block; margin-top: 4px; font-size: 11px; color: var(--dim); }
   .hint p { font-size: 10.5px; line-height: 1.8; color: var(--dim); }
 
   /* actions share one style in both bottom corners */
   /* three buttons — on a narrow screen they must wrap, not overflow */
-  .ctl { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 13px 0 12px; }
+  .ctl {
+    display: flex; flex-wrap: wrap; justify-content: flex-end;
+    gap: 12px 20px; margin: 13px 0 12px;
+  }
   .ctl button, .about button {
     background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
     font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
@@ -277,6 +328,8 @@
   }
   .ctl button:hover, .about button:hover { opacity: 1; text-shadow: 0 0 14px rgba(255,178,87,.6); }
   .ctl button::before { content: '→ '; opacity: .5; }
+  /* every button is borderless text — without this, keyboard users are blind */
+  button:focus-visible { outline: 1px solid var(--amber); outline-offset: 3px; }
 
   /* short primer in the corner — essentials readable, the rest behind a button */
   .about { margin-top: 26px; }
@@ -287,20 +340,18 @@
   }
   .about p { font-size: 10.5px; line-height: 1.8; color: var(--dim); margin-bottom: 7px; }
   .about p b { color: var(--txt); font-weight: 400; }
-  .about button {
-    background: none; border: 0; padding: 4px 0 0; cursor: pointer; font: inherit;
-    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--amber); opacity: .85;
-  }
-  .about button:hover { opacity: 1; text-shadow: 0 0 14px rgba(255,178,87,.6); }
+  /* the shared rule above does the rest */
+  .about button { padding-top: 4px; }
 
-  /* the Hawking stream dissolves to the right instead of cutting mid-line */
+  /* The stream dissolves towards the LEFT now: the block is right-aligned, so
+     the fade has to run away from the edge the text is anchored to, or it eats
+     the newest characters instead of the oldest. */
   #hawking {
-    margin-bottom: 14px;
+    margin-top: 16px;
     font-size: 9.5px; color: #8a8175; letter-spacing: .2em;
-    white-space: nowrap; overflow: hidden;
-    -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent);
-    mask-image: linear-gradient(90deg, #000 55%, transparent);
+    white-space: nowrap; overflow: hidden; direction: rtl;
+    -webkit-mask-image: linear-gradient(270deg, #000 55%, transparent);
+    mask-image: linear-gradient(270deg, #000 55%, transparent);
   }
 
   body.dragging::after {
@@ -329,14 +380,17 @@
     .tele { display: none; }
   }
 
-  /* milestone: the HUD gets pulled past the horizon for a beat and let back */
-  .ui { transition: transform 1.1s cubic-bezier(.5,0,.75,0), opacity 1.1s, filter 1.1s; }
-  body.collapse .ui { transform: scale(.4) rotate(-7deg); opacity: 0; filter: blur(3px); }
+  /* Milestone: the HUD steps aside for a beat and comes back exactly the way it
+     arrives on load — the same fade and small lift as @keyframes boot. It used
+     to scale to 40%, rotate and blur, which read as a rendering glitch rather
+     than a moment, and dragged the whole column across the disc on the way. */
+  .ui { transition: transform .45s ease, opacity .45s ease; }
+  body.collapse .ui { transform: translateY(7px); opacity: 0; }
 
-  /* the fullscreen shader is already borderline; sucking in the UI is too much */
+  /* the fullscreen shader is already borderline; moving the UI too is too much */
   @media (prefers-reduced-motion: reduce) {
     .ui { transition: opacity .4s; }
-    body.collapse .ui { transform: none; filter: none; opacity: .15; }
+    body.collapse .ui { transform: none; opacity: .15; }
     h1, .rank, .hero, .goal, .tele, .bot, .feed, .about { animation: none; }
   }
 
@@ -388,18 +442,26 @@
     .tele { display: none; }
 
     /* The main action is a real button, not a 10-pixel link. Dragging a file
-       is impossible on a phone, so all traffic goes here. */
-    .ctl { gap: 12px 18px; margin: 4px 0 10px; }
+       is impossible on a phone, so all traffic goes here.
+
+       Pinned to the viewport, not left in the flow. The primer and the action
+       are one block now, and that block lives below the fold — which on a phone
+       would mean the only way to feed the hole is off screen with nothing to
+       hint at it. Pinned, it is reachable at every scroll position instead of
+       only at the top, which is strictly better than what it replaced. */
+    .ctl { gap: 12px 18px; margin: 4px 0 10px; justify-content: flex-start; }
     #pick {
-      order: -1; width: 100%; padding: 15px 12px; text-align: center;
+      position: fixed; left: 16px; right: 16px; z-index: 5;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      padding: 15px 12px; text-align: center;
       border: 1px solid rgba(255,178,87,.45); border-radius: 3px;
+      background: rgba(8,6,10,.82); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
       font-size: 12px; opacity: 1;
     }
     #pick::before { content: none; }
+    /* room for the pinned button, so it never covers the last line of text */
+    .ui { padding-bottom: calc(74px + env(safe-area-inset-bottom)); }
     .hint p { font-size: 11px; opacity: .75; }
-    /* The list sits below the fold with room to spare — show everything,
-       including the matter kind (#recent li i) that used to be cut */
-    .hint { max-width: none; }
     #warn { top: auto; bottom: 30%; }
     dialog { max-height: 90vh; }
     dialog header { padding: 15px 18px; }
@@ -418,7 +480,8 @@
 <canvas id="sp"></canvas>
 
 <div class="ui">
-  <div id="quasar" data-t="quasar">квазар</div>
+  <!-- no data-t: the frame loop rewrites this node anyway -->
+  <div id="quasar">квазар</div>
   <div id="warn" role="status" aria-live="polite"></div>
   <button id="upd" hidden data-t="update">вийшло оновлення — перезавантажити</button>
 
@@ -427,6 +490,11 @@
     <h1>TON 404<small data-t="tagline">кинь у неї будь-що</small></h1>
 
     <div class="stats">
+    <!-- The big picture, which the first screen never had: what this is, that
+         it is collective, and that the road is long. The bar underneath is the
+         next rung; this one is the season. -->
+    <div class="mission" data-t="mission">Сезон I · разом вирощуємо надмасивну чорну діру</div>
+
     <div class="rank">
       <div class="k" data-t="rankLabel">Клас обʼєкта</div>
       <div id="rankName">—</div>
@@ -437,16 +505,24 @@
       <div class="k" data-t="massLabel">Маса</div>
       <div id="mass">—</div>
       <div class="sub" id="massCmp"></div>
-      <!-- the one number that moves on every throw at any scale: on a heavy
-           hole the mass barely stirs, since it grows as √bytes -->
       <div class="sub" id="eaten"></div>
     </div>
 
     <div class="goal">
-      <div class="k" data-t="goalLabel">Глобальна ціль</div>
+      <div class="k" data-t="goalLabel">Наступна віха</div>
+      <!-- The rung leads because it is the feedback loop: it moves on every
+           single throw, it names its target, and its distance is in units you
+           are holding — "11.4 MB to go" is a file you have. The season below is
+           the frame, not the loop: it moves once per rung, so a newcomer could
+           throw ten files and watch it sit still. -->
       <div class="bar"><i id="goalFill"></i></div>
       <div class="sub" id="goalTxt"></div>
-      <!-- Evaporation used to be silent bookkeeping: live since day one, seen
+      <!-- Season progress counts RUNGS, not bytes: bytes are spread over
+           fifteen orders of magnitude and a linear bar across them is useless —
+           it would sit near zero for the entire first half of the season. -->
+      <div class="bar season"><i id="seasonFill"></i></div>
+      <div class="sub" id="seasonTxt"></div>
+      <!-- Dissipation used to be silent bookkeeping: live since day one, seen
            by no one. But it's the very reason to come back tomorrow — the
            hole shrinks overnight. -->
       <div class="sub" id="decay"></div>
@@ -454,29 +530,38 @@
     </div>
 
     <div class="tele">
-      <div class="k" style="margin-bottom:4px" data-t="teleLabel">Телеметрія</div>
+      <!-- the button is a sibling of the label, never a child: the language pass
+           assigns textContent to every [data-t] node and would wipe it out -->
+      <div class="k" style="margin-bottom:4px"><span data-t="teleLabel">Телеметрія</span><button id="eqTgl" aria-expanded="false">показати формули</button></div>
       <div class="t"><span data-t="teleRadius">радіус горизонту</span><b id="radius">—</b><i id="radiusCmp"></i></div>
-      <div class="t"><span data-t="teleArea">площа горизонту</span><b id="area">—</b><i>A = 4·l<sub>P</sub>²·N·ln2 — <span data-t="areaNote"></span></i></div>
-      <div class="t"><span data-t="teleTemp">температура Гокінга</span><b id="temp">—</b><i id="tempCmp"></i></div>
-      <div class="t"><span data-t="teleEvap">повне випаровування</span><b id="evap">—</b><i>t = 5120πG²M³/ħc⁴ — <span data-t="evapNote"></span></i></div>
+      <!-- What a telescope would actually measure. Lensing makes the dark patch
+           larger than the horizon: √27·GM/c² across, i.e. 2.6 Schwarzschild
+           radii, and that is the number the EHT images are quoted in. -->
+      <div class="t"><span data-t="teleShadow">діаметр тіні</span><b id="shadow">—</b><i><span class="eq">d = √27·GM/c² — </span><span id="shadowCmp"></span></i></div>
+      <!-- The formula is folded away by default: it is the answer to "how", and
+           a first-time visitor has not yet asked "what". The value stays. -->
+      <div class="t"><span data-t="teleLum">світність</span><b id="lum">—</b><i><span class="eq">L = 1.26·10³¹ · M/M<sub>☉</sub> — </span><span data-t="lumNote"></span></i></div>
+      <div class="t"><span data-t="teleTemp">температура диска</span><b id="temp">—</b><i id="tempCmp"></i></div>
+      <div class="t"><span data-t="teleEvap">повне випаровування</span><b id="evap">—</b><i><span class="eq">t = 5120πG²M³/ħc⁴ — </span><span data-t="evapNote"></span></i></div>
       <div class="t"><span data-t="teleInfo">поглинуто</span><b id="info">—</b><i id="bits"></i></div>
+      <!-- The map scale. The on-screen radius is log-compressed (cheat #3), so
+           without this the picture has no scale at all; with it the compression
+           stops being a lie and becomes the legend on a map. -->
+      <div class="t"><span data-t="teleScale">масштаб</span><b id="scale">—</b><i data-t="scaleNote"></i></div>
+      <!-- Two clocks: time spent at the hole vs time passed on Earth. Their
+           ratio is a constant √2 for a hole of ANY mass — Schwarzschild
+           geometry is self-similar — so mass enters only through the orbit's
+           duration in the caption, never through the rate. -->
+      <div class="t"><span data-t="teleDilate">уповільнення часу</span><b id="dilate">—</b><i><span class="eq">dτ = dt·√(1−3GM/rc²) — </span><span id="dilateCmp"></span></i></div>
+      <!-- The counterweight to every other row: this one gets SMALLER as the
+           hole grows. Real, and the reason falling into a supermassive hole is
+           survivable while a stellar one is not. -->
+      <div class="t"><span data-t="teleTide">приливне розтягнення</span><b id="tide">—</b><i><span class="eq">Δa = L·c⁶/4G²M² — </span><span id="tideCmp"></span></i></div>
       <div class="t"><span data-t="teleRecord">рекорд доби</span><b id="record">—</b></div>
     </div>
    </div>
    </div>
 
-   <div class="bot">
-    <div id="hawking"></div>
-    <div class="hint">
-      <div class="act" data-t="dropHere">Перетягни файл сюди<span data-t="orPaste"></span></div>
-      <div class="ctl">
-        <button id="pick" data-t="pickFile">обрати файл</button>
-        <button id="share" data-t="share">затягни друга</button>
-        <button id="lang" data-t="other">English</button>
-      </div>
-      <p data-t="privacy">Файл не покидає твій пристрій.</p>
-    </div>
-   </div>
   </div>
 
   <div class="col right">
@@ -486,12 +571,29 @@
       <ul id="recent"></ul>
     </div>
 
-    <div class="about">
-      <div class="k" data-t="aboutLabel">Як це працює</div>
-      <div class="f">M = m<sub>P</sub> · √(N·ln2 / 4π)</div>
-      <p data-th="aboutP1"></p>
-      <p data-t="aboutP2"></p>
-      <button id="what" data-t="expand">Розгорнути ↗</button>
+    <!-- One block in the corner: what this is, then what to do about it. They
+         used to sit in opposite bottom corners, which made the explanation and
+         the action look like two unrelated things. Reading order ends on the
+         call to action, which is where it belongs. -->
+    <div class="bot">
+      <div class="about">
+        <div class="k" data-t="aboutLabel">Як це працює</div>
+        <div class="f" data-t="eqMass">M = N · 10²⁰ кг</div>
+        <p data-th="aboutP1"></p>
+        <p data-t="aboutP2"></p>
+        <button id="what" data-t="expand">Розгорнути ↗</button>
+      </div>
+
+      <div id="hawking"></div>
+      <div class="hint">
+        <div class="act" data-t="dropHere">Перетягни файл сюди<span data-t="orPaste"></span></div>
+        <div class="ctl">
+          <button id="pick" data-t="pickFile">обрати файл</button>
+          <button id="share" data-t="share">затягни друга</button>
+          <button id="lang" data-t="other">English</button>
+        </div>
+        <p data-t="privacy">Файл не покидає твій пристрій. Рахуються тільки байти — це і є горизонт подій.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -512,7 +614,7 @@
 
     <h3 data-n="02" data-t="hMass"></h3>
     <p data-th="pMass1"></p>
-    <div class="eq">M = m<sub>P</sub> · √(N·ln2 / 4π)</div>
+    <div class="eq" data-t="eqMass">M = N · 10²⁰ кг</div>
     <p data-t="pMass2"></p>
     <table id="massTable"></table>
 
@@ -530,13 +632,18 @@
     <p data-th="pCheat1"></p>
     <p data-th="pCheat2"></p>
     <p data-th="pCheat3"></p>
-    <p data-t="pCheat4"></p>
+    <p data-th="pCheat4"></p>
+    <p data-t="pCheat5"></p>
 
     <h3 data-n="05" data-t="hClasses"></h3>
     <!-- rows are generated from the same CLASSES as the rank on the left:
          otherwise the dialog caption and the real boundary drift apart on the
          very first edit -->
     <table id="clsTable"></table>
+
+    <h3 data-n="06" data-t="hMiles"></h3>
+    <p data-t="pMiles"></p>
+    <table id="mileTable" class="miles"></table>
 
     <div class="foot">
       <span id="sgr"></span><br><br>
@@ -565,6 +672,11 @@ const LANG = localStorage.getItem(LKEY)
 
 // Ukrainian plural forms — without them the counter reads machine-made
 const plural = (n, one, few, many) => {
+  // «4.4 Сонця», same rule as RAZ below. Tested on the string as rendered, not
+  // just the value: callers pass an already-rounded display string, and 17980.3
+  // shown as "17980" must take the plural of a whole number, while "1.00000"
+  // stays a decimal even though it parses back to exactly 1.
+  if (n % 1 || String(n).includes('.')) return few;
   const t = n % 100, u = n % 10;
   return t > 10 && t < 20 ? many : u === 1 ? one : u >= 2 && u <= 4 ? few : many;
 };
@@ -580,45 +692,113 @@ const RAZ = n => {
 // each language has its own grammar, and gluing it externally produces calques.
 const TXT = {
 uk: {
-  name: 'українська', other: 'English',
+  other: 'English',
   title: 'TON 404 — чорна діра, яку годують файлами',
-  quasar: 'квазар', quasarMax: 'квазар · ліміт еддінгтона',
+  // The real ratio, not a claim about a limit: at these masses every throw is
+  // millions of times over Eddington, and saying so is more honest and more
+  // interesting than pretending there is a threshold being watched.
+  quasar: 'квазар', quasarMax: n => `квазар · ${n}× над межею Еддінгтона`,
   update: 'вийшло оновлення — перезавантажити',
   tagline: 'кинь у неї будь-що',
   rankLabel: 'Клас обʼєкта', massLabel: 'Маса',
-  goalLabel: 'Глобальна ціль', teleLabel: 'Телеметрія',
+  goalLabel: 'Наступна віха', teleLabel: 'Телеметрія',
   teleRadius: 'радіус горизонту', teleArea: 'площа горизонту',
-  teleTemp: 'температура Гокінга', teleEvap: 'повне випаровування',
-  teleInfo: 'поглинуто', teleRecord: 'рекорд доби', teleDecay: 'випаровується за добу',
-  areaNote: 'єдине число тут, що росте рівно вдвічі від удвічі більших даних',
-  evapNote: 'тому ми жульничаємо',
+  teleShadow: 'діаметр тіні',
+  teleScale: 'масштаб', scaleNote: 'розмір на екрані умовний — цей рядок, як легенда мапи, повертає справжній',
+  scaleVal: v => `1 піксель = ${v}`,
+  // M87* is the first black hole ever photographed — the obvious yardstick for
+  // a shadow, and the comparison is what makes the number mean anything.
+  // v is null when n is already scientific — «10¹³» cannot be declined, and at
+  // that size the genitive plural is the only correct form anyway (see lumVal)
+  shadowCmp: (n, v) => `тінь M87* у ${n} ${v === null ? 'разів' : RAZ(v)} більша`,
+  teleLum: 'світність', teleTemp: 'температура диска',
+  teleEvap: 'повне випаровування',
+  teleInfo: 'поглинуто', teleRecord: 'рекорд доби', teleDecay: 'розсіюється за добу',
+  teleDilate: 'уповільнення часу', teleTide: 'приливне розтягнення',
+  // Two wall clocks — their own formatter, because fmtTime prints «1.90·10² с»
+  // for three minutes, which is no way to read a clock. NBSP inside each half:
+  // the row is wider than the column, and the only place a clock may break in
+  // two is at the separator — never inside «17 хв 43 с».
+  dilClock: s => s < 60 ? `${s} с` : `${Math.floor(s / 60)} хв ${s % 60} с`,
+  dilGap: (you, earth) => `біля діри ти ${you} · на Землі минуло ${earth}`,
+  teleOrbit: 'оберт диска',
+  dilOrbit: (you, there) => `${you} у тебе · ${there} для самої речовини`,
+  tideSafe: 'горизонт можна перетнути цілим',
+  tideKills: d => `розірве вже за ${d} від центра`,
+  lumNote: 'межа Еддінгтона — яскравіше така діра світити не може',
+  evapNote: 'справжня цифра, і саме тому ми жульничаємо',
   dropHere: 'Перетягни файл сюди', orPaste: 'або встав із буфера',
   pickFile: 'обрати файл', share: 'затягни друга',
   shared: 'посилання скопійовано — кинь другу',
   someoneFed: (ext, size) => `хтось щойно кинув .${ext} · ${size}`,
   privacy: 'Файл не покидає твій пристрій. Рахуються тільки байти — це і є горизонт подій.',
   feedLabel: 'Останні жертви', aboutLabel: 'Як це працює',
-  aboutP1: 'Інформація в чорній дірі пропорційна <b>площі</b> горизонту, а не обʼєму. Тому маса росте як корінь із байтів, і <b>один гігабайт важить 0.474 грама</b>.',
-  aboutP2: 'Діра одна на всіх. Випаровується на 1% за добу.',
+  aboutP1: 'TON 404 перетворює інформацію в матерію: <b>один байт важить 10²⁰ кілограмів</b>. Це єдина вигадка тут — усе інше рахується справжніми формулами з цієї маси.',
+  aboutP2: 'Діра одна на всіх. 18.5 ГБ = маса Сонця. Розсіюється на 0.5% за добу.',
   expand: 'Розгорнути ↗', close: 'Закрити',
 
-  classes: ['Порожній горизонт','Квантова флуктуація','Планківська діра','Мікроскопічна діра',
-            'Первинна діра','Астероїдна діра','Зоряна діра','Проміжна діра','Надмасивна діра'],
+  classes: ['Порожній горизонт','Первинна діра','Холодна діра','Планетарна діра',
+            'Неможлива діра','Зоряна діра','Проміжна діра','Надмасивна діра'],
   classNotes: ['нічого не поглинуто. вона голодна',
-    'легша за планківську масу — формально це ще не чорна діра',
-    'межа, де загальна теорія відносності стикається з квантовою механікою',
-    'горизонт менший за протон на десяток порядків',
     'такі могли утворитися в перші секунди після Великого вибуху',
-    'випаровуватиметься довше за нинішній вік Всесвіту',
-    'як Лебідь X-1 — перша, яку люди знайшли, 1964 рік',
+    'холодніша за реліктове тло — тепер вона поглинає більше, ніж випромінює',
+    'важить як планета, а горизонт менший за сантиметр',
+    'занадто важка для планети й занадто легка, щоб чорна діра такої маси могла народитися з зорі',
+    'важча за межу Оппенгеймера — ніщо інше такої маси існувати не може',
     'найрідкісніший клас, астрономи досі сперечаються про них',
     'як Стрілець A* у центрі нашої галактики'],
-  gram: ['йг','зг','аг','фг','пг','нг','мкг','мг','г','кг','т'],
+  // Declined by the value, like victims/lumVal above: a fixed genitive plural
+  // rendered the headline as «1 мас Сонця» and the table as «1 мас Землі».
+  kg: 'кг',
+  // The headline formula, in both the sidebar and the dialog. It carries a unit,
+  // so leaving it out of the dictionary showed an English visitor «кг» in the
+  // two most prominent places on the page — and the parity self-check cannot
+  // catch that: it only validates keys that markup already asks for.
+  eqMass: 'M = N · 10²⁰ кг',
+  mEarth: v => plural(v, 'маса Землі', 'маси Землі', 'мас Землі'),
+  mSun:   v => plural(v, 'маса Сонця', 'маси Сонця', 'мас Сонця'),
   byte: ['Б','КБ','МБ','ГБ','ТБ','ПБ','ЕБ'],
-  scales: ['довжини Планка','протона','атома водню','нитки ДНК','бактерії','піщинки',
-           'метра','Землі','Сонця'],
-  objects: ['пилинка','піщинка','крапля води','скріпка','монета','яблуко','цеглина',
-            'людина','автомобіль','Ейфелева вежа','Земля'],
+  len: ['нм','мкм','мм','см','м','км'],
+  scales: ['довжину хвилі світла','клітину крові','піщинку','метр','нейтронну зорю',
+           'Місяць','Землю','орбіту Місяця','Сонце'],
+  objects: ['Церера','Плутон','Місяць','Меркурій','Марс','Земля',
+            'Нептун','Юпітер','Сонце','Лебідь X-1','Стрілець A*'],
+  mkind: { body: 'реальний обʼєкт', limit: 'фізична межа', geo: 'розмір горизонту' },
+  // Every rung: name, then the science in one line. Keyed by id, so inserting a
+  // milestone in the middle can never slide a note onto the wrong number.
+  miles: {
+    vesta:      ['Веста', 'маса найважчого астероїда головного поясу'],
+    ceres:      ['Церера', 'маса Церери — єдиної карликової планети у поясі астероїдів'],
+    pluto:      ['Плутон', 'маса Плутона'],
+    cmb:        ['Холодніша за Всесвіт', 'температура Гокінга впала до 2.725 K — тепер діра поглинає з реліктового тла більше, ніж випромінює, і починає рости сама'],
+    moon:       ['Місяць', 'маса Місяця'],
+    mmHoriz:    ['Горизонт — міліметр', 'уперше діру можна побачити оком'],
+    earth:      ['Земля', 'маса Землі, стиснута в горизонт розміром 9 міліметрів'],
+    neptune:    ['Нептун', 'маса Нептуна'],
+    mHoriz:     ['Горизонт — метр', 'завбільшки з людину'],
+    jupiter:    ['Юпітер', 'маса найважчої планети Сонячної системи'],
+    deuterium:  ['Межа горіння дейтерію', '13.6 маси Юпітера — нижче цього не запалюється навіть дейтерій, і обʼєкт лишається планетою'],
+    brownDwarf: ['Межа запалювання зорі', '0.08 маси Сонця — нижче цього водень не горить, і зоря не народжується взагалі'],
+    kmHoriz:    ['Горизонт — кілометр', 'уже помітна на карті'],
+    sun:        ['Сонце', 'рівно одна маса Сонця, а горизонт лише 2.95 км'],
+    chandra:    ['Межа Чандрасекара', '1.4 маси Сонця — важчого білого карлика у природі не існує, він завалюється'],
+    tov:        ['Межа Оппенгеймера', '2.17 маси Сонця — важчої нейтронної зорі не існує. З цієї миті вона може бути тільки чорною дірою'],
+    gw170817:   ['Найлегша відома діра', 'приблизно 2.7 маси Сонця — залишок злиття нейтронних зір GW170817'],
+    nsHoriz:    ['Горизонт — нейтронна зоря', 'десять кілометрів: діра завбільшки з цілу нейтронну зорю'],
+    cygX1:      ['Лебідь X-1', '21 маса Сонця — перша чорна діра, яку знайшло людство, 1964 рік'],
+    gw150914:   ['GW150914', '62 маси Сонця — перше в історії почуте злиття чорних дір, Нобелівська премія 2017'],
+    gapIn:      ['Заборонена смуга', '65 мас Сонця: вище цього парна нестабільність розриває зорю дощенту, не лишаючи чорної діри'],
+    imbh:       ['Проміжний клас', '100 мас Сонця — межа, з якої чорну діру офіційно називають проміжною. Таких знайдено лише кілька'],
+    gapOut:     ['Вихід із забороненої смуги', '130 мас Сонця — знову дозволена територія. Природа не робить дір між цими двома межами'],
+    gw190521:   ['GW190521', '142 маси Сонця — перша проміжна чорна діра, зафіксована гравітаційними хвилями'],
+    m82x1:      ['M82 X-1', 'близько 400 мас Сонця у галактиці Сигара'],
+    earthRad:   ['Горизонт — радіус Землі', 'тінь діри тепер завбільшки з нашу планету'],
+    omegaCen:   ['Омега Центавра', '8200 мас Сонця — проміжну діру знайшли у 2024 році за швидкістю зір у ядрі скупчення'],
+    jupRad:     ['Горизонт — радіус Юпітера', 'сімдесят тисяч кілометрів'],
+    rgg118:     ['RGG 118', '50 000 мас Сонця — найменша надмасивна чорна діра, відома астрономам'],
+    smbh:       ['НАДМАСИВНА', '100 000 мас Сонця. Офіційний клас надмасивних, і фінал Сезону I. Горизонт — одна світлова секунда'],
+    moonOrbit:  ['Горизонт — орбіта Місяця', 'горизонт дістає туди, де навколо Землі летить Місяць'],
+  },
   kinds: ['бюрократична матерія','заморожені фотони','надщільна згорнута матерія',
           'часово-просторовий зліпок','застиглі коливання','скамʼяніла логіка',
           'мертві інструкції','застиглі гліфи','інформаційна ентропія'],
@@ -626,23 +806,32 @@ uk: {
   whispers: ['вона дивиться у відповідь', 'інформація не зникає',
              'по той бік щось лічить', 'ентропія памʼятає все'],
 
-  metre: 'м', metre2: 'м²', sec: 'с', years: 'років', clip: 'буфер.clip',
+  metre2: 'м²', sec: 'с', years: 'років', clip: 'буфер.clip',
   empty: 'порожньо. вона голодна',
   cmpSame: n => `важить приблизно як ${n}`,
   cmpDiff: (v, n, up) => `у ${v} ${RAZ(v)} ${up ? 'важча' : 'легша'}, ніж ${n}`,
-  cmpRad: (k, n, less) => `у ${k} разів ${less ? 'менший' : 'більший'} за радіус ${n}`,
+  cmpRad: (k, n, less) => `у ${k} ${RAZ(k)} ${less ? 'менший' : 'більший'} за ${n}`,
   ago: s => s < 10 ? 'щойно' : s < 60 ? `${Math.floor(s)} с тому`
      : s < 3600 ? `${Math.floor(s / 60)} хв тому`
      : s < 86400 ? `${Math.floor(s / 3600)} год тому` : `${Math.floor(s / 86400)} дн тому`,
   victims: n => `${n} ${plural(n, 'жертва', 'жертви', 'жертв')}`,
   awayAte: (v, size) => `поки тебе не було, діра з'їла ${v} (${size})`,
   awayEvap: s => `поки тебе не було, діра випарувала ${s}`,
-  hotter: k => `у ${k} разів гарячіше за ядро Сонця`,
-  bitsOn: b => `${b} бітів на горизонті`,
+  cmpRadSame: n => `завбільшки з ${n}`,
+  discCmp: k => `у ${k} ${RAZ(k)} гарячіше за поверхню Сонця`,
+  // v is the raw number, or null when n is already in scientific notation —
+  // «10⁹» cannot be declined, and large values take the genitive plural anyway
+  lumVal: (n, v) => `як ${n} ${v === null ? 'Сонць' : plural(v, 'Сонце', 'Сонця', 'Сонць')}`,
+  capacity: b => `горизонт вмістив би ${b} бітів`,
   goalLeft: (g, left) => `${g} — лишилось ${left}`,
-  goalDone: 'цілей більше немає',
-  // BYTES, not mass: mass loses 1% a day but bytes lose 1.99% — people care
-  // how much to bring back, which is the second number
+  goalDone: 'усі віхи взято',
+  mission: 'Сезон I · разом вирощуємо надмасивну чорну діру',
+  showEq: 'показати формули', hideEq: 'сховати формули',
+  // The rung count says the road is long without any extra words; the second
+  // half names what the season is actually for.
+  season: (i, n, left) => `щабель ${i} з ${n} · до надмасивної лишилось ${left}`,
+  seasonDone: n => `усі ${n} щаблів узято · надмасивну зібрано`,
+  // BYTES, not the percent: people care how much to bring back to hold the line
   decay: v => `тане на ${v} за добу`,
   alone: 'ти сам на сам із нею', watchers: n => `за нею спостерігає ${n}`,
   yours: (v, pct) => `твій внесок: ${v}` + (pct ? ` · ${pct}% маси` : ''),
@@ -654,70 +843,125 @@ uk: {
              'cooldown': 'надто швидко — дай їй ковтнути',
              'daily cap': 'на сьогодні з тебе досить',
              'bytes out of range': 'завеликий шматок' },
-  sgr: need => `щоб дорівнятися Стрільцю A* (4.3·10⁶ мас Сонця), треба ще ${need} байтів`
-     + ' — у видимому Всесвіті лише 10⁸⁰ атомів',
+  sgr: need => `щоб дорівнятися Стрільцю A* (4.3·10⁶ мас Сонця), треба ще ${need}`
+     + ' — у сорок три рази більше за ціль цього сезону',
 
   lead: 'Чорна діра, яку годують файлами. Одна на всіх: те, що кинув хтось на іншому континенті, ти побачиш у себе на екрані за секунду.',
   hFile: 'Твій файл нікуди не завантажується',
   pFile1: 'Це не обіцянка в політиці конфіденційності, а архітектура. Браузер бере розмір файлу, розширення й рахує підпис по перших 64 КБ. На сервер летить рівно це:',
   pFile2: 'Імені файлу тут немає — і сервер його не прийме, навіть якщо надіслати. Люди кидають у діру <code>скан_паспорта.jpg</code>, і жодне з цих слів не має покидати їхній пристрій. Далі перших 64 КБ файл не читається взагалі.',
-  hMass: 'Чому маса справжня',
-  pMass1: 'Ентропія Бекенштейна–Гокінга каже: інформація в чорній дірі пропорційна <b>площі</b> горизонту, а не обʼєму. Звідси маса від кількості бітів N:',
-  pMass2: 'Маса росте як корінь із байтів. Тому кожні ×10 маси коштують ×100 інформації — що більша діра, то важче її нагодувати.',
-  thSwallowed: 'Поглинуто', thMass: 'Маса', rowBit: '1 біт', rowDvd: '4.4 ГБ — один DVD',
+  hMass: 'Звідки береться маса',
+  pMass1: 'Тут одна вигадка, і вона оголошена великим шрифтом: <b>один байт важить 10²⁰ кілограмів</b>. Це і є TON 404 — машина, що перетворює інформацію в матерію. Від кількості байтів N маса виходить прямо:',
+  pMass2: 'Маса лінійна в байтах, тому 18.5 ГБ дають рівно одну масу Сонця. Складність живе не у формулі, а у віхах: наступний клас лежить від сотень до тисяч разів далі за попередній.',
+  thSwallowed: 'Поглинуто', thMass: 'Маса', rowByte: '1 байт', rowDvd: '4.4 ГБ — один DVD',
   hHorizon: 'Горизонт, температура, час життя',
-  pHorizon: 'Гігабайт інформації дає горизонт подій 7.04·10⁻³¹ метра — це менше за протон у 10¹⁵ разів — і температуру Гокінга 2.6·10²⁶ K — у сімнадцять квінтильйонів (1.7·10¹⁹) разів гарячіше за ядро Сонця.',
+  pHorizon: 'Далі — жодної вигадки. Гігабайт дає горизонт подій 159 метрів, і це справжній радіус Шварцшильда для такої маси. Температура Гокінга при цьому 1.14 мікрокельвіна — у 2.4 мільйона разів <b>холодніше</b> за реліктове тло Всесвіту, і саме тому така діра не випаровується, а росте.',
   hCheat: 'Де ми жульничаємо',
-  pCheat0: 'Тричі, і всі три рази свідомо.',
-  pCheat1: '<b>Час життя.</b> Чесне випаровування такої діри триває 10⁻²⁶ секунди — вона мала б зникнути ще до того, як ти відпустив кнопку миші. Тому тут стоїть −1% маси за добу.',
-  pCheat2: '<b>Масштаб на екрані.</b> Радіус росте як √(log₁₀ байтів), а не √байтів: справжній закон дав би 33000-кратну різницю між одним байтом і одним гігабайтом, і діра була б або невидимою, або на весь екран.',
-  pCheat3: '<b>Колір диска.</b> Температура падає як T ∝ M<sup>−1/4</sup> — це справжня модель тонкого диска, через яку діри зоряних мас світять у рентгені, а надмасивні у видимому. Підігнана лише прив’язка: 3000 K на масі монети, інакше для наших грамів колір лежав би поза будь-якою видимою шкалою.',
-  pCheat4: 'Решта — справжня фізика, включно з доплерівським підсиленням акреційного диска й джетами, що вмикаються при перевищенні ліміту Еддінгтона.',
+  pCheat0: 'Чотири рази, і всі чотири свідомо.',
+  pCheat1: '<b>Сама маса.</b> Один байт не важить 10²⁰ кілограмів. Справжня межа Бекенштейна каже протилежне: горизонт масою в кілограм вмістив би кілька петабайтів. Ми граємо навпаки, бо інакше вся ця сторінка показувала б кілька грамів і нічого більше.',
+  pCheat2: '<b>Розсіювання.</b> Діра втрачає 0.5% маси за добу — це ігрова механіка, а не фізика: справжнє випаровування такої маси триває 10⁶⁷ років, у 10⁵⁷ разів довше за вік Всесвіту. Єдиний чесний залишок: поки в дірі менше за 450 байтів, вона справді гарячіша за реліктове тло і справді зменшується.',
+  pCheat3: '<b>Масштаб на екрані.</b> Радіус росте як √(log₁₀ байтів), а не прямо: справжній закон дав би мільярдну різницю між одним байтом і одним гігабайтом, і діра була б або невидимою, або на весь екран. Але масштаб не прихований: у телеметрії стоїть рядок «масштаб» — скільки метрів у одному пікселі просто зараз. Це вже не підміна, а легенда мапи.',
+  pCheat4: '<b>Колір диска.</b> Температура падає як T ∝ M<sup>−1/4</sup> — це справжня модель тонкого диска, через яку діри зоряних мас світять у рентгені, а надмасивні у видимому. Але справжні числа тут від сотень тисяч до мільярдів кельвінів: це рентген і крайній ультрафіолет, око такого не бачить. Тому справжню температуру лінійно за логарифмом перекладено у видимий діапазон — так само фарбують знімки телескопів. Порядок збережено: гарячіше досі синіше.',
+  pCheat5: 'Решта — справжня фізика: радіус Шварцшильда, межа Еддінгтона, доплерівське підсилення диска й джети.',
   hClasses: 'Класи',
-  thClass: 'Клас', thReached: 'Досягається на', anything: 'будь-чому',
+  thClass: 'Клас', thReached: 'Досягається на',
+  hMiles: 'Драбина віх',
+  pMiles: 'За кожним щаблем стоїть справжня наука: реальний названий обʼєкт, фізична межа, за якою природа змінює правила, або розмір, який можна уявити. Жодне число тут не вписане руками — усі пораховані з тих самих формул.',
+  thMile: 'Віха',
   foot: 'Фан-проєкт. Один HTML-файл, один фрагментний шейдер, один Durable Object.',
 },
 en: {
-  name: 'English', other: 'українська',
+  other: 'українська',
   title: 'TON 404 — one black hole, fed with files',
-  quasar: 'quasar', quasarMax: 'quasar · eddington limit',
+  quasar: 'quasar', quasarMax: n => `quasar · ${n}× over the Eddington limit`,
   update: 'new version shipped — reload',
   tagline: 'throw anything into it',
   rankLabel: 'Object class', massLabel: 'Mass',
-  goalLabel: 'Global goal', teleLabel: 'Telemetry',
+  goalLabel: 'Next milestone', teleLabel: 'Telemetry',
   teleRadius: 'horizon radius', teleArea: 'horizon area',
-  teleTemp: 'Hawking temperature', teleEvap: 'full evaporation',
-  teleInfo: 'swallowed', teleRecord: 'record of the day', teleDecay: 'evaporates per day',
-  areaNote: 'the only number here that doubles when the data doubles',
-  evapNote: 'which is exactly why we cheat',
+  teleShadow: 'shadow diameter',
+  teleScale: 'scale', scaleNote: 'the on-screen size is not to scale — like a map legend, this row restores the real one',
+  scaleVal: v => `1 pixel = ${v}`,
+  shadowCmp: n => `M87*’s shadow is ${n}× wider`,
+  teleLum: 'luminosity', teleTemp: 'disc temperature',
+  teleEvap: 'full evaporation',
+  teleInfo: 'swallowed', teleRecord: 'record of the day', teleDecay: 'dissipates per day',
+  teleDilate: 'time dilation', teleTide: 'tidal stretch',
+  dilClock: s => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`,
+  dilGap: (you, earth) => `${you} at the hole · ${earth} passed on Earth`,
+  teleOrbit: 'disc orbit',
+  dilOrbit: (you, there) => `${you} for you · ${there} for the matter itself`,
+  tideSafe: 'the horizon can be crossed intact',
+  tideKills: d => `it tears you apart ${d} from the centre`,
+  lumNote: 'the Eddington limit — no hole this size can shine brighter',
+  evapNote: 'the real figure, and exactly why we cheat',
   dropHere: 'Drag a file here', orPaste: 'or paste from the clipboard',
   pickFile: 'choose a file', share: 'pull a friend in',
   shared: 'link copied — throw it to a friend',
   someoneFed: (ext, size) => `someone just threw in a .${ext} · ${size}`,
   privacy: 'The file never leaves your device. Only the bytes are counted — that is what an event horizon is.',
   feedLabel: 'Latest victims', aboutLabel: 'How this works',
-  aboutP1: 'Information in a black hole is proportional to the <b>area</b> of its horizon, not its volume. So mass grows as the square root of bytes, and <b>one gigabyte weighs 0.474 grams</b>.',
-  aboutP2: 'One hole for everyone. It evaporates by 1% a day.',
+  aboutP1: 'TON 404 turns information into matter: <b>one byte weighs 10²⁰ kilograms</b>. That is the only invented number here — everything else is computed from it with real formulas.',
+  aboutP2: 'One hole for everyone. 18.5 GB makes a solar mass. It dissipates by 0.5% a day.',
   expand: 'Read more ↗', close: 'Close',
 
-  classes: ['Empty horizon','Quantum fluctuation','Planck hole','Microscopic hole',
-            'Primordial hole','Asteroid-mass hole','Stellar hole','Intermediate hole',
-            'Supermassive hole'],
+  classes: ['Empty horizon','Primordial hole','Cold hole','Planetary hole',
+            'Impossible hole','Stellar hole','Intermediate hole','Supermassive hole'],
   classNotes: ['nothing swallowed yet. it is hungry',
-    'lighter than the Planck mass — formally not yet a black hole',
-    'the boundary where general relativity meets quantum mechanics',
-    'a horizon ten orders of magnitude smaller than a proton',
     'these could have formed in the first seconds after the Big Bang',
-    'will take longer to evaporate than the present age of the universe',
-    'like Cygnus X-1 — the first one humans ever found, in 1964',
+    'colder than the cosmic background — it now absorbs more than it radiates',
+    'as heavy as a planet, with a horizon under a centimetre',
+    'too heavy for a planet and too light for a black hole of this mass to be born from a star',
+    'past the Oppenheimer limit — nothing else of this mass can exist',
     'the rarest class; astronomers still argue about them',
     'like Sagittarius A* at the centre of our galaxy'],
-  gram: ['yg','zg','ag','fg','pg','ng','µg','mg','g','kg','t'],
+  kg: 'kg',
+  eqMass: 'M = N · 10²⁰ kg',
+  // exactly "1", not 1.00 — a printed decimal stays plural in English too
+  mEarth: v => String(v) === '1' ? 'Earth mass' : 'Earth masses',
+  mSun:   v => String(v) === '1' ? 'solar mass' : 'solar masses',
   byte: ['B','KB','MB','GB','TB','PB','EB'],
-  scales: ['the Planck length','a proton','a hydrogen atom','a strand of DNA','a bacterium',
-           'a grain of sand','a metre','the Earth','the Sun'],
-  objects: ['a speck of dust','a grain of sand','a drop of water','a paperclip','a coin',
-            'an apple','a brick','a person','a car','the Eiffel Tower','the Earth'],
+  len: ['nm','µm','mm','cm','m','km'],
+  scales: ['a wavelength of light','a blood cell','a grain of sand','a metre','a neutron star',
+           'the Moon','the Earth',"the Moon's orbit",'the Sun'],
+  objects: ['Ceres','Pluto','the Moon','Mercury','Mars','the Earth',
+            'Neptune','Jupiter','the Sun','Cygnus X-1','Sagittarius A*'],
+  mkind: { body: 'real object', limit: 'physical limit', geo: 'horizon size' },
+  // Every rung: name, then the science in one line. Keyed by id, so inserting a
+  // milestone in the middle can never slide a note onto the wrong number.
+  miles: {
+    vesta:      ['Vesta', 'the mass of the heaviest asteroid in the main belt'],
+    ceres:      ['Ceres', 'the mass of Ceres, the only dwarf planet in the asteroid belt'],
+    pluto:      ['Pluto', 'the mass of Pluto'],
+    cmb:        ['Colder than the universe', 'its Hawking temperature has fallen to 2.725 K — the hole now absorbs more from the cosmic background than it radiates, and starts growing on its own'],
+    moon:       ['The Moon', 'the mass of the Moon'],
+    mmHoriz:    ['Horizon: one millimetre', 'the first size you could actually see'],
+    earth:      ['The Earth', 'the mass of our planet, squeezed into a 9 mm horizon'],
+    neptune:    ['Neptune', 'the mass of Neptune'],
+    mHoriz:     ['Horizon: one metre', 'about the size of a person'],
+    jupiter:    ['Jupiter', 'the mass of the heaviest planet in the solar system'],
+    deuterium:  ['Deuterium-burning limit', '13.6 Jupiter masses — below this not even deuterium ignites, and the object stays a planet'],
+    brownDwarf: ['Stellar ignition limit', '0.08 solar masses — below this hydrogen never burns and no star is ever born'],
+    kmHoriz:    ['Horizon: one kilometre', 'big enough to show up on a map'],
+    sun:        ['The Sun', 'exactly one solar mass, with a horizon just 2.95 km'],
+    chandra:    ['Chandrasekhar limit', '1.4 solar masses — no heavier white dwarf can exist in nature; it collapses'],
+    tov:        ['Oppenheimer limit', '2.17 solar masses — no heavier neutron star exists. From here on it can only be a black hole'],
+    gw170817:   ['Lightest known hole', 'about 2.7 solar masses — the remnant of the neutron-star merger GW170817'],
+    nsHoriz:    ['Horizon: a neutron star', 'ten kilometres: a hole the size of an entire neutron star'],
+    cygX1:      ['Cygnus X-1', '21 solar masses — the first black hole humanity ever found, in 1964'],
+    gw150914:   ['GW150914', '62 solar masses — the first black-hole merger ever heard, and the 2017 Nobel Prize'],
+    gapIn:      ['The forbidden band', '65 solar masses: above this, pair instability tears the star apart completely and leaves no black hole at all'],
+    imbh:       ['Intermediate class', '100 solar masses — the line above which a black hole is officially called intermediate. Only a handful are known'],
+    gapOut:     ['Out of the forbidden band', '130 solar masses — allowed territory again. Nature makes no holes between these two limits'],
+    gw190521:   ['GW190521', '142 solar masses — the first intermediate-mass black hole caught by gravitational waves'],
+    m82x1:      ['M82 X-1', 'around 400 solar masses, in the Cigar Galaxy'],
+    earthRad:   ['Horizon: Earth’s radius', 'the shadow of the hole is now the size of our planet'],
+    omegaCen:   ['Omega Centauri', '8200 solar masses — found in 2024 from the speed of stars in the cluster’s core'],
+    jupRad:     ['Horizon: Jupiter’s radius', 'seventy thousand kilometres'],
+    rgg118:     ['RGG 118', '50,000 solar masses — the smallest supermassive black hole known to astronomers'],
+    smbh:       ['SUPERMASSIVE', '100,000 solar masses. The official supermassive class, and the finale of Season I. Its horizon is one light-second'],
+    moonOrbit:  ['Horizon: the Moon’s orbit', 'the horizon now reaches out to where the Moon circles the Earth'],
+  },
   kinds: ['bureaucratic matter','frozen photons','ultradense folded matter',
           'a cast of spacetime','congealed vibrations','fossilised logic',
           'dead instructions','petrified glyphs','pure information entropy'],
@@ -725,22 +969,28 @@ en: {
   whispers: ['it is looking back', 'information is never lost',
              'something on the far side is counting', 'entropy remembers everything'],
 
-  metre: 'm', metre2: 'm²', sec: 's', years: 'years', clip: 'clipboard.clip',
+  metre2: 'm²', sec: 's', years: 'years', clip: 'clipboard.clip',
   empty: 'empty. it is hungry',
   cmpSame: n => `weighs about as much as ${n}`,
   cmpDiff: (v, n, up) => `${v}× ${up ? 'heavier' : 'lighter'} than ${n}`,
-  cmpRad: (k, n, less) => `${k}× ${less ? 'smaller' : 'larger'} than the radius of ${n}`,
+  cmpRad: (k, n, less) => `${k}× ${less ? 'smaller' : 'larger'} than ${n}`,
   ago: s => s < 10 ? 'just now' : s < 60 ? `${Math.floor(s)}s ago`
      : s < 3600 ? `${Math.floor(s / 60)}m ago`
      : s < 86400 ? `${Math.floor(s / 3600)}h ago` : `${Math.floor(s / 86400)}d ago`,
   victims: n => `${n} victim${n === 1 ? '' : 's'}`,
   awayAte: (v, size) => `while you were away it swallowed ${v} (${size})`,
   awayEvap: s => `while you were away it evaporated ${s}`,
-  hotter: k => `${k}× hotter than the core of the Sun`,
-  bitsOn: b => `${b} bits on the horizon`,
+  cmpRadSame: n => `almost exactly the size of ${n}`,
+  discCmp: k => `${k}× hotter than the surface of the Sun`,
+  lumVal: n => `like ${n} Suns`,
+  capacity: b => `the horizon could hold ${b} bits`,
   goalLeft: (g, left) => `${g} — ${left} to go`,
-  goalDone: 'no goals left',
-  decay: v => `evaporating at ${v} a day`,
+  goalDone: 'every milestone taken',
+  mission: 'Season I · growing a supermassive black hole, together',
+  showEq: 'show formulas', hideEq: 'hide formulas',
+  season: (i, n, left) => `rung ${i} of ${n} · ${left} to supermassive`,
+  seasonDone: n => `all ${n} rungs taken · supermassive reached`,
+  decay: v => `losing ${v} a day`,
   alone: 'you are alone with it', watchers: n => `${n} watching it`,
   yours: (v, pct) => `your contribution: ${v}` + (pct ? ` · ${pct}% of the mass` : ''),
   nothing: 'nothing', horizonClear: 'the horizon is clear',
@@ -751,27 +1001,31 @@ en: {
              'cooldown': 'too fast — let it swallow',
              'daily cap': 'that is enough out of you today',
              'bytes out of range': 'too big a bite' },
-  sgr: need => `to match Sagittarius A* (4.3·10⁶ solar masses) it needs ${need} more bytes`
-     + ' — and the visible universe holds only 10⁸⁰ atoms',
+  sgr: need => `to match Sagittarius A* (4.3·10⁶ solar masses) it needs ${need} more`
+     + ' — forty-three times this season’s target',
 
   lead: 'A black hole you feed with files. There is one, and it is shared: throw something in on another continent and it lands on your screen a second later.',
   hFile: 'Your file is never uploaded',
   pFile1: 'This is not a promise buried in a privacy policy — it is the architecture. Your browser takes the file size, the extension, and a signature computed over the first 64 KB. Exactly this is what reaches the server:',
   pFile2: 'The filename is not in there — and the server would refuse it even if you sent it. People throw <code>passport_scan.jpg</code> into this thing, and not one of those words should ever leave their device. Past the first 64 KB the file is not read at all.',
-  hMass: 'Why the mass is real',
-  pMass1: 'Bekenstein–Hawking entropy says the information in a black hole is proportional to the <b>area</b> of its horizon, not its volume. From that, the mass follows from the number of bits N:',
-  pMass2: 'Mass grows as the square root of bytes. Every ×10 in mass therefore costs ×100 in information — the bigger the hole gets, the harder it is to feed.',
-  thSwallowed: 'Swallowed', thMass: 'Mass', rowBit: '1 bit', rowDvd: '4.4 GB — one DVD',
+  hMass: 'Where the mass comes from',
+  pMass1: 'There is one invented number here, and it is declared in bold: <b>one byte weighs 10²⁰ kilograms</b>. That is what TON 404 is — a machine that turns information into matter. From a count of N bytes the mass follows directly:',
+  pMass2: 'Mass is linear in bytes, so 18.5 GB makes exactly one solar mass. The difficulty lives in the milestones, not the formula: each next class sits hundreds to thousands of times further out than the last.',
+  thSwallowed: 'Swallowed', thMass: 'Mass', rowByte: '1 byte', rowDvd: '4.4 GB — one DVD',
   hHorizon: 'Horizon, temperature, lifetime',
-  pHorizon: 'A gigabyte of information gives an event horizon of 7.04·10⁻³¹ metres — 10¹⁵ times smaller than a proton — and a Hawking temperature of 2.6·10²⁶ K — seventeen quintillion (1.7·10¹⁹) times hotter than the core of the Sun.',
+  pHorizon: 'From here on, nothing is invented. A gigabyte gives an event horizon of 159 metres — the real Schwarzschild radius for that mass. Its Hawking temperature is 1.14 microkelvin, 2.4 million times <b>colder</b> than the cosmic background, which is precisely why a hole like this does not evaporate but grows.',
   hCheat: 'Where we cheat',
-  pCheat0: 'Three times, and all three on purpose.',
-  pCheat1: '<b>Lifetime.</b> An honest evaporation for a hole this size takes 10⁻²⁶ seconds — it would be gone before you let go of the mouse button. So it loses 1% of its mass a day instead.',
-  pCheat2: '<b>Scale on screen.</b> The radius grows as √(log₁₀ bytes), not √bytes: the real law would put a factor of 33000 between one byte and one gigabyte, and the hole would be either invisible or the entire screen.',
-  pCheat3: '<b>Disc colour.</b> Its temperature falls as T ∝ M<sup>−1/4</sup> — the real thin-disc model, and the reason stellar-mass holes shine in X-rays while supermassive ones shine in visible light. Only the anchor is tuned: 3000 K at the mass of a coin, or the colour for our few grams would sit far outside anything the eye can see.',
-  pCheat4: 'Everything else is real physics, including the Doppler boosting of the accretion disc and the jets that switch on when the Eddington limit is exceeded.',
+  pCheat0: 'Four times, and all four on purpose.',
+  pCheat1: '<b>The mass itself.</b> A byte does not weigh 10²⁰ kilograms. The real Bekenstein bound says the opposite: a horizon weighing one kilogram could hold several petabytes. We run it backwards, because otherwise this whole page would read a few grams and nothing else.',
+  pCheat2: '<b>Dissipation.</b> The hole loses 0.5% of its mass a day — a game mechanic, not physics: real evaporation at this mass takes 10⁶⁷ years, 10⁵⁷ times longer than the universe has existed. One honest remnant survives: while the hole holds under 450 bytes it really is hotter than the cosmic background, and really does shrink.',
+  pCheat3: '<b>Scale on screen.</b> The radius grows as √(log₁₀ bytes), not directly: the real law would put a factor of a billion between one byte and one gigabyte, and the hole would be either invisible or the entire screen. The scale is not hidden, though: the telemetry carries a "scale" row — how many metres one pixel is worth right now. That makes it a map legend rather than a sleight of hand.',
+  pCheat4: '<b>Disc colour.</b> Its temperature falls as T ∝ M<sup>−1/4</sup> — the real thin-disc model, and the reason stellar-mass holes shine in X-rays while supermassive ones shine in visible light. But the real numbers run from hundreds of thousands to billions of kelvin: that is X-ray and extreme ultraviolet, and the eye sees none of it. So the real temperature is mapped log-linearly into the visible band, exactly the way telescope images are false-coloured. Order survives: hotter is still bluer.',
+  pCheat5: 'Everything else is real physics: the Schwarzschild radius, the Eddington limit, Doppler boosting of the disc, and the jets.',
   hClasses: 'Classes',
-  thClass: 'Class', thReached: 'Reached at', anything: 'anything at all',
+  thClass: 'Class', thReached: 'Reached at',
+  hMiles: 'The ladder',
+  pMiles: 'Every rung has real science behind it: a real named object, a physical limit where nature changes the rules, or a size you can picture. Not one number here is typed in by hand — all of them are computed from the same formulas.',
+  thMile: 'Milestone',
   foot: 'A fun project. One HTML file, one fragment shader, one Durable Object.',
 },
 };
@@ -789,26 +1043,86 @@ for (const el of document.querySelectorAll('[data-th]')) el.innerHTML  = L[el.da
 for (const el of document.querySelectorAll('[data-ta]')) el.setAttribute('aria-label', L[el.dataset.ta]);
 
 // ─── physics ───────────────────────────────────────────────────────────────
-const M_PLANCK = 2.176434e-8, G = 6.67430e-11, C = 2.99792458e8;
+const G = 6.67430e-11, C = 2.99792458e8;
 const HBAR = 1.054571817e-34, KB = 1.380649e-23, LN2 = Math.LN2;
+const SUN = 1.989e30, L_SUN = 3.828e26, M_EARTH = 5.972e24;
+const T_CMB = 2.725;                            // temperature of the universe
+// The mass whose Hawking temperature IS the cosmic background: below it the hole
+// radiates more than it absorbs and really shrinks, above it really grows.
+// Derived, not typed — a class boundary and a milestone both point here, and a
+// rounded literal made them disagree in the sixth digit.
+const M_CMB = HBAR * C ** 3 / (8 * Math.PI * G * KB * T_CMB);
 
-const massOf   = bits => M_PLANCK * Math.sqrt(bits * LN2 / (4 * Math.PI));
+// TON 404 turns information into matter. THIS LINE IS THE ONLY INVENTED NUMBER
+// on the page — everything below is real physics applied to the mass it makes.
+// Picked so the ladder lands on real objects: 18.5 GB is one solar mass and
+// 1.77 PB a supermassive hole.
+const KG_PER_BYTE = 1e20;
+const massOf   = bytes => bytes * KG_PER_BYTE;
+const bytesFor = kg => kg / KG_PER_BYTE;
+
 const radiusOf = m => 2 * G * m / (C * C);
 const tempOf   = m => m > 0 ? HBAR * C ** 3 / (8 * Math.PI * G * m * KB) : 0;
 const evapOf   = m => 5120 * Math.PI * G * G * m ** 3 / (HBAR * C ** 4);
-// horizon area: A = 4·l_P²·N·ln2 — the only quantity linear in bytes
+// Plain geometry now. Under the old entropy law this was the one quantity
+// linear in bytes; with a linear mass law it grows as bytes² instead, and it is
+// no longer the Bekenstein area — see bitsCap for that.
+const areaOf   = m => 4 * Math.PI * radiusOf(m) ** 2;
+// Eddington limit — the brightest a hole of this mass can shine, in watts
+const eddOf    = m => 1.26e31 * m / SUN;
+// The same limit expressed as an accretion rate, in BYTES per second under our
+// mass law: Ṁ = L_Edd / (η c²) at the standard 10% radiative efficiency.
+// It comes out at 1.4e-5 B/s for a solar-mass hole — so a single 5 MB throw is
+// already 3.6e11 times over Eddington, and there is no feeding rate here that
+// is not. That is why the jets are driven by how fast you feed rather than by
+// this threshold: gating on the real limit would leave them permanently on.
+// The label states the true ratio instead of claiming a limit it never checks.
+const eddBps   = m => eddOf(m) / (0.1 * C ** 2) / KG_PER_BYTE;
+// The dark patch a telescope actually sees is bigger than the horizon: light
+// bending wraps the shadow out to √27 · GM/c² across — 2.598 Schwarzschild
+// radii, not one. This is the quantity the Event Horizon Telescope images are
+// quoted in, so it is the only one comparable to a real photograph.
+const shadowOf = m => Math.sqrt(27) * G * m / (C * C);
+const M87 = 6.5e9 * SUN;                 // first black hole ever photographed
+// The real Bekenstein bound: how much information this horizon could hold. Now
+// a different question from how much we fed it, and the answer dwarfs it.
 const LP2      = HBAR * G / C ** 3;
-const areaOf   = bits => 4 * LP2 * bits * LN2;
-// the inverse problem: how many bytes make the hole weigh m
-const bytesFor = m => (m / M_PLANCK) ** 2 * 4 * Math.PI / LN2 / 8;
+const bitsCap  = m => areaOf(m) / (4 * LP2 * LN2);
 
-const SUN = 1.989e30;
-// classes by real mass; the bottom is the quantum regime, which is all we'll
-// ever feed. Boundaries here, names in the dictionary — per language
-const CLASSES = [0, 1e-30, M_PLANCK, 1e-6, 1e-3, 1e12, 3 * SUN, 1e5 * SUN, 1e6 * SUN]
+// Gravitational time dilation for matter on a circular orbit at k Schwarzschild
+// radii: dτ/dt = √(1 − 3GM/rc²), which folds in both the gravity and the orbital
+// speed. Note what it does NOT contain: mass. Schwarzschild geometry is
+// self-similar in r/r_s, so at any fixed multiple of the radius the rate is the
+// same constant for a hole of any weight — a byte and a supermassive one dilate
+// identically. Only durations scale with mass (see iscoPeriod), never rates.
+const orbitDil = k => Math.sqrt(1 - 1.5 / k);
+const ISCO_RS  = 3;                      // innermost stable orbit: 6GM/c² = 3 r_s
+const DIL      = orbitDil(ISCO_RS);      // exactly 1/√2 — the disc's inner edge ages √2 slower
+
+// Tidal stretch: the difference in pull between your head and your feet, which
+// is what actually tears you apart. Δa = 2GML/r³, evaluated at the horizon
+// (r = r_s) it collapses to L·c⁶/4G²M² — falling as M⁻². This is the one number
+// here that gets GENTLER as the hole grows, and the reason a supermassive hole
+// can be crossed intact while a stellar one shreds you thousands of km out.
+const L_BODY  = 1.7;                     // a person, head to feet, in metres
+const G_EARTH = 9.81;
+const tideAt  = m => m > 0 ? L_BODY * C ** 6 / (4 * G * G * m * m) : Infinity;
+// ponytail: the survivability threshold is the only number in this block that is
+// not derived — human tissue has no single tearing figure. 10 g of stretch is
+// "rough but survivable"; retune freely, nothing else depends on it.
+const TIDE_OK = 10;
+// Where the stretch drops to that threshold: 2GML/r³ = TIDE_OK·g. Beyond this
+// radius you are fine, inside it you are not.
+const spagR   = m => Math.cbrt(2 * G * m * L_BODY / (TIDE_OK * G_EARTH));
+
+// Classes by real mass, and every boundary above the second is also a milestone
+// below — so the rank and the ladder can never contradict each other. CLASSES[1]
+// is one byte, which is not a rung, and that is why the assert takes slice(2).
+// Boundaries here, names in the dictionary — per language.
+const CLASSES = [0, KG_PER_BYTE, M_CMB, M_EARTH, 0.013 * SUN, 2.17 * SUN,
+                 100 * SUN, 1e5 * SUN]
   .map((m, i) => [m, L.classes[i], L.classNotes[i]]);
 const classOf = m => CLASSES.reduce((a, c) => m >= c[0] ? c : a, CLASSES[0]);
-const nextClass = m => CLASSES.find(c => c[0] > m);
 
 // ─── state ─────────────────────────────────────────────────────────────────
 const KEY = 'blackhole.v1', MKEY = 'blackhole.mine', MTKEY = 'blackhole.mine.t';
@@ -816,20 +1130,29 @@ const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null;
 // in shared mode S comes from the server and is never stored locally
 let S = (API ? null : load()) || { bytes: 0, count: 0, recent: [], t: Date.now() };
 S.count |= 0;                                  // state saved before the counter existed
+// Dissipation, NOT Hawking evaporation — see "where we cheat". Mass is linear
+// in bytes now, so losing 0.5% of the mass is losing 0.5% of the bytes, once.
+// The rate sets the ceiling the hole can ever reach: a steady inflow F settles
+// at F/rate, so at 11 TB/day this allows 2.2 PB — comfortably past the season
+// target of 1.77 PB. Raise it and the target becomes unreachable forever.
+// Must match the worker's DECAY.
+const DECAY = 0.995;
+
 // The personal contribution is always yours, but it is part of the hole and
-// evaporates with it. Without this, "your contribution" grew past hundreds of
-// percent: the hole loses ~2% of bytes a day, the counter lost nothing.
-// Same formula as the worker's.
+// dissipates with it. Without this, "your contribution" grew past hundreds of
+// percent: the hole lost bytes a day, the counter lost nothing.
 let MINE = +localStorage.getItem(MKEY) || 0;
 {
   const days = (Date.now() - (+localStorage.getItem(MTKEY) || Date.now())) / 864e5;
-  if (days > 0 && MINE > 0) MINE *= Math.pow(0.99, days) ** 2;
+  if (days > 0 && MINE > 0) MINE *= Math.pow(DECAY, days);
 }
 
-// Hawking evaporation: -1% mass per day. mass ∝ √bytes ⇒ bytes ∝ mass²
 // (in shared mode the server does this)
+// ponytail: an idle open tab in shared mode never decays locally, so its mass
+// goes stale until the next broadcast — cosmetic at session scale; a local
+// re-decay tick would fix it if tabs ever live for days.
 const days = (Date.now() - S.t) / 864e5;
-if (!API && days > 0 && S.bytes > 0) S.bytes *= Math.pow(0.99, days) ** 2;
+if (!API && days > 0 && S.bytes > 0) S.bytes *= Math.pow(DECAY, days);
 S.t = Date.now();
 
 // try/catch is mandatory: private-mode Safari and full quotas make setItem
@@ -845,26 +1168,33 @@ const save = () => {
 };
 
 // ─── formatting ────────────────────────────────────────────────────────────
-const GRAM_UNITS = [1e-24,1e-21,1e-18,1e-15,1e-12,1e-9,1e-6,1e-3,1,1e3,1e6]
-  .map((f, i) => [f, L.gram[i]]);
 // sig > 0 — the headline number: a FIXED count of significant digits, not
 // "more decimals", or the biggest number on the page jitters in width on
 // every throw. Six digits is the threshold where megabytes still register on
-// a hole of tens of gigabytes (mass grows as √bytes).
-// sig = 0 — goal captions. Goals are always round, so trailing zeros are cut:
-// "10 g" and "3 g", not "10.0 g" and "3.00 g".
+// a hole of tens of gigabytes.
+// sig = 0 — captions. Those are always round, so trailing zeros are cut:
+// "10 M☉" and "3 M☉", not "10.0" and "3.00".
+//
+// Grams are gone: the reachable range is now 1e20 kg (one byte) to 2e35 kg, so
+// three bands cover everything — bare kg while the hole is lighter than a
+// planet, then Earths, then Suns. Without this the headline number rendered
+// one solar mass as a 28-digit count of tonnes.
 function fmtMass(kg, sig = 0) {
-  const g = kg * 1000;
-  if (g <= 0) return ['0', L.gram[8]];
-  for (let i = GRAM_UNITS.length - 1; i >= 0; i--) {
-    const [f, u] = GRAM_UNITS[i];
-    if (g >= f || i === 0) {
-      const v = g / f;
-      // +'' via Number, not a regex: a regex would also strip zeros in "100"
-      return [sig ? v.toPrecision(sig)
-                  : +v.toFixed(v < 10 ? 2 : v < 100 ? 1 : 0) + '', u];
-    }
-  }
+  if (kg <= 0) return ['0', L.mSun(0)];
+  // toPrecision is not usable here: once the integer part outgrows `sig` it
+  // flips to exponential — 332982 Earth masses came out as "3.33e+5", which is
+  // not a headline. Same digit count, always plain decimals, so a big number
+  // rounds off its tail instead ("333000") rather than growing an exponent.
+  const num = v => {
+    if (!sig) return +v.toFixed(v < 10 ? 2 : v < 100 ? 1 : 0) + '';
+    const d = sig - 1 - Math.floor(Math.log10(Math.abs(v)));
+    return d >= 0 ? v.toFixed(d) : (Math.round(v / 10 ** -d) * 10 ** -d).toFixed(0);
+  };
+  // The unit agrees with the number as printed, so the rounded string is what
+  // gets declined — 17980.34 shows as "17980" and must read «мас Землі».
+  if (kg >= SUN)     { const s = num(kg / SUN);     return [s, L.mSun(s)]; }
+  if (kg >= M_EARTH) { const s = num(kg / M_EARTH); return [s, L.mEarth(s)]; }
+  return [sci(kg, sig ? 4 : 2), L.kg];
 }
 const BYTE_UNITS = L.byte;
 function fmtBytes(b) {
@@ -872,18 +1202,39 @@ function fmtBytes(b) {
   while (b >= 1024 && i < BYTE_UNITS.length - 1) { b /= 1024; i++; }
   return [(i === 0 ? Math.round(b) : b.toFixed(b < 10 ? 2 : 1)) + '', BYTE_UNITS[i]];
 }
+// The whole point of the new law is that the horizon has a size you can picture,
+// so it must not render as "1.63·10⁵ m" where "163 km" will do.
+const LEN_UNITS = [1e-9, 1e-6, 1e-3, 1e-2, 1, 1e3];
+function fmtLen(m) {
+  if (m <= 0) return ['0', L.len[4]];
+  // The table bottoms out at nanometres, so anything smaller rounded to a bare
+  // "0 nm" — reachable on every load, since the intro eases the hole up from
+  // nothing and its horizon spends those frames well below a nanometre.
+  if (m < LEN_UNITS[0]) return [sci(m), L.len[4]];
+  let i = 0;
+  while (i < LEN_UNITS.length - 1 && m >= LEN_UNITS[i + 1]) i++;
+  const v = m / LEN_UNITS[i];
+  return [(v < 10 ? +v.toFixed(2) : v < 100 ? +v.toFixed(1) : Math.round(v)) + '', L.len[i]];
+}
 function sci(x, d = 2) {
   if (x === 0) return '0';
-  const e = Math.floor(Math.log10(Math.abs(x)));
-  const m = (x / 10 ** e).toFixed(d);
+  let e = Math.floor(Math.log10(Math.abs(x)));
+  let m = (x / 10 ** e).toFixed(d);
+  // Rounding can push the mantissa up to a full ten — 9.999e6 printed as
+  // "10.00·10⁶" instead of "1.00·10⁷". Reachable for #temp and #bits.
+  if (Math.abs(+m) >= 10) { e++; m = (x / 10 ** e).toFixed(d); }
   return m + '·10' + String(e).replace(/[-\d]/g, c => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(c)]);
 }
-const SCALES = [1.616e-35, 8.4e-16, 5.3e-11, 2e-9, 1e-6, 5e-4, 1, 6.371e6, 6.96e8]
+// Horizon sizes worth comparing against. The reachable range is now 1.5e-7 m
+// (one byte) to 3.8e8 m, so anything sub-atomic is gone and there is nothing
+// above the Sun's radius to reach for.
+const SCALES = [5e-7, 1e-5, 5e-4, 1, 1e4, 1.737e6, 6.371e6, 3.844e8, 6.957e8]
   .map((r, i) => [r, L.scales[i]]);
-// Mass compared to everyday objects — astronomy is silent between a gram and
-// a ton, since real black holes of such mass don't exist. Ukrainian names stay
-// in the nominative: both phrases below are built so no declension is needed.
-const OBJECTS = [1e-9, 1e-6, 5e-5, 1e-3, 5e-3, 0.15, 2, 70, 1500, 7.3e6, 5.97e24]
+// Mass compared to real bodies. Everyday objects are useless now — a paperclip
+// and the Eiffel Tower both sit below one byte. Ukrainian names stay in the
+// nominative: both phrases below are built so no declension is needed.
+const OBJECTS = [9.39e20, 1.303e22, 7.346e22, 3.301e23, 6.417e23, 5.972e24,
+                 1.024e26, 1.898e27, SUN, 21.2 * SUN, 4.3e6 * SUN]
   .map((m, i) => [m, L.objects[i]]);
 function cmpMass(kg) {
   if (kg <= 0) return L.empty;
@@ -898,17 +1249,22 @@ function cmpMass(kg) {
 }
 
 // ─── disc color ────────────────────────────────────────────────────────────
-// The hole itself has no color: no features besides mass, so a 3 g and a 3 kg
-// hole look identical. The disc does. In the Shakura–Sunyaev thin-disc model
-// its temperature falls as T ∝ M^(−1/4) — the reason stellar-mass holes shine
-// in X-rays while supermassive ones shine in visible light.
-//
-// ponytail: the law is real, only the anchor constant is tuned — 3000 K at
-// coin mass. Otherwise our few grams would sit outside any visible scale.
-// Same kind of cut corner as the on-screen radius.
-const T_ANCHOR = 3000, M_ANCHOR = 5e-3;
-const diskT = kg => kg <= 0 ? 30000
-  : Math.min(30000, Math.max(700, T_ANCHOR * Math.pow(kg / M_ANCHOR, -0.25)));
+// The hole itself has no color: no features besides mass, so two holes of
+// different weight look identical. The disc does. In the Shakura–Sunyaev
+// thin-disc model its inner temperature falls as T ∝ M^(−1/4) — the real reason
+// stellar-mass holes shine in X-rays while supermassive ones shine in visible
+// light. Anchored at ~1e7 K for a solar-mass hole accreting near 10% Eddington,
+// which is the textbook figure, not a tuned constant.
+const discT = kg => kg > 0 ? 1e7 * Math.pow(kg / SUN, -0.25) : 0;
+// ponytail: false colour. Over the reachable range — one byte up to the season
+// target — the real disc runs 5.6e5–3.8e9 K: hard UV and X-ray, which the eye
+// cannot see at all, and bbColor below is only valid 1000–40000 K. So 3.8
+// decades of real temperature are mapped log-linearly onto the 1.6 decades the
+// eye has, exactly the way telescope images are
+// false-coloured. Order survives: hotter is still bluer, and the
+// disc visibly cools as the hole grows.
+const diskT = kg => kg <= 0 ? 30000 : Math.min(40000, Math.max(1000,
+  1000 * Math.pow(40, (Math.log10(discT(kg)) - 5) / 5)));
 
 // Planck-in-RGB approximation (Tanner Helland, valid ~1000-40000 K).
 // An exact integral with CIE matching functions adds nothing visible here.
@@ -931,13 +1287,18 @@ const diskColors = kg => {
   return [bbColor(t * Math.sqrt(T_SPREAD)), bbColor(t / Math.sqrt(T_SPREAD))];
 };
 
+// Same shape as cmpMass, and for the same reason: the ratios are small numbers
+// now. Under the entropy law radii spanned 10⁻³¹ to 10⁻³ m, so sci() was the
+// only sane format; today the nearest scale is usually within a factor of ten
+// and "1.3·10⁰ times" is a silly way to write "1.3 times".
 function cmpRadius(r) {
   if (r <= 0) return '';
   let best = SCALES[0];
   for (const s of SCALES) if (Math.abs(Math.log10(r / s[0])) < Math.abs(Math.log10(r / best[0]))) best = s;
-  const k = best[0] / r;
-  return k > 1 ? L.cmpRad(sci(k, 1), best[1], true)
-               : L.cmpRad(sci(1 / k, 1), best[1], false);
+  const k = r / best[0];
+  if (k > 0.66 && k < 1.5) return L.cmpRadSame(best[1]);
+  const n = k > 1 ? k : 1 / k;
+  return L.cmpRad(n < 10 ? +n.toFixed(1) : Math.round(n), best[1], k < 1);
 }
 function fmtTime(s) {
   if (s < 1) return sci(s, 2) + ' ' + L.sec;
@@ -964,34 +1325,73 @@ const rel = ts => L.ago((Date.now() - ts) / 1000);
 // ─── UI rendering ──────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
-// Round mass numbers in kg, two steps per decade. Every ×10 in mass costs
-// ×100 in information, so on pure decades the goal bar barely moves: the ×3
-// intermediate step in mass is ×10 in bytes and moves ten times livelier.
-const GOALS = [];
-for (let e = -9; e <= 3; e++) GOALS.push(10 ** e, 3 * 10 ** e);
-const nextGoal = m => GOALS.find(g => g > m);
+// ─── the ladder ────────────────────────────────────────────────────────────
+// Every rung has real science behind it, and every value is DERIVED from a
+// physical quantity rather than typed in — the same rule the tables below
+// already follow, and the reason a stale number can't drift in here.
+const MSUN  = ms => bytesFor(ms * SUN);              // a mass in suns
+const MKG   = kg => bytesFor(kg);                    // a mass in kg
+const MRAD  = r  => bytesFor(r * C * C / (2 * G));   // horizon of this radius
+//
+// Three kinds, one table:
+//   body  — a real named object, mass straight from the literature
+//   limit — a physical threshold: cross it and nature changes its mind
+//   geo   — the horizon reaching a size you can picture
+// Names and notes live in L.miles[id] — KEYED, not index-aligned, so inserting
+// a rung in the middle can never slide a translation onto the wrong number.
+const MILES = [
+  ['vesta',      'body',  MKG(2.59e20)],     //   2.6 B
+  ['ceres',      'body',  MKG(9.39e20)],     //   9.4 B
+  ['pluto',      'body',  MKG(1.303e22)],    //   130 B
+  ['cmb',        'limit', MKG(M_CMB)],       //   450 B  ← colder than the sky
+  ['moon',       'body',  MKG(7.346e22)],    //   735 B
+  ['mmHoriz',    'geo',   MRAD(1e-3)],       //  6.6 KB
+  ['earth',      'body',  MKG(M_EARTH)],     // 58.3 KB
+  ['neptune',    'body',  MKG(1.024e26)],    // 0.98 MB
+  ['mHoriz',     'geo',   MRAD(1)],          // 6.4 MB
+  ['jupiter',    'body',  MKG(1.898e27)],    // 18.1 MB
+  ['deuterium',  'limit', MSUN(0.013)],      //  246 MB
+  ['brownDwarf', 'limit', MSUN(0.08)],       // 1.48 GB
+  ['kmHoriz',    'geo',   MRAD(1e3)],        // 6.27 GB
+  ['sun',        'body',  MSUN(1)],          // 18.5 GB ← the headline
+  ['chandra',    'limit', MSUN(1.4)],        // 25.9 GB
+  ['tov',        'limit', MSUN(2.17)],       // 40.2 GB
+  ['gw170817',   'body',  MSUN(2.7)],        // 50.0 GB
+  ['nsHoriz',    'geo',   MRAD(1e4)],        // 62.7 GB
+  ['cygX1',      'body',  MSUN(21.2)],       //  393 GB ← first one ever found
+  ['gw150914',   'body',  MSUN(62)],         // 1.12 TB
+  ['gapIn',      'limit', MSUN(65)],         // 1.18 TB ← forbidden band opens
+  ['imbh',       'limit', MSUN(100)],        // 1.81 TB ← intermediate class
+  ['gapOut',     'limit', MSUN(130)],        // 2.35 TB ← and closes
+  ['gw190521',   'body',  MSUN(142)],        // 2.57 TB
+  ['m82x1',      'body',  MSUN(400)],        // 7.24 TB
+  ['earthRad',   'geo',   MRAD(6.371e6)],    // 39.0 TB
+  ['omegaCen',   'body',  MSUN(8200)],       //  148 TB
+  ['jupRad',     'geo',   MRAD(6.9911e7)],   //  428 TB
+  ['rgg118',     'body',  MSUN(5e4)],        //  904 TB
+  ['smbh',       'limit', MSUN(1e5)],        // 1.77 PB ← season I finale
+  ['moonOrbit',  'geo',   MRAD(3.844e8)],    // 2.30 PB
+];
+const milesPassed = bytes => MILES.filter(m => m[2] <= bytes).length;
 
-// A milestone is crossing an everyday object's weight, not an astronomy class.
-// Only four classes are reachable (the last, primordial, at 4.5 GB — and the
-// hole sits there forever). Objects span the reachable range evenly:
-// sand grain 4.7 KB · droplet 11 MB · paperclip 4.5 GB · coin 111 GB · apple 98 TB.
-const milestoneOf = kg => OBJECTS.filter(o => o[0] <= kg).length;
 // A local hole already has mass from localStorage — seed at once, or the first
 // milestone announces itself retroactively. In shared mode S jumps from zero
 // to server mass, so the first snapshot seeds it; until then mile stays null.
 let mile = null;
-if (!API) mile = milestoneOf(massOf(S.bytes * 8));
+if (!API) mile = milesPassed(S.bytes);
 
 function checkMilestone() {
-  const now = milestoneOf(massOf(S.bytes * 8));
+  const now = milesPassed(S.bytes);
   if (mile !== null && now > mile) {
-    // The UI gets pulled past the horizon for a beat and let back.
+    // The UI steps aside for a beat and comes back the way it arrives on load.
     document.body.classList.add('collapse');
-    // Announce after the return: during the pull the message would ride along
-    // with everything else, since #warn lives inside .ui
+    // Announce after the return: while it is away the message would fade out
+    // along with everything else, since #warn lives inside .ui
     setTimeout(() => {
       document.body.classList.remove('collapse');
-      warn(L.milestone(OBJECTS[now - 1][1]));
+      // A batch can clear several rungs at once; only the top one is news.
+      const [name, note] = L.miles[MILES[now - 1][0]];
+      warn(L.milestone(name), note);
     }, 1100);
     // at 0.7/s decay the old 2.2 would burn for three seconds
     shock = 1.4;
@@ -1003,49 +1403,114 @@ let shown = 0;   // mass eases toward S.bytes instead of jumping
 
 // numbers — every frame while the easing runs
 function renderNumbers() {
-  const bits = shown * 8, m = massOf(bits), r = radiusOf(m), Th = tempOf(m);
-  const [mv, mu] = fmtMass(m, 6), [bv, bu] = fmtBytes(shown);
+  const m = massOf(shown), r = radiusOf(m);
+  // Three significant digits, not six. Six was a theatre of precision: at Earth
+  // masses it rendered "332982", which is noise, not information — and nobody
+  // reads the sixth digit of a number that is a shared, decaying estimate.
+  const [mv, mu] = fmtMass(m, 3), [bv, bu] = fmtBytes(shown);
+  const rTxt = r > 0 ? fmtLen(r).join(' ') : '0 ' + L.len[4];
+  // Luminosity spans single Suns to billions, so it needs both formats: sci()
+  // alone printed "4.6·10⁰ Suns" early on, which is a silly way to write 4.6.
+  const lsun = eddOf(m) / L_SUN;
+  const lum  = m > 0
+    ? (lsun < 1e4
+        ? (v => L.lumVal(v, v))(lsun < 10 ? +lsun.toFixed(1) : Math.round(lsun))
+        : L.lumVal(sci(lsun, 1), null))
+    : '—';
 
   $('mass').innerHTML = mv + '<em>' + mu + '</em>';
   $('massCmp').textContent = cmpMass(m);
   $('eaten').textContent = S.count ? L.victims(S.count) + ' · ' + bv + ' ' + bu : '';
-  $('radius').textContent = r > 0 ? sci(r) + ' ' + L.metre : '0 ' + L.metre;
+  $('radius').textContent = rTxt;
   $('radiusCmp').textContent = cmpRadius(r);
-  $('area').textContent = (bits > 0 ? sci(areaOf(bits)) : '0') + ' ' + L.metre2;
-  $('temp').textContent = Th > 0 ? sci(Th) + ' K' : '—';
-  $('tempCmp').textContent = Th > 0 ? L.hotter(sci(Th / 1.5e7, 1)) : '';
+  const sh = shadowOf(m);
+  $('shadow').textContent = m > 0 ? fmtLen(sh).join(' ') : '—';
+  // the ratio spans 10¹³ down to single digits over the season, so it needs the
+  // same two formats as luminosity: a plain number while it is one, then sci()
+  const shx = shadowOf(M87) / sh;
+  const shv = shx < 1e4 ? +shx.toPrecision(3) : null;
+  $('shadowCmp').textContent = m > 0
+    ? L.shadowCmp(shv === null ? sci(shx, 1) : shv, shv) : '';
+  $('lum').textContent = lum;
+  // This row is about the DISC, so its caption must be about the disc too. The
+  // hole's own Hawking temperature is a different number entirely (and now far
+  // colder than the sky) — that story lives in the dialog, not here.
+  $('temp').textContent = m > 0 ? sci(discT(m)) + ' K' : '—';
+  $('tempCmp').textContent = m > 0 ? L.discCmp(Math.round(discT(m) / 5772)) : '';
   $('evap').textContent = m > 0 ? fmtTime(evapOf(m)) : '—';
   $('info').textContent = bv + ' ' + bu;
-  $('bits').textContent = bits > 0 ? L.bitsOn(sci(bits, 2)) : '';
+  // Metres per CSS pixel, straight from the same visRadius() the shader draws
+  // with — the shader normalises by the SHORTER side, so that is the divisor.
+  // Derived, never a second constant: retune the radius curve and the legend
+  // follows by itself.
+  const px = visRadius() * Math.min(innerWidth, innerHeight);
+  $('scale').textContent = m > 0 && px > 0
+    ? L.scaleVal(fmtLen(r / px).join(' ')) : '—';
+  $('bits').textContent = m > 0 ? L.capacity(sci(bitsCap(m), 1)) : '';
+
+  // The dilation VALUE is ticked by its own interval (dilTick) — it moves on
+  // wall-clock time, not on mass. Only the note belongs here: one orbit of the
+  // inner edge, which is the mass-dependent half of the row. Both numbers grow
+  // together, their ratio pinned at DIL.
+  const per = m > 0 ? iscoPeriod(m) : 0;
+  $('dilateCmp').textContent = per > 0
+    ? L.teleOrbit + ': ' + L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '';
+  // Tidal stretch in g — the unit a body actually feels. Falls as M⁻², so over
+  // a season this row travels twelve orders of magnitude downward.
+  // Same two formats as luminosity and the shadow ratio, for the same reason:
+  // the row ends the season in single digits, and "1.79·10⁻¹ g" is a silly way
+  // to write 0.18 — which is precisely the number the whole row builds toward.
+  const tide = m > 0 ? tideAt(m) / G_EARTH : 0;
+  const tideTxt = tide < 1e4 ? +tide.toPrecision(3) : sci(tide, 2);
+  $('tide').textContent = m > 0 ? tideTxt + ' g' : '—';
+  // Below the threshold the spaghettification radius sits inside the horizon —
+  // there is no "you get torn apart here" left to report, which IS the news.
+  $('tideCmp').textContent = m <= 0 ? ''
+    : tide <= TIDE_OK ? L.tideSafe : L.tideKills(fmtLen(spagR(m)).join(' '));
 
   // The same set in the dialog — only while it's open, otherwise it's a
   // wasted innerHTML every frame during the mass easing
   if ($('about').open) $('teleDlg').innerHTML = [
-    [L.teleRadius, r > 0 ? sci(r) + ' ' + L.metre : '0 ' + L.metre],
-    [L.teleArea,   (bits > 0 ? sci(areaOf(bits)) : '0') + ' ' + L.metre2],
-    [L.teleTemp,   Th > 0 ? sci(Th) + ' K' : '—'],
+    [L.teleRadius, rTxt],
+    [L.teleLum,    lum],
+    [L.teleArea,   (m > 0 ? sci(areaOf(m)) : '0') + ' ' + L.metre2],
+    [L.teleTemp,   m > 0 ? sci(discT(m)) + ' K' : '—'],
     [L.teleEvap,   m > 0 ? fmtTime(evapOf(m)) : '—'],
     [L.teleInfo,   bv + ' ' + bu],
-    [L.teleDecay,  fmtBytes(shown * (1 - 0.99 ** 2)).join(' ')],
+    [L.teleDilate, `<span id="dlgDilate">${$('dilate').textContent}</span>`],
+    [L.teleOrbit,  per > 0 ? L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '—'],
+    [L.teleTide,   m > 0 ? tideTxt + ' g' : '—'],
+    [L.teleDecay,  fmtBytes(shown * (1 - DECAY)).join(' ')],
   ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
 
   const [, rname, rnote] = classOf(m);
   $('rankName').textContent = rname;
   $('rankNote').textContent = rnote;
 
-  const g = nextGoal(m);
-  const need = g ? bytesFor(g) : 0;
-  $('goalFill').style.width = g ? Math.min(100, shown / need * 100).toFixed(2) + '%' : '100%';
-  if (g) {
-    const [nv, nu] = fmtBytes(Math.max(0, need - shown));
-    $('goalTxt').textContent = L.goalLeft(fmtMass(g).join(' '), `${nv} ${nu}`);
-  } else $('goalTxt').textContent = L.goalDone;
+  // Fills from the PREVIOUS milestone to the next, not from zero — otherwise
+  // crossing a rung snapped the bar to 9% instead of resetting it. Linear in
+  // bytes on purpose: the caption right underneath says "6.5 GB to go", and a
+  // log scale would show 78% next to that number and read as a lie.
+  const i = milesPassed(shown), next = MILES[i], lo = i ? MILES[i - 1][2] : 0;
+  $('goalFill').style.width = next
+    ? Math.min(100, (shown - lo) / (next[2] - lo) * 100).toFixed(2) + '%' : '100%';
+  $('goalTxt').textContent = next
+    ? L.goalLeft(L.miles[next[0]][0], atBytes(next[2] - shown)) : L.goalDone;
 
-  // Mass loses 1% a day, but mass ∝ √bytes — so bytes lose 1 − 0.99² = 1.99%.
+  // The season, above the rung. Counted in RUNGS: the target is fifteen orders
+  // of magnitude away in bytes, so a byte-linear bar would read as empty for
+  // most of the season and tell a newcomer nothing about how far along we are.
+  $('seasonFill').style.width =
+    Math.min(100, i / SEASON_RUNGS * 100).toFixed(2) + '%';
+  $('seasonTxt').textContent = shown >= TARGET_BYTES
+    ? L.seasonDone(SEASON_RUNGS)
+    : L.season(i, SEASON_RUNGS, atBytes(TARGET_BYTES - shown));
+
+  // Mass is linear in bytes now, so a 0.5% mass loss is a 0.5% byte loss.
   // Show bytes: people don't care about the percent, they care how much to
   // bring just to keep the hole where it is.
-  const perDay = shown * (1 - 0.99 ** 2);
-  $('decay').textContent = shown > 0 ? L.decay(fmtBytes(perDay).join(' ')) : '';
+  $('decay').textContent = shown > 0
+    ? L.decay(fmtBytes(shown * (1 - DECAY)).join(' ')) : '';
 }
 
 // lists — only when they actually changed
@@ -1054,7 +1519,10 @@ function renderList() {
     ? (S.watching === 1 ? L.alone : L.watchers(S.watching)) : '';
 
   if (MINE > 0) {
-    const [pv, pu] = fmtBytes(MINE);
+    // In the same units as the headline, not in bytes: "0.12 solar masses"
+    // lands as a share of the thing on screen, while "2.4 GB" is a different
+    // quantity the reader has to convert before it means anything.
+    const [pv, pu] = fmtMass(massOf(MINE), 3);
     $('mine').textContent = L.yours(`${pv} ${pu}`,
       API && S.bytes > 0 ? +Math.min(100, MINE / S.bytes * 100).toFixed(2) : 0);
   } else $('mine').textContent = '';
@@ -1067,7 +1535,10 @@ function renderList() {
         .reduce((a, b) => b.bytes > (a?.bytes || 0) ? b : a, null);
   $('record').textContent = top ? `${fmtBytes(top.bytes).join(' ')} · .${top.ext}` : L.nothing;
 
-  $('sgr').textContent = L.sgr(sci(bytesFor(4.3e6 * SUN) - S.bytes, 1));
+  // through atBytes like every other byte figure: bare sci() printed a raw
+  // mantissa with no unit and on a scale nobody reads — «треба ще 8.4·10¹⁶»
+  // instead of «треба ще 75.96 ПБ».
+  $('sgr').textContent = L.sgr(atBytes(bytesFor(4.3e6 * SUN) - S.bytes));
 
   $('recent').innerHTML = S.recent.slice(0, 6).map(x => {
     const [v, u] = fmtBytes(x.bytes);
@@ -1081,7 +1552,7 @@ let titleFlash = 0;
 function setTitle() {
   if (Date.now() < titleFlash) return;
   document.title = S.bytes > 0
-    ? fmtMass(massOf(S.bytes * 8), 4).join(' ') + ' — TON 404' : L.title;
+    ? fmtMass(massOf(S.bytes), 4).join(' ') + ' — TON 404' : L.title;
 }
 // `shown` is eased toward S.bytes inside frame(), and frame() only ever starts
 // when there is a GL context. Without one it stayed at 0 forever, so every
@@ -1094,28 +1565,42 @@ const render = () => {
 };
 
 // ─── dialog tables ─────────────────────────────────────────────────────────
-// Computed from the same formulas and boundaries as everything else, not
-// hand-written. The switch immediately fixed two stale numbers: the asteroid
-// hole is really 4.8·10³⁹ bytes, not 10⁴⁰, and the stellar one 1.7·10⁷⁷.
+// Computed from the same formulas and boundaries as everything else, never
+// hand-written — that is what keeps the dialog from drifting away from the code
+// every time a constant moves.
 const atBytes = b => b < 1024 ? +b.toFixed(1) + ' ' + L.byte[0]
                    : b < 1024 ** 6 ? fmtBytes(b).join(' ')
                    : sci(b, 1) + ' ' + L.byte[0];
 
 $('massTable').innerHTML =
-  `<tr><th>${L.thSwallowed}</th><th>${L.thMass}</th></tr>` +
-  [[L.rowBit, massOf(1)],
-   ['1 ' + L.byte[3], massOf(1024 ** 3 * 8)],
-   [L.rowDvd, massOf(4.4 * 1024 ** 3 * 8)],
-   [atBytes(bytesFor(1)), 1]]
+  `<tr><th scope="col">${L.thSwallowed}</th><th scope="col">${L.thMass}</th></tr>` +
+  [[L.rowByte, massOf(1)],
+   ['1 ' + L.byte[3], massOf(1024 ** 3)],
+   [L.rowDvd, massOf(4.4 * 1024 ** 3)],
+   [atBytes(bytesFor(M_EARTH)), M_EARTH],
+   [atBytes(bytesFor(SUN)), SUN],
+   [atBytes(bytesFor(1e5 * SUN)), 1e5 * SUN]]
   .map(([what, m]) => `<tr><td>${what}</td><td>${fmtMass(m).join(' ')}</td></tr>`).join('');
 
 $('clsTable').innerHTML =
-  `<tr><th>${L.thClass}</th><th>${L.thReached}</th></tr>` +
-  CLASSES.slice(1, 7).map(([m, name]) => {
-    const b = bytesFor(m);
-    return `<tr><td>${name}</td><td>${b < 1 ? L.anything : atBytes(b)}</td></tr>`;
-  }).join('');
+  `<tr><th scope="col">${L.thClass}</th><th scope="col">${L.thReached}</th></tr>` +
+  CLASSES.slice(1).map(([m, name]) =>
+    `<tr><td>${name}</td><td>${atBytes(bytesFor(m))}</td></tr>`).join('');
 
+// The ladder. Rebuilt on every open, not per frame: thirty rows of innerHTML
+// during the mass easing would be waste, but once per dialog is free. It used
+// to be built once per page load behind a flag that never reset, so the ✓ marks
+// froze at whatever S.bytes was the first time the dialog was ever opened.
+function renderMileTable() {
+  const done = milesPassed(S.bytes);
+  $('mileTable').innerHTML =
+    `<tr><th scope="col">${L.thMile}</th><th scope="col">${L.thReached}</th></tr>` +
+    MILES.map(([id, kind, b], i) => {
+      const [name, note] = L.miles[id];
+      return `<tr><td>${i < done ? '✓ ' : ''}${name}<i>${note}</i></td>` +
+             `<td>${atBytes(b)}<i>${L.mkind[kind]}</i></td></tr>`;
+    }).join('');
+}
 
 // ─── Hawking radiation: a trace of the last file ───────────────────────────
 let seed = S.recent[0]?.sig || 0x811c9dc5, hawkBuf = '';
@@ -1143,6 +1628,27 @@ function hawkTick() {
 }
 setInterval(hawkTick, 120);
 
+// ─── two clocks ────────────────────────────────────────────────────────────
+// renderNumbers() only runs while the mass is easing, and the 15 s render tick
+// is far too coarse for something meant to be watched drifting. Its own second,
+// touching one text node. Only visible time counts — "time at the hole" would
+// be a lie if the clock kept running in a hidden tab — so one step is capped
+// at two ticks: the first visible tick after a throttled hidden stretch would
+// otherwise credit the whole absence to the hole.
+let nearMs = 0, lastTick = Date.now();
+function dilTick() {
+  const now = Date.now();
+  if (!document.hidden) nearMs += Math.min(now - lastTick, 2000);
+  lastTick = now;
+  const near = Math.floor(nearMs / 1000);
+  const txt = L.dilGap(L.dilClock(near), L.dilClock(Math.floor(near / DIL)));
+  $('dilate').textContent = txt;
+  // The dialog mirror is the only live row in teleDlg. On phones the telemetry
+  // column is hidden entirely — the dialog is the only place the clocks exist.
+  const dlg = $('dlgDilate'); if (dlg) dlg.textContent = txt;
+}
+setInterval(dilTick, 1000); dilTick();
+
 // ─── swallowing ────────────────────────────────────────────────────────────
 // ponytail: FNV-1a over the first 64 KB instead of SHA-256 — it's a dedup and
 // radiation-visual seed, not crypto; also works on file:// where crypto.subtle
@@ -1155,9 +1661,24 @@ async function signature(file) {
 }
 
 let warnTimer;
-function warn(msg) {
+// sub is the second, quieter line — the science behind a milestone, which is the
+// whole point of the ladder. Built as a DOM node, never innerHTML: warn() also
+// carries a server-supplied file extension (see someoneFed), and a text node
+// closes that hole for good at the same cost.
+function warn(msg, sub) {
   const w = $('warn');
-  w.textContent = msg; w.style.opacity = '1';
+  // One mutation, not two. #warn is role="status": setting textContent and then
+  // appending made a screen reader announce the headline first and the whole
+  // thing again a tick later. Still text nodes, never innerHTML — warn() also
+  // carries a server-supplied file extension (see someoneFed).
+  const parts = [msg];
+  if (sub) {
+    const i = document.createElement('i');
+    i.textContent = sub;
+    parts.push(i);
+  }
+  w.replaceChildren(...parts);
+  w.style.opacity = '1';
   clearTimeout(warnTimer);
   // Clearing the text matters as much as fading it: #warn is role="status", and
   // a message left in the DOM keeps reading as current to a screen reader long
@@ -1271,6 +1792,9 @@ async function swallow(files) {
   sparkFlash();                            // one of the orbiting sparks is you
   shock = Math.max(shock, 0.3 + 0.12 * Math.min(1, Math.log10(1 + total) / 12));
   quasar = Math.min(1, quasar + 0.35);     // fast feeding → jets
+  // How far over Eddington this throw actually is, taking the batch as arriving
+  // over the one second the animation lasts. Real number, and a big one.
+  eddX = total / eddBps(massOf(S.bytes));
   // one request for the whole batch — after all signatures are computed
   if (API) sendFeed(batch);
   save(); render();
@@ -1279,10 +1803,18 @@ async function swallow(files) {
 // clipboard text / dragged text is information too
 const asFile = txt => new File([txt], L.clip, { type: 'text/plain' });
 
-addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('dragging'); });
+addEventListener('dragover', e => {
+  e.preventDefault(); document.body.classList.add('dragging');
+  // Re-armed on every event, and dragover fires continuously while the cursor
+  // is over the window — so frame() decaying it is the whole reset mechanism.
+  // No dragleave bookkeeping, and a drag abandoned outside the window (which
+  // dragleave's relatedTarget===null never catches) settles by itself.
+  pull = 1;
+});
 addEventListener('dragleave', e => { if (e.relatedTarget === null) document.body.classList.remove('dragging'); });
 addEventListener('drop', e => {
   e.preventDefault(); document.body.classList.remove('dragging');
+  ripple = 1;
   const fs = [...e.dataTransfer.files];
   const txt = fs.length ? '' : e.dataTransfer.getData('text');
   swallow(fs.length ? fs : txt ? [asFile(txt)] : []);
@@ -1298,9 +1830,27 @@ $('upd').onclick = () => location.reload();
 // renderNumbers fills the dialog telemetry only while it's open, so the first
 // frame must be drawn right after showModal or the table stays empty until
 // the next mass easing
-$('what').onclick = () => { $('about').showModal(); renderNumbers(); };
+$('what').onclick = () => {
+  $('about').showModal(); renderMileTable(); renderNumbers();
+};
 // clicking the backdrop closes too: for ::backdrop the event target is the <dialog>
 $('about').onclick = e => { if (e.target === $('about')) $('about').close(); };
+
+// Formulas fold away by default — see the markup. The choice sticks, because
+// someone who asked for them once is the kind of visitor who wants them again.
+const EQKEY = 'blackhole.eq';
+const tele = document.querySelector('.tele');
+const setEq = on => {
+  tele.classList.toggle('eqOn', on);
+  $('eqTgl').textContent = on ? L.hideEq : L.showEq;
+  $('eqTgl').setAttribute('aria-expanded', on);
+};
+setEq(localStorage.getItem(EQKEY) === '1');
+$('eqTgl').onclick = () => {
+  const on = !tele.classList.contains('eqOn');
+  setEq(on);
+  try { localStorage.setItem(EQKEY, on ? '1' : '0'); } catch {}
+};
 
 // Manual choice overrides detection: a Ukrainian browser abroad and an English
 // one in Ukraine both happen. Reload rather than in-place translation: half
@@ -1342,7 +1892,12 @@ function checkAway(bytes, count) {
   const df = count - p.c, db = bytes - p.b;
   let msg = null;
   if (df > 0) msg = L.awayAte(L.victims(df), fmtBytes(Math.max(0, db)).join(' '));
-  else if (db < -1e6) msg = L.awayEvap(fmtBytes(-db).join(' '));
+  // Relative, not a flat megabyte. Dissipation is 0.5% of mass a day, so on a
+  // 138 GB hole an hour away already loses 29 MB and the notice fired on every
+  // single return; at the season target it would be 9 TB a day. 0.1% of mass is
+  // the point where the loss is actually worth a word, with a 1 MB floor so a
+  // tiny hole doesn't report a handful of bytes.
+  else if (db < -Math.max(1e6, bytes * 0.001)) msg = L.awayEvap(fmtBytes(-db).join(' '));
   // after the hole finishes forming, so it doesn't cut into the odometer;
   // with reduced-motion, right away
   if (msg) setTimeout(() => warn(msg), calm.matches ? 800 : 3300);
@@ -1426,6 +1981,15 @@ const gl = cv.getContext('webgl', { alpha: false, antialias: false });
 const FRAG = `
 precision highp float;
 uniform vec2 res, mouse; uniform float time, rad, act, shock, qsr, hot, hotA;
+// driven by mass — see LOOK in the script. These are the channels that carry
+// growth, because the radius alone only moves 26% across the whole season.
+uniform float spin, expo, squash, ripple, ringB, dopS, lens, starD;
+// The arm count is NOT among them and must stay a whole number. Both patterns
+// below are sin(atan(...) * ARMS + …), and atan jumps from +π to −π along the
+// negative x axis. Only an integer multiplier survives that branch cut; ramping
+// it 3.0 → 2.0 tore a permanent seam across the left half of the screen at the
+// exact vertical centre. Six channels carry the growth without it.
+const float ARMS = 3.0;
 // disc color by temperature T ∝ M^(−1/4): dIn is the inner edge, dOut the outer
 uniform vec3 dIn, dOut, shockCol;
 
@@ -1456,11 +2020,13 @@ vec3 stars(vec2 uv){
     float sc = 34.0 + i * 86.0;
     vec2 g = uv * sc, id = floor(g), f = fract(g) - 0.5;
     float hh = h21(id + i * 17.3);
-    if (hh > 0.90) {
+    if (hh > starD) {
       vec2 off = (vec2(h21(id + 1.7), h21(id + 3.1)) - 0.5) * 0.62;
       float d = length(f - off);
       float tw = 0.65 + 0.35 * sin(time * 1.7 + hh * 61.0);
-      float b = smoothstep(0.075, 0.0, d) * tw * (hh - 0.90) * 11.0;
+      // normalized by the gap above the threshold, so raising starD thins the
+      // sky without also dimming the stars that survive
+      float b = smoothstep(0.075, 0.0, d) * tw * (hh - starD) / (1.0 - starD) * 1.1;
       c += b * mix(vec3(0.62, 0.74, 1.0), vec3(1.0, 0.84, 0.6), h21(id + 5.3));
     }
   }
@@ -1478,7 +2044,7 @@ void main(){
   vec2 dir = uv / max(r, 1e-5);
 
   // ray deflection: the closer to the horizon, the stronger
-  float bend = rad * rad * 2.1 / r;
+  float bend = rad * rad * lens / r;
   float a = time * 0.008;
   vec2 s = dir * (r + bend);
   s = vec2(s.x * cos(a) - s.y * sin(a), s.x * sin(a) + s.y * cos(a));
@@ -1492,17 +2058,17 @@ void main(){
   float rw = rad * 0.055 + 0.0015;
   col += vec3(exp(-pow((r - rad * 1.082) / rw, 2.0)),
               exp(-pow((r - rad * 1.090) / rw, 2.0)),
-              exp(-pow((r - rad * 1.098) / rw, 2.0))) * dIn * 1.15;   // lensed disc light
+              exp(-pow((r - rad * 1.098) / rw, 2.0))) * dIn * ringB;   // lensed disc light
 
   // accretion disc (flattened + Doppler boost on the left)
-  vec2 d = vec2(uv.x, uv.y * 3.4);
+  vec2 d = vec2(uv.x, uv.y * squash);
   float dr = length(d);
   float disk = exp(-pow((dr - rad * 2.5) / (rad * 1.15 + 0.02), 2.0));
   float ang = atan(d.y, d.x);
-  disk *= 0.55 + 0.45 * sin(ang * 3.0 - time * 1.6 + dr * 26.0);
+  disk *= 0.55 + 0.45 * sin(ang * ARMS - time * spin + dr * ripple);
   disk *= smoothstep(rad * 0.95, rad * 1.5, dr);
   float dop = smoothstep(-0.25, 0.25, -uv.x);   // 1 = the side coming at us
-  disk *= 0.35 + 1.05 * dop;
+  disk *= 0.35 + dopS * dop;
   disk *= 0.35 + 0.9 * act;
   vec3 dcol = mix(dOut, dIn, smoothstep(rad * 3.2, rad * 1.2, dr));   // hotter inward: T ∝ r^(−3/4)
   dcol = mix(dcol * vec3(1.2, 0.5, 0.3), dcol, dop);   // the receding side is also redder
@@ -1512,7 +2078,7 @@ void main(){
   // without this arch the silhouette reads as just a ring of light
   float arc = exp(-pow((r - rad * 2.3) / (rad * 0.42 + 0.012), 2.0));
   arc *= smoothstep(0.18, 0.62, abs(uv.y) / max(r, 1e-5));   // top and bottom only
-  arc *= 0.5 + 0.5 * sin(atan(uv.y, uv.x) * 3.0 - time * 1.6 + r * 26.0);
+  arc *= 0.5 + 0.5 * sin(atan(uv.y, uv.x) * ARMS - time * spin + r * ripple);
   arc *= (0.4 + 0.85 * dop) * (0.35 + 0.9 * act);
   col += arc * mix(dOut, dIn, smoothstep(rad * 3.0, rad * 1.4, r)) * 0.9;
 
@@ -1540,7 +2106,7 @@ void main(){
   // heat around the horizon, not blinking
   col += shock * shockCol * 1.5 * exp(-(r - rad) * 3.5);
 
-  col = col / (col + 0.85);          // tonemapping
+  col = col / (col + expo);          // tonemapping — exposure rises with mass
   col = pow(col, vec3(0.85));
 
   // grain: also removes banding on dark gradients
@@ -1573,7 +2139,10 @@ if (gl) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
   const loc = gl.getAttribLocation(prog, 'p');
   gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  U = n => gl.getUniformLocation(prog, n);
+  // Cached: getUniformLocation is a driver lookup by string, and the frame loop
+  // asks for every uniform on every frame. Fine at a dozen, wasteful at twenty.
+  const ulocs = {};
+  U = n => n in ulocs ? ulocs[n] : (ulocs[n] = gl.getUniformLocation(prog, n));
 }
 
 // On mobile the context is lost routinely — background the tab, come back,
@@ -1701,16 +2270,81 @@ function resize() {
 }
 addEventListener('resize', resize); resize();
 
-// ponytail: on-screen radius is √(log₁₀ bytes), not √bytes. The real law puts
-// a 33000× gap between 1 B and 1 GB — the hole would be invisible or the
-// whole screen. On narrow screens the hole shrinks by a third; that's about
-// the disc, not the hole: it reaches 3.2 radii and at full size covers the
-// whole phone, putting text on bright pixels. On desktop the same number is
-// harmless — the columns sit at the edges, out of the disc's reach.
+// ponytail: on-screen radius is √(log₁₀ bytes), not the real radius. Mass is
+// linear in bytes now, so r_s is too — a 10⁹× gap between 1 B and 1 GB, and the
+// hole would be invisible or the whole screen. /16 spans 1 B to ~8.9 PB, leaving
+// headroom above the season target. On narrow screens the hole shrinks by a
+// third; that's about the disc, not the hole: it reaches 3.2 radii and at full
+// size covers the whole phone, putting text on bright pixels. On desktop the
+// same number is harmless — the columns sit at the edges, out of the disc's reach.
 const narrow = matchMedia('(max-width: 820px)');
 const calm = matchMedia('(prefers-reduced-motion: reduce)');
 const visRadius = () =>
-  (0.045 + 0.33 * Math.sqrt(Math.log10(1 + shown) / 15)) * (narrow.matches ? 0.7 : 1);
+  (0.045 + 0.33 * Math.sqrt(Math.log10(1 + shown) / 16)) * (narrow.matches ? 0.7 : 1);
+
+// ─── mass-driven look ──────────────────────────────────────────────────────
+// The screen radius above only grows 26% from 1 GB to the season target — six
+// orders of bytes buying a quarter of a difference, and every other measure in
+// the shader is relative to it, so the whole frame moves by that same 26%. It
+// cannot be stretched: the disc already reaches 3.2 radii. So growth has to be
+// carried by channels that are NOT the radius. These are they.
+
+// Real innermost stable orbit: r = 6GM/c², period T = 2π√(r³/GM) = 92.3·GM/c³.
+// One byte orbits in 2.3e-14 s, the season target in 45 s.
+const iscoPeriod = m => 92.3 * G * m / C ** 3;
+// ponytail: log-compressed, the same deliberate lie as visRadius. Twelve orders
+// of real period map onto 2.1 s .. 28 s per revolution — a 13x slowdown, which
+// is the whole point: a heavy hole turns slowly and that reads as weight. The
+// real law is unwatchable, so there is no upgrade path here, only retuning.
+const SPIN_SLOW = 28, SPIN_FAST = 2.1;                 // seconds per revolution
+const TARGET_BYTES = bytesFor(1e5 * SUN);
+// How far up the season we are, 0..1. Anchored at a kilobyte, not at one byte:
+// measured from zero, log₁₀ hands 39% of the range to the first megabyte — one
+// dropped photo — and leaves 61% for everything from there to a petabyte. That
+// is the exact mistake the radius already makes, and the reason these channels
+// exist at all. Below a kilobyte the hole simply sits at the fast, dim end.
+// The season ends at the supermassive rung, and the ladder deliberately carries
+// one rung past it (the Moon's orbit, 2.3 PB) as headroom. Derived, not written
+// down: inserting a milestone must never leave this counting the wrong total.
+const SEASON_RUNGS = MILES.findIndex(m => m[2] >= TARGET_BYTES) + 1;
+const T_FLOOR = 3;                                     // log₁₀ bytes, i.e. 1 KB
+const massT = bytes => Math.min(1, Math.max(0,
+  (Math.log10(1 + bytes) - T_FLOOR) / (Math.log10(1 + TARGET_BYTES) - T_FLOOR)));
+const spinOf = bytes =>
+  2 * Math.PI / (SPIN_FAST * Math.pow(SPIN_SLOW / SPIN_FAST, massT(bytes)));
+
+// Everything else the mass drives. The disc gets thinner, its structure finer,
+// the photon ring and the Doppler asymmetry sharper,
+// lensing stronger, and the sky emptier as the hole swallows more of it.
+// Exposure is the one that matters most: colour goes amber to dim red as the
+// disc cools (T ∝ M^−1/4, real), so without compensating, growth reads as
+// FADING. A lower tonemap constant lifts the whole frame, which is also honest —
+// at 1e5 suns the Eddington luminosity is 3.3 billion times the Sun's.
+const LOOK = {
+  expo:  [0.85, 0.55],   // col/(col+K) — smaller K, brighter frame
+  squash:[3.4,  4.6],    // disc flattening
+  ripple:[26.0, 38.0],   // mottling density
+  ringB: [1.15, 1.55],   // photon ring brightness
+  dopS:  [1.05, 1.45],   // Doppler asymmetry
+  lens:  [2.1,  2.9],    // deflection strength
+  starD: [0.90, 0.94],   // star threshold — higher means fewer stars
+};
+const lookAt = bytes => {
+  const t = massT(bytes), o = {};
+  for (const k in LOOK) o[k] = LOOK[k][0] + (LOOK[k][1] - LOOK[k][0]) * t;
+  // Same reason visRadius shrinks the hole on a phone: the disc reaches 3.2
+  // radii and the text columns sit on top of it. A full-mass hole at full
+  // exposure puts that text on bright amber, so narrow screens keep headroom.
+  if (narrow.matches) o.expo = Math.max(o.expo, 0.72);
+  return o;
+};
+
+// While a file hangs over the window the hole leans toward the cursor, and on
+// release a wave runs through the frame. Both ride uniforms that already exist:
+// `mouse` (parallax) amplified, and `lens` (deflection strength) oscillated —
+// warping the picture in and out is exactly what a passing wave looks like. No
+// new uniform, no line of GLSL.
+let pull = 0, ripple = 0;
 
 // parallax cursor — with inertia, or the background twitches
 let mx = 0, my = 0, tmx = 0, tmy = 0;
@@ -1730,12 +2364,18 @@ function infall() { hotT = 0; hotA = Math.random() * 6.2832; }
 let intro = !calm.matches, introT0 = 0;
 
 let shock = 0, quasar = 0, last = 0;
+let eddX = 0;                    // how far over Eddington the last throw was
 function frame(t) {
   const dt = Math.min((t - last) / 1000, 0.05); last = t;
   // 0.7/s: a throw's peak holds ~half a second and smolders for another —
   // slow heat instead of the old 1.6/s flash
   shock = Math.max(0, shock - dt * 0.7);
   hotT = Math.min(99, hotT + dt);
+  // 4/s: the lean drops within ~250 ms of the drag stopping — dragover fires far
+  // faster than that while the cursor is still over the window.
+  pull = Math.max(0, pull - dt * 4);
+  ripple = Math.max(0, ripple - dt * 1.1);          // ~0.9 s of wave
+
   mx += (tmx - mx) * Math.min(1, dt * 3);
   my += (tmy - my) * Math.min(1, dt * 3);
 
@@ -1755,7 +2395,7 @@ function frame(t) {
   quasar = Math.max(0, quasar - dt * 0.13);            // ~8 s until the jets fade
   const q = $('quasar');
   q.style.opacity = quasar > 0.5 ? '1' : '0';
-  q.textContent = quasar > 0.92 ? L.quasarMax : L.quasar;
+  q.textContent = quasar > 0.92 && eddX > 0 ? L.quasarMax(sci(eddX, 0)) : L.quasar;
   const hourAgo = Date.now() - 36e5;
   const act = Math.min(1, S.recent.filter(x => x.ts > hourAgo).length / 6);
   gl.uniform2f(U('res'), cv.width, cv.height);
@@ -1769,13 +2409,29 @@ function frame(t) {
   gl.uniform1f(U('act'), act);
   gl.uniform1f(U('shock'), shock);
   gl.uniform1f(U('qsr'), quasar);
-  gl.uniform2f(U('mouse'), calm.matches ? 0 : mx, calm.matches ? 0 : my);
+  // 2.5× at full pull: enough that the disc visibly follows the file, not so
+  // much that the hole leaves the frame. Both effects are motion, so both go
+  // away under reduced-motion, the same as the parallax they ride on.
+  const drag = calm.matches ? 0 : pull;
+  const par = 1 + 1.5 * drag;
+  gl.uniform2f(U('mouse'), calm.matches ? 0 : mx * par, calm.matches ? 0 : my * par);
   gl.uniform1f(U('hot'), hotT);
   gl.uniform1f(U('hotA'), hotA);
-  const [dIn, dOut] = diskColors(massOf(shown * 8));
+  const [dIn, dOut] = diskColors(massOf(shown));
   gl.uniform3fv(U('dIn'), dIn);
   gl.uniform3fv(U('dOut'), dOut);
   gl.uniform3fv(U('shockCol'), shockCol);
+  // The channels that carry growth. `shown`, not S.bytes: they must move with
+  // the same easing as the radius, or the disc would snap while the hole grows.
+  // No reduced-motion factor here — `time` above already carries it, and
+  // applying it twice would leave the disc at a ninth of its speed.
+  gl.uniform1f(U('spin'), spinOf(shown));
+  const look = lookAt(shown);
+  // A decaying oscillation on the deflection strength: the image bends out and
+  // settles back, ~2 cycles over the second the ripple lasts.
+  if (ripple > 0 && !calm.matches)
+    look.lens *= 1 + 0.35 * ripple * Math.sin(t / 1000 * 14);
+  for (const k in look) gl.uniform1f(U(k), look[k]);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   // second layer: sparks run on animation time, TDE on wall clock (synchronized)
   sx.clearRect(0, 0, innerWidth, innerHeight);
@@ -1791,26 +2447,153 @@ setInterval(render, 15000);   // refreshes "N min ago" and the evaporation line
 // ─── self-check: you can't `node index.html`, hence ?test in the URL ────────
 if (location.search.includes('test')) {
   const eq = (a, b, msg) => console.assert(Math.abs(a / b - 1) < 0.02, msg, a, b);
-  eq(massOf(8 * 1024 ** 3), 4.74e-4, '1 GB ≈ 0.47 g');
-  eq(radiusOf(massOf(8 * 1024 ** 3)), 7.04e-31, 'r_s for 1 GB');
-  eq(massOf(1), 5.11e-9, 'mass of one bit');
+  // The whole point of the new law: these three numbers are the pitch.
+  eq(bytesFor(SUN) / 1024 ** 3, 18.52, 'one solar mass is 18.5 GB');
+  eq(bytesFor(1e5 * SUN) / 1024 ** 5, 1.767, 'supermassive is 1.77 PB');
+  eq(bytesFor(21.2 * SUN) / 1024 ** 3, 393, 'Cygnus X-1 is 393 GB');
+  eq(massOf(1), 1e20, 'one byte weighs 1e20 kg');
+  eq(radiusOf(massOf(1024 ** 3)), 159.4, 'r_s for 1 GB is 159 m');
+  eq(radiusOf(SUN * 1), 2954, 'r_s of one solar mass is 2.95 km');
+  // The disc's inner edge ages exactly 1/√2 slower — and the same for any mass,
+  // which is the claim the row is built on. A regression here would be a rate
+  // that drifts with weight, i.e. the physics error the row exists to avoid.
+  eq(DIL, 0.70711, 'ISCO orbit dilates by 1/√2');
+  // The split the row depends on: duration scales with mass, rate never does.
+  eq(iscoPeriod(1e5 * SUN) / iscoPeriod(SUN), 1e5, 'orbit duration is linear in mass');
+  eq(iscoPeriod(1e5 * SUN), 45.5, 'the season target turns once every 45 s');
+  // The two clocks the row shows: Earth ages exactly √2 faster, for any hole.
+  eq(1 / DIL, Math.SQRT2, 'Earth runs √2 ahead of the disc inner edge');
+  console.assert(TXT.uk.dilClock(84) === '1 хв 24 с' && TXT.en.dilClock(84) === '1m 24s'
+    && TXT.uk.dilClock(9) === '9 с', 'dilClock formats a clock', TXT.uk.dilClock(84));
+  console.assert(TXT.uk.dilGap('9 с', '12 с').includes('12 с')
+    && TXT.en.dilGap('9s', '12s').includes('12s'), 'dilGap holds both clocks');
+  // Tidal stretch: the textbook figure for a solar-mass hole, and the payoff at
+  // the season target — the same hole, gentle enough to cross.
+  eq(tideAt(SUN), 1.751e10, 'a solar-mass horizon stretches a person by 1.8e10 m/s²');
+  eq(tideAt(SUN) / G_EARTH, 1.785e9, 'which is 1.8 billion g');
+  eq(tideAt(1e5 * SUN) / G_EARTH, 0.1785, 'at the season target it is a fifth of a g');
+  console.assert(tideAt(1e5 * SUN) / G_EARTH < TIDE_OK
+    && tideAt(SUN) / G_EARTH > TIDE_OK, 'the season must cross the survivable threshold');
+  // Below the threshold the "you die here" radius has sunk inside the horizon,
+  // which is exactly why the row switches to tideSafe instead of printing it.
+  console.assert(spagR(1e5 * SUN) < radiusOf(1e5 * SUN),
+    'a survivable hole has no spaghettification radius outside its horizon');
   console.assert(fmtBytes(1536)[0] === '1.50', 'fmtBytes', fmtBytes(1536));
   console.assert(sci(4.74e-4) === '4.74·10⁻⁴', 'sci', sci(4.74e-4));
-  eq(bytesFor(massOf(8 * 1024 ** 3)), 1024 ** 3, 'bytesFor inverts massOf');
-  eq(evapOf(massOf(8 * 1024 ** 3)), 8.97e-27, 'evaporation time of 1 GB');
-  console.assert(classOf(massOf(8 * 1024 ** 3))[1] === L.classes[3], 'class for 1 GB');
+  eq(bytesFor(massOf(1024 ** 3)), 1024 ** 3, 'bytesFor inverts massOf');
+  // This number IS the alibi for calling the decay a game mechanic, not physics.
+  eq(evapOf(SUN) / 3.156e7, 2.10e67, 'a solar-mass hole would live 2e67 years');
+  // 1 GB is 0.054 solar masses — past the deuterium-burning limit but far below
+  // Oppenheimer, so it lands in the "impossible" class, not the planetary one.
+  // Recount if a class boundary ever moves.
+  console.assert(classOf(massOf(1024 ** 3))[1] === L.classes[4], 'class for 1 GB is the impossible one');
+  console.assert(classOf(M_EARTH)[1] === L.classes[3], 'Earth mass is planetary');
   console.assert(classOf(0)[1] === L.classes[0], 'class for an empty hole');
-  console.assert(nextClass(1e40) === undefined, 'nothing above supermassive');
-  console.assert(nextGoal(5.3e-5) === 1e-4, 'goal after 53 mg is 100 mg');
-  eq(bytesFor(1e-4), 4.784e7, '100 mg = 45.6 MB');
-  console.assert(fmtMass(1e-4).join(' ') === '100 ' + L.gram[7], 'fmtMass for goals', fmtMass(1e-4));
-  // the headline number must stir from megabytes on a tens-of-GB hole —
-  // that is exactly why it gets six significant digits
-  console.assert(fmtMass(massOf(43.5e9 * 8), 6)[0] !== fmtMass(massOf(43.5e9 * 8 + 6e6 * 8), 6)[0],
-    '6 MB must move the mass on 43.5 GB');
-  console.assert(fmtMass(1e-2, 6)[0].length === fmtMass(3e-3, 6)[0].length,
-    'headline width is constant — otherwise it jitters on every throw');
-  console.assert(GOALS.every((g, i) => !i || g > GOALS[i - 1]), 'GOALS must be increasing');
+  console.assert(classOf(2e5 * SUN)[1] === L.classes[7], 'past 1e5 suns it is supermassive');
+  // fmtMass bands: kg while lighter than a planet, then Earths, then Suns.
+  // Before this the headline rendered one solar mass as 28 digits of tonnes.
+  console.assert(fmtMass(SUN)[1] === L.mSun(1) && fmtMass(M_EARTH)[1] === L.mEarth(1)
+    && fmtMass(1e21)[1] === L.kg, 'fmtMass picks the right band');
+  // Regression: the unit was a frozen genitive plural, so the table row for one
+  // Earth mass read «1 мас Землі» and the headline «1.00410 мас Сонця».
+  console.assert(fmtMass(M_EARTH)[1] !== fmtMass(5 * M_EARTH)[1],
+    'the mass unit declines with the number', fmtMass(M_EARTH), fmtMass(5 * M_EARTH));
+  // And it must agree with the number as PRINTED: 1 GB is 17980.34 Earths, shown
+  // as "17980", so the unit is the one for a round 17980 — declining the raw
+  // ratio instead gave «17980 маси Землі».
+  console.assert(fmtMass(massOf(1024 ** 3))[1] === fmtMass(17980 * M_EARTH)[1],
+    'the unit follows the rounded number, not the raw ratio',
+    fmtMass(massOf(1024 ** 3)), fmtMass(17980 * M_EARTH));
+  console.assert(fmtLen(159.4).join(' ') === '159 ' + L.len[4]
+    && fmtLen(2954).join(' ') === '2.95 ' + L.len[5], 'fmtLen', fmtLen(2954));
+  // The headline is three significant digits and must never grow an exponent:
+  // toPrecision would have turned 332982 Earth masses into "3.33e+5".
+  console.assert(!/e/i.test(fmtMass(332982 * M_EARTH, 3)[0])
+    && !/e/i.test(fmtMass(1e5 * SUN, 3)[0]),
+    'the headline never falls back to exponential notation',
+    fmtMass(332982 * M_EARTH, 3), fmtMass(1e5 * SUN, 3));
+  console.assert(fmtMass(332982 * M_EARTH, 3)[0].replace(/0+$/, '').length <= 3,
+    'the headline carries three significant digits, not six',
+    fmtMass(332982 * M_EARTH, 3));
+  // A decade crossing is where a naive formatter changes width: "9.99000" and
+  // "10.0000" lay their digits out differently and must still occupy the same
+  // room. Comparing 3 vs 9 suns proved nothing — same shape by construction.
+  console.assert(fmtMass(9.99 * SUN, 6)[0].length === fmtMass(10 * SUN, 6)[0].length,
+    'headline width survives a decade crossing — otherwise it jitters on every throw',
+    fmtMass(9.99 * SUN, 6), fmtMass(10 * SUN, 6));
+  // The season layer: the rung bar must be readable at both ends, and the
+  // formula toggle must actually hide the formulas it claims to hide.
+  console.assert(milesPassed(0) === 0 && milesPassed(TARGET_BYTES) === SEASON_RUNGS,
+    'taking every season rung is exactly what reaches the target',
+    milesPassed(TARGET_BYTES), SEASON_RUNGS);
+  console.assert(SEASON_RUNGS < MILES.length,
+    'the ladder keeps headroom past the season finale', SEASON_RUNGS, MILES.length);
+  console.assert($('seasonTxt').textContent.includes(String(SEASON_RUNGS)),
+    'the season caption names the total number of rungs', $('seasonTxt').textContent);
+  // Asserted on what the toggle DOES, not on how many formulas there are —
+  // counting them meant adding a row to the telemetry broke this check.
+  {
+    const on = tele.classList.contains('eqOn'), eqs = [...document.querySelectorAll('.tele .eq')];
+    console.assert(eqs.length > 0 && eqs.every(el =>
+      (getComputedStyle(el).display !== 'none') === on),
+      'the formula toggle actually hides every formula', on, eqs.length);
+    console.assert($('eqTgl').textContent === (on ? L.hideEq : L.showEq),
+      'the toggle label matches its own state', $('eqTgl').textContent);
+  }
+  // The jets are a feeding-rate mechanic on purpose, and this is the number that
+  // justifies it: the real Eddington rate is so tiny under our mass law that no
+  // throw a human can make is anywhere near it. If this ever stops holding, the
+  // label — and the decision not to gate on the limit — both need revisiting.
+  console.assert(eddBps(SUN) < 1e-4 && 5e6 / eddBps(SUN) > 1e10,
+    'any real throw is astronomically super-Eddington',
+    eddBps(SUN), 5e6 / eddBps(SUN));
+  console.assert(typeof L.quasarMax === 'function' && L.quasarMax('X').includes('X'),
+    'the quasar label reports a computed ratio, it does not claim a limit');
+  // The shadow is what a telescope sees, and it is NOT the horizon: √27·GM/c²
+  // is 2.598 Schwarzschild radii across. Getting this wrong by the factor of two
+  // between radius and diameter is the classic error here.
+  eq(shadowOf(SUN) / radiusOf(SUN), 2.598, 'the shadow is 2.6 horizon radii across');
+  eq(shadowOf(M87), 4.99e13, 'M87* casts a shadow about 5e13 m across');
+  // The whole point of the mass-driven channels: the screen radius only grows
+  // 26% across the season, so if these stop moving, growth stops being visible
+  // and nothing else would tell us. A big hole must turn markedly slower and
+  // sit at a brighter exposure than a small one.
+  console.assert(spinOf(TARGET_BYTES) < spinOf(1024) / 10,
+    'a full hole turns at least 10x slower than an empty one',
+    spinOf(1024), spinOf(TARGET_BYTES));
+  console.assert(massT(100) === 0 && massT(TARGET_BYTES) === 1 && massT(0) === 0,
+    'the season maps onto 0..1, clamped below the floor',
+    massT(100), massT(TARGET_BYTES));
+  {
+    const lo = lookAt(1024), hi = lookAt(TARGET_BYTES);
+    console.assert(Object.keys(LOOK).every(k => lo[k] !== hi[k]),
+      'every mass-driven channel actually moves across the season', lo, hi);
+    console.assert(hi.expo < lo.expo,
+      'exposure rises with mass — otherwise growth reads as fading', lo.expo, hi.expo);
+  }
+  // atBytes feeds all three dialog tables and the goal caption, and had no
+  // assert at all — including at its own two branch edges.
+  console.assert(atBytes(999) === '999 ' + L.byte[0] && atBytes(1024).endsWith(L.byte[1]),
+    'atBytes at the sub-kilobyte edge', atBytes(999), atBytes(1024));
+  console.assert(atBytes(1024 ** 6).includes('·10'),
+    'past exabytes atBytes falls back to scientific notation', atBytes(1024 ** 6));
+  console.assert(atBytes(bytesFor(SUN)) === '18.5 ' + L.byte[3],
+    'atBytes on the headline figure', atBytes(bytesFor(SUN)));
+  // The "past the last rung" branch is what this change added, and nothing
+  // exercised it: milesPassed returns MILES.length, MILES[i] is undefined, and
+  // the bar must read 100% with the goalDone caption instead of crashing.
+  console.assert(milesPassed(MILES[MILES.length - 1][2]) === MILES.length
+    && MILES[milesPassed(Infinity)] === undefined,
+    'past the last milestone there is no next rung', milesPassed(Infinity));
+  // fmtLen bottoms out during the intro animation, when the hole is still
+  // microscopic — it must not print a bare "0".
+  console.assert(fmtLen(1e-12)[0] !== '0' && fmtLen(0)[0] === '0',
+    'fmtLen below a nanometre', fmtLen(1e-12), fmtLen(0));
+  // MILES values are COMPUTED from physics, so a mis-ordered rung is invisible
+  // to the eye and would silently corrupt milesPassed. This is the load-bearing
+  // assert of the whole ladder.
+  console.assert(MILES.every((m, i) => !i || m[2] > MILES[i - 1][2]),
+    'MILES must be strictly increasing', MILES.map(m => m[0]));
   // Regression: a contribution can't exceed the whole hole. It drifted two
   // ways — server-rejected throws and rollbacks — and showed "2593% of mass".
   // `|| !S.bytes`: this block runs synchronously, and in shared mode the first
@@ -1828,14 +2611,38 @@ if (location.search.includes('test')) {
       .map(el => el.dataset.t || el.dataset.th || el.dataset.ta)
       .filter(k => L[k] === undefined);
     console.assert(!bad.length, 'markup has data-t without a dictionary entry', bad);
-    console.assert($('clsTable').rows.length === 7 && $('massTable').rows.length === 5,
-      'dialog tables generated');
-    for (const k of ['classes', 'classNotes', 'gram', 'byte', 'scales', 'objects', 'kinds', 'whispers'])
+    renderMileTable();
+    console.assert($('clsTable').rows.length === 8 && $('massTable').rows.length === 7
+      && $('mileTable').rows.length === MILES.length + 1, 'dialog tables generated');
+    for (const k of ['classes', 'classNotes', 'byte', 'len', 'scales', 'objects', 'kinds', 'whispers'])
       console.assert(TXT.uk[k].length === TXT.en[k].length, 'array length differs for ' + k);
+    // uk/en parity was checked; JS-constant vs dictionary alignment never was.
+    // A short array renders `undefined` into the UI and nothing catches it.
+    for (const [k, n] of [['classes', CLASSES.length], ['classNotes', CLASSES.length],
+                          ['objects', OBJECTS.length], ['scales', SCALES.length],
+                          ['len', LEN_UNITS.length], ['kinds', KIND_RE.length]])
+      for (const lang of ['uk', 'en'])
+        console.assert(TXT[lang][k].length === n,
+          `${lang}.${k}: ${TXT[lang][k].length} names for ${n} values`);
+    // Milestones are keyed, so the failure modes are a missing id and an orphan.
+    for (const [id] of MILES) for (const lang of ['uk', 'en'])
+      console.assert(TXT[lang].miles[id]?.[1], `${lang}.miles.${id} missing name or note`);
+    for (const lang of ['uk', 'en'])
+      console.assert(Object.keys(TXT[lang].miles).every(id => MILES.some(m => m[0] === id)),
+        `${lang}.miles has ids no longer in MILES`);
+    // every class boundary above the first is also a rung, so the rank shown on
+    // the left and the ladder in the dialog can never disagree
+    console.assert(CLASSES.slice(2).every(c =>
+      MILES.some(m => Math.abs(m[2] / bytesFor(c[0]) - 1) < 1e-6)),
+      'class boundaries must be milestones too');
   }
   // disc: T ∝ M^(−1/4) — a heavier hole is cooler, hence redder
-  eq(diskT(1e-3) / diskT(1e-3 * 16), 2, 'T ∝ M^(−1/4): ×16 mass = ÷2 temperature');
-  console.assert(diskT(0) === 30000 && diskT(1e9) === 700, 'temperature clamped on both ends');
+  eq(discT(SUN) / discT(SUN * 16), 2, 'T ∝ M^(−1/4): ×16 mass = ÷2 temperature');
+  console.assert(discT(SUN) === 1e7, 'thin-disc anchor: 1e7 K at one solar mass');
+  // false colour must preserve order and stay inside bbColor's valid window
+  console.assert(diskT(massOf(1)) > diskT(1e5 * SUN), 'a heavier hole has a cooler disc');
+  console.assert(diskT(massOf(1)) <= 40000 && diskT(1e6 * SUN) >= 1000,
+    'false colour stays inside bbColor validity', diskT(massOf(1)), diskT(1e6 * SUN));
   const blue = c => c[2] / c[0];
   console.assert(blue(bbColor(20000)) > blue(bbColor(2000)), 'hotter blackbody is bluer');
   console.assert(blue(shockColorFor(1e9)) > blue(shockColorFor(1e3)),
@@ -1844,12 +2651,13 @@ if (location.search.includes('test')) {
   // the same star at the same time — the basis of TDE synchronicity
   console.assert(JSON.stringify(tdeNow(1234567)) === JSON.stringify(tdeNow(1234567)),
     'TDE identical across tabs');
-  const [dIn_, dOut_] = diskColors(3e-3);
+  const [dIn_, dOut_] = diskColors(SUN);
   console.assert(blue(dIn_) > blue(dOut_), 'inner disc edge hotter than outer');
-  // milestones are objects, not astronomy classes: only four classes are reachable
-  console.assert(milestoneOf(0) === 0, 'empty hole has no milestones');
-  console.assert(milestoneOf(massOf(120 * 1024 ** 3 * 8)) > milestoneOf(massOf(110 * 1024 ** 3 * 8)),
-    'the coin milestone sits near 111 GB');
+  // the ladder counts rungs already behind us — check both sides of one edge
+  console.assert(milesPassed(0) === 0, 'empty hole has no milestones');
+  console.assert(milesPassed(MILES[13][2]) === 14 && milesPassed(MILES[13][2] - 1) === 13,
+    'milesPassed is exact on a rung edge');
+  console.assert(milesPassed(bytesFor(SUN)) === 14, 'one solar mass is the 14th rung');
   // a server refusal must take back exactly what the page already showed —
   // otherwise mass quietly diverges and the next snapshot rolls it back
   {
@@ -1860,32 +2668,34 @@ if (location.search.includes('test')) {
     console.assert(Math.abs(S.bytes - b) < 1e-6 && S.count === c && MINE === mine
       && S.recent.length === n && !S.recent.includes(e), 'refuse must undo what was shown');
   }
-  console.assert(nextGoal(4e-3) === 1e-2 && nextGoal(2e-3) === 3e-3, 'intermediate goals in place');
   console.assert(
     ['жертва', 'жертви', 'жертв', 'жертв', 'жертва', 'жертв'].every((w, i) =>
       plural([1, 2, 5, 11, 21, 111][i], 'жертва', 'жертви', 'жертв') === w),
     'Ukrainian counter declension');
-  // Constants must be self-consistent, not just typed from a reference:
-  // m_P = √(ħc/G), l_P² = ħG/c³. A typo in either would silently skew
-  // everything, since all other formulas derive from them.
-  eq(M_PLANCK, Math.sqrt(HBAR * C / G), 'm_P = √(ħc/G)');
-  eq(LP2, HBAR * G / C ** 3, 'l_P² = ħG/c³');
-  // The dialog number: 2.6·10²⁶ K over the Sun's core 1.5·10⁷ K is 10¹⁹, not
-  // 10⁹. "Seventeen billion" sat here for a long time — off by a billion.
-  eq(tempOf(massOf(8 * 1024 ** 3)) / 1.5e7, 1.73e19, 'temperature: 1.7·10¹⁹ solar cores');
-  eq(bytesFor(3 * SUN), 1.703e77, 'lightest stellar hole is 1.7·10⁷⁷ bytes');
-  eq(1e80 / bytesFor(3 * SUN), 587, 'one byte per 587 atoms of the universe');
-  eq(massOf(200e21 * 8), 6470, 'all of humanity\'s data (200 ZB) is 6.5 tons');
-  // Evaporation display: −1% mass per day means −1.99% bytes, since mass ∝
-  // √bytes. Showing 1% instead is the same substitution the temperature text
-  // was caught on: right value, wrong unit.
-  eq(1 - 0.99 ** 2, 0.0199, '1.99% of bytes evaporate per day');
-  eq(Math.sqrt(0.99 ** 2), 0.99, '…which is exactly −1% of mass');
-  // the area must match 4πr² — a check of Bekenstein's formula itself
-  eq(areaOf(8 * 1024 ** 3), 4 * Math.PI * radiusOf(massOf(8 * 1024 ** 3)) ** 2, 'A = 4πr_s²');
-  eq(areaOf(2e9) / areaOf(1e9), 2, 'area is linear in bits');
-  console.assert(cmpMass(1e-3) === L.cmpSame(L.objects[3]), 'cmpMass exact', cmpMass(1e-3));
-  console.assert(cmpMass(2e-2) === L.cmpDiff(4, L.objects[4], true), 'cmpMass multiplier', cmpMass(2e-2));
+  // The CMB rung is derived by inverting the Hawking formula, so verify it
+  // really is the mass where the hole stops being hotter than the sky.
+  eq(tempOf(massOf(MILES[3][2])), T_CMB, 'the cmb rung is exactly where T_H = 2.725 K');
+  console.assert(MILES[3][2] > 400 && MILES[3][2] < 500, 'and it lands near 450 bytes', MILES[3][2]);
+  // 1 GB is colder than the sky by this much — the pHorizon text quotes it
+  eq(T_CMB / tempOf(massOf(1024 ** 3)), 2.4e6, '1 GB is 2.4 million times colder than the CMB');
+  eq(eddOf(SUN) / L_SUN, 3.29e4, 'a solar-mass hole can shine like 33 000 Suns');
+  eq(bytesFor(4.3e6 * SUN) / 1024 ** 5, 75.96, 'Sgr A* is 76 PB');
+  eq(bytesFor(4.3e6 * SUN) / bytesFor(1e5 * SUN), 43, 'Sgr A* is 43x the season target');
+  eq(massOf(200e21) / SUN, 1.0e13, "humanity's 200 ZB would be 1e13 solar masses");
+  // The reservoir ceiling: steady inflow F settles at F/(1-DECAY). At 0.5% that
+  // is 200x the daily inflow, so 11 TB/day tops out at 2.2 PB — above the
+  // 1.77 PB target. At 1% the ceiling was 1.1 PB and the season was unwinnable.
+  eq(1 / (1 - DECAY), 200, 'the hole tops out at 200x its daily inflow');
+  console.assert(11.1 * 1024 ** 4 / (1 - DECAY) > bytesFor(1e5 * SUN),
+    'the season target must sit below the ceiling');
+  // area is plain geometry now: r_s ∝ mass, so the area goes as mass². Asserting
+  // A = 4πr² here would just restate the body of areaOf; this is the real claim.
+  eq(areaOf(massOf(2e9)) / areaOf(massOf(1e9)), 4, 'horizon area grows as bytes²');
+  // the real Bekenstein bound dwarfs what we feed it — that is the honest number
+  console.assert(bitsCap(massOf(1e15)) > 1e15 * 8, 'capacity dwarfs the data fed in');
+  console.assert(cmpMass(SUN) === L.cmpSame(L.objects[8]), 'cmpMass exact', cmpMass(SUN));
+  console.assert(cmpMass(4 * SUN) === L.cmpDiff(4, L.objects[8], true),
+    'cmpMass multiplier', cmpMass(4 * SUN));
   console.assert(cmpMass(0) === L.empty, 'cmpMass zero');
   // regression: an unconditional display on <dialog> overrides browser display:none
   console.assert(getComputedStyle($('about')).display === 'none', 'closed dialog must be hidden');

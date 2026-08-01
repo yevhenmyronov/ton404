@@ -2,6 +2,16 @@
 // Files never reach this code: only size, extension, and a dedup signature.
 
 const DAY = 864e5;
+// Dissipation per day. This single number is the game's difficulty dial: with a
+// steady inflow F the hole settles at F/rate, so 0.5% allows 200x the daily
+// inflow — 2.2 PB at 11 TB/day, past the 1.77 PB season target. At 1% the
+// ceiling was 1.1 PB and the target was unreachable forever. Must match the
+// client's DECAY.
+// NOT exported: the Workers runtime reads every named export of the entrypoint
+// as a service binding and refuses anything that is not a function or handler —
+// `export const DECAY` kills the worker at startup with "Incorrect type for map
+// entry". The test compares this against the client by reading both sources.
+const DECAY = 0.995;
 // Anything can be thrown: the browser only reads file.size, so size costs nothing.
 // The real anti-inflation boundary is the daily cap, which stays fixed.
 const MAX_FEED   = 1e11;   // 100 GB per throw
@@ -53,7 +63,8 @@ export class BlackHole {
     });
   }
 
-  // Hawking evaporation: -1% mass per day. mass ∝ √bytes ⇒ bytes ∝ mass²
+  // Dissipation, not Hawking evaporation: a hole this heavy would really live
+  // 1e67 years. Mass is linear in bytes, so -0.5% of mass is -0.5% of bytes.
   decay() {
     const now = Date.now();
     if (!this.d.t) { this.d.t = now; return; }
@@ -64,7 +75,7 @@ export class BlackHole {
     // request billed the first throw for that whole idle stretch. A year of
     // quiet ate 84% of it. Same hazard after any /rollback down to zero.
     if (days > 0.01) {
-      if (this.d.bytes > 0) this.d.bytes *= Math.pow(0.99, days) ** 2;
+      if (this.d.bytes > 0) this.d.bytes *= Math.pow(DECAY, days);
       this.d.t = now;
     }
   }
@@ -88,6 +99,9 @@ export class BlackHole {
   // ponytail: broadcast tick grows with the audience. At 2000 viewers a 1 s
   // tick means 2000 sends/s from one single-threaded object — it can't.
   // Ceiling 5 s: slower is already visible to the eye.
+  // This IS a deferred timer, so eviction can drop one coalesced broadcast
+  // (unlike save() below, which never defers). Accepted: the state is already
+  // saved, and the client re-syncs on its 30 s ping or reconnect.
   broadcast() {
     if (this.tCast) return;
     const n = this.state.getWebSockets().length;

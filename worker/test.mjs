@@ -2,6 +2,7 @@
 // The limits are all that stands between the hole and inflation, so they stay
 // tested even when nobody touches the rest of the code.
 import assert from 'node:assert';
+import { readFileSync } from 'node:fs';
 import { BlackHole } from './src/index.js';
 
 // platform class; only needed so the constructor doesn't crash
@@ -233,6 +234,29 @@ h.d.log.push({ t: Date.now() - 48 * 864e5, b: 9e9, e: 'old', s: 53 }); // two da
   assert.equal(snap.record.ext, 'iso');
 }
 
+// ── dissipation ───────────────────────────────────────────────────────────
+// Mass is linear in bytes now, so -0.5% of mass is -0.5% of bytes, applied
+// once. It used to be squared (bytes ∝ mass² under the old entropy law) and
+// nothing here tested it, so the change would have gone through unnoticed.
+{
+  h = await hole();
+  h.d.bytes = 1e12;
+  h.d.t = Date.now() - 10 * 864e5;
+  h.decay();
+  assert.ok(Math.abs(h.d.bytes / (1e12 * 0.995 ** 10) - 1) < 1e-9,
+    '0.5% of bytes per day, compounded once', h.d.bytes);
+  // A steady inflow settles at F/(1-rate): the ceiling the season target must
+  // sit under. At 0.5% that is 200x the daily inflow.
+  const ceiling = 11.1 * 1024 ** 4 / 0.005;
+  assert.ok(ceiling > 1.77 * 1024 ** 5, 'the ceiling must clear the season target');
+
+  // A quiet hole must not drift: under the threshold decay is a no-op.
+  h.d.bytes = 1e12;
+  h.d.t = Date.now();
+  h.decay();
+  assert.equal(h.d.bytes, 1e12, 'no decay applied for a near-zero interval');
+}
+
 // ── rollback ──────────────────────────────────────────────────────────────
 h = await hole();
 await feed(h, { bytes: GB, ext: 'a', sig: 31 });
@@ -273,6 +297,46 @@ assert.equal(out.bytes, 5 * GB, 'the two-day-old mass stays');
   await feed(h, { bytes: 1, ext: 'a', sig: 72 }, '7.7.7.7');
   assert.ok(h.d.bytes > 0.99e11,
     'a year of empty quiet must not eat the first throw', h.d.bytes);
+}
+
+// ── the daily cap per address ─────────────────────────────────────────────
+// Never had a test. The cooldown case above looks like it covers this, but both
+// its requests land in the same counter through a different branch. A batch is
+// the only way to cross the cap in one request: items share one cooldown and
+// each is judged on its own, so the ones past the ceiling come back rejected
+// while the earlier ones are still swallowed.
+{
+  h = await hole();
+  const per = 1e11;                                   // MAX_FEED, 100 GB a throw
+  const n = 6;                                        // 600 GB > the 500 GB cap
+  const r = await feed(h, {
+    items: Array.from({ length: n }, (_, i) => ({ bytes: per, ext: 'iso', sig: 200 + i })),
+  }, '8.8.8.8');
+  const body = await r.json();
+  assert.equal(body.rejected.length, 1, 'exactly the throw past the cap is refused');
+  assert.equal(body.rejected[0].error, 'daily cap');
+  assert.equal(h.d.bytes, 5 * per, 'everything up to the cap was still swallowed');
+}
+
+// ── the two copies of DECAY must not drift ────────────────────────────────
+// The rate is written twice by hand — here and in the client — and nothing
+// compared them, so one side could be retuned alone and the page would quietly
+// disagree with the server about how fast mass leaves.
+// Both sides are read from source rather than imported: the worker must NOT
+// export the constant. Workers treats every named export of the entrypoint as a
+// service binding and rejects anything that is not a function or handler, so
+// `export const DECAY` takes the whole site down at startup.
+{
+  const rate = (path, what) => {
+    const src = readFileSync(new URL(path, import.meta.url), 'utf8');
+    const m = src.match(/^(?:export )?const DECAY *= *([\d.]+);/m);
+    assert.ok(m, `${what} DECAY not found — did the declaration move?`);
+    assert.ok(!/^export const DECAY/m.test(src) || what !== 'worker',
+      'the worker must not export DECAY — Workers refuses a non-function export');
+    return Number(m[1]);
+  };
+  assert.equal(rate('../public/index.html', 'client'), rate('./src/index.js', 'worker'),
+    'client and worker DECAY must match');
 }
 
 // ── unknown paths never wake the Durable Object ───────────────────────────
