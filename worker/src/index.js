@@ -99,6 +99,9 @@ export class BlackHole {
   // ponytail: broadcast tick grows with the audience. At 2000 viewers a 1 s
   // tick means 2000 sends/s from one single-threaded object — it can't.
   // Ceiling 5 s: slower is already visible to the eye.
+  // This IS a deferred timer, so eviction can drop one coalesced broadcast
+  // (unlike save() below, which never defers). Accepted: the state is already
+  // saved, and the client re-syncs on its 30 s ping or reconnect.
   broadcast() {
     if (this.tCast) return;
     const n = this.state.getWebSockets().length;
