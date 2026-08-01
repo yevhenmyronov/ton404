@@ -551,10 +551,10 @@
            without this the picture has no scale at all; with it the compression
            stops being a lie and becomes the legend on a map. -->
       <div class="t"><span data-t="teleScale">масштаб</span><b id="scale">—</b><i data-t="scaleNote"></i></div>
-      <!-- The gap, not two clock faces. Two clocks showing near-identical times
-           read as a bug; the distance between them is the whole story, and it
-           only ever grows. The rate is a constant — Schwarzschild geometry is
-           self-similar — so mass enters through the orbit's duration instead. -->
+      <!-- Two clocks: time spent at the hole vs time passed on Earth. Their
+           ratio is a constant √2 for a hole of ANY mass — Schwarzschild
+           geometry is self-similar — so mass enters only through the orbit's
+           duration in the caption, never through the rate. -->
       <div class="t"><span data-t="teleDilate">уповільнення часу</span><b id="dilate">—</b><i><span class="eq">dτ = dt·√(1−3GM/rc²) — </span><span id="dilateCmp"></span></i></div>
       <!-- The counterweight to every other row: this one gets SMALLER as the
            hole grows. Real, and the reason falling into a supermassive hole is
@@ -718,11 +718,12 @@ uk: {
   teleEvap: 'повне випаровування',
   teleInfo: 'поглинуто', teleRecord: 'рекорд доби', teleDecay: 'розсіюється за добу',
   teleDilate: 'уповільнення часу', teleTide: 'приливне розтягнення',
-  // The gap since the page opened — its own formatter, because fmtTime prints
-  // «1.90·10² с» for three minutes and L.ago drags a «тому» that makes no sense
-  // for a distance between two clocks.
-  dilGap: (m, s) => m ? `ти на ${m} хв ${s} с попереду` : `ти на ${s} с попереду`,
-  dilOrbit: (you, there) => `оберт диска: ${you} у тебе · ${there} для речовини`,
+  // Two wall clocks — their own formatter, because fmtTime prints «1.90·10² с»
+  // for three minutes, which is no way to read a clock.
+  dilClock: s => s < 60 ? `${s} с` : `${Math.floor(s / 60)} хв ${s % 60} с`,
+  dilGap: (you, earth) => `біля діри ти ${you} · на Землі минуло ${earth}`,
+  teleOrbit: 'оберт диска',
+  dilOrbit: (you, there) => `${you} у тебе · ${there} для речовини`,
   tideSafe: 'горизонт можна перетнути цілим',
   tideKills: d => `розірве вже за ${d} від центра`,
   lumNote: 'межа Еддінгтона — яскравіше така діра світити не може',
@@ -887,8 +888,10 @@ en: {
   teleEvap: 'full evaporation',
   teleInfo: 'swallowed', teleRecord: 'record of the day', teleDecay: 'dissipates per day',
   teleDilate: 'time dilation', teleTide: 'tidal stretch',
-  dilGap: (m, s) => m ? `you are ${m}m ${s}s ahead` : `you are ${s}s ahead`,
-  dilOrbit: (you, there) => `one disc orbit: ${you} for you · ${there} for the matter`,
+  dilClock: s => s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`,
+  dilGap: (you, earth) => `${you} at the hole · ${earth} passed on Earth`,
+  teleOrbit: 'disc orbit',
+  dilOrbit: (you, there) => `${you} for you · ${there} for the matter`,
   tideSafe: 'the horizon can be crossed intact',
   tideKills: d => `it tears you apart ${d} from the centre`,
   lumNote: 'the Eddington limit — no hole this size can shine brighter',
@@ -1449,7 +1452,7 @@ function renderNumbers() {
   // together, their ratio pinned at DIL.
   const per = m > 0 ? iscoPeriod(m) : 0;
   $('dilateCmp').textContent = per > 0
-    ? L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '';
+    ? L.teleOrbit + ': ' + L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '';
   // Tidal stretch in g — the unit a body actually feels. Falls as M⁻², so over
   // a season this row travels twelve orders of magnitude downward.
   // Same two formats as luminosity and the shadow ratio, for the same reason:
@@ -1472,7 +1475,7 @@ function renderNumbers() {
     [L.teleTemp,   m > 0 ? sci(discT(m)) + ' K' : '—'],
     [L.teleEvap,   m > 0 ? fmtTime(evapOf(m)) : '—'],
     [L.teleInfo,   bv + ' ' + bu],
-    [L.teleDilate, per > 0 ? L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '—'],
+    [L.teleOrbit,  per > 0 ? L.dilOrbit(fmtTime(per), fmtTime(per * DIL)) : '—'],
     [L.teleTide,   m > 0 ? tideTxt + ' g' : '—'],
     [L.teleDecay,  fmtBytes(shown * (1 - DECAY)).join(' ')],
   ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
@@ -1623,15 +1626,20 @@ function hawkTick() {
 }
 setInterval(hawkTick, 120);
 
-// ─── the gap between two clocks ────────────────────────────────────────────
+// ─── two clocks ────────────────────────────────────────────────────────────
 // renderNumbers() only runs while the mass is easing, and the 15 s render tick
 // is far too coarse for something meant to be watched drifting. Its own second,
-// touching one text node: the gap widens by 0.293 s every second, so a minute
-// on the page already puts you 17.6 s ahead of the disc's inner edge.
-const openedAt = Date.now();
+// touching one text node. Only visible time counts — "time at the hole" would
+// be a lie if the clock kept running in a hidden tab — so one step is capped
+// at two ticks: the first visible tick after a throttled hidden stretch would
+// otherwise credit the whole absence to the hole.
+let nearMs = 0, lastTick = Date.now();
 function dilTick() {
-  const gap = (Date.now() - openedAt) / 1000 * (1 - DIL);
-  $('dilate').textContent = L.dilGap(Math.floor(gap / 60), Math.floor(gap % 60));
+  const now = Date.now();
+  if (!document.hidden) nearMs += Math.min(now - lastTick, 2000);
+  lastTick = now;
+  const near = Math.floor(nearMs / 1000);
+  $('dilate').textContent = L.dilGap(L.dilClock(near), L.dilClock(Math.floor(near / DIL)));
 }
 setInterval(dilTick, 1000); dilTick();
 
@@ -2447,6 +2455,12 @@ if (location.search.includes('test')) {
   // The split the row depends on: duration scales with mass, rate never does.
   eq(iscoPeriod(1e5 * SUN) / iscoPeriod(SUN), 1e5, 'orbit duration is linear in mass');
   eq(iscoPeriod(1e5 * SUN), 45.5, 'the season target turns once every 45 s');
+  // The two clocks the row shows: Earth ages exactly √2 faster, for any hole.
+  eq(1 / DIL, Math.SQRT2, 'Earth runs √2 ahead of the disc inner edge');
+  console.assert(TXT.uk.dilClock(84) === '1 хв 24 с' && TXT.en.dilClock(84) === '1m 24s'
+    && TXT.uk.dilClock(9) === '9 с', 'dilClock formats a clock', TXT.uk.dilClock(84));
+  console.assert(TXT.uk.dilGap('9 с', '12 с').includes('12 с')
+    && TXT.en.dilGap('9s', '12s').includes('12s'), 'dilGap holds both clocks');
   // Tidal stretch: the textbook figure for a solar-mass hole, and the payoff at
   // the season target — the same hole, gentle enough to cross.
   eq(tideAt(SUN), 1.751e10, 'a solar-mass horizon stretches a person by 1.8e10 m/s²');
