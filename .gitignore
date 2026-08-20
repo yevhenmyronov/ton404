@@ -12,3 +12,6 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# Повнорозмірний оригінал знімка: у репозиторій їде стиснута версія поруч.
+screenshots/original-*.png

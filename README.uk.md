@@ -13,6 +13,10 @@ M87*). TON — реальний каталог квазарів Тонанцин
   <a href="README.md"><img src="https://img.shields.io/badge/README-in%20English-555" alt="Read in English"></a>
 </p>
 
+<p align="center">
+  <img src="screenshots/ton404.jpg" width="100%" alt="TON 404 на 21.1 сонячної маси: телеметрія ліворуч, останні жертви праворуч, діра посередині">
+</p>
+
 Стара адреса `blackhole.mironovjm.workers.dev` лишається робочою, щоб не побити
 вже роздані посилання. Канонічна одна — вона в `<link rel="canonical">`.
 

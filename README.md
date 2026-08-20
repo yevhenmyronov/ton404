@@ -14,6 +14,10 @@ longer there.
   <a href="README.uk.md"><img src="https://img.shields.io/badge/README-українською-0057B7" alt="Читати українською"></a>
 </p>
 
+<p align="center">
+  <img src="screenshots/ton404.jpg" width="100%" alt="TON 404 at 21.1 solar masses: telemetry on the left, latest victims on the right, the hole in the middle">
+</p>
+
 The old address `blackhole.mironovjm.workers.dev` still works so that links
 already handed out keep resolving. The canonical one is in `<link rel="canonical">`.
 
