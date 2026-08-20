@@ -1,246 +1,266 @@
 # TON 404
 
-Односторінковий сайт із чорною дірою, яку годують файлами.
+A one-page site with a black hole that you feed with files.
 
-Назва — у форматі позначення каталогу, як у справжніх дір (TON 618, Sgr A*,
-M87*). TON — реальний каталог квазарів Тонанцинтли, 404 — те, чого більше немає.
+The name follows the catalogue format real holes use (TON 618, Sgr A\*, M87\*).
+TON is the actual Tonantzintla quasar catalogue; 404 is the thing that is no
+longer there.
 
 **https://nohair.dev**
 
-Стара адреса `blackhole.mironovjm.workers.dev` лишається робочою, щоб не побити
-вже роздані посилання. Канонічна одна — вона в `<link rel="canonical">`.
+<p>
+  <a href="https://github.com/yevhenmyronov/ton404/actions/workflows/ci.yml"><img src="https://github.com/yevhenmyronov/ton404/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT">
+  <a href="README.uk.md"><img src="https://img.shields.io/badge/README-українською-0057B7" alt="Читати українською"></a>
+</p>
 
-Кидаєш файл — діра важчає. **18.5 ГБ = одне Сонце.** Одна оголошена вигадка
-(`1 байт = 10²⁰ кг`), усе інше — справжня фізика, порахована з цієї маси. Спільнота
-разом вирощує діру від зоряної до надмасивної через тридцять один щабель, за
-кожним з яких стоїть реальний обʼєкт або фізична межа. Діра одна на всіх: те, що
-кинув хтось в Аргентині, ти побачиш у себе на екрані за секунду.
+The old address `blackhole.mironovjm.workers.dev` still works so that links
+already handed out keep resolving. The canonical one is in `<link rel="canonical">`.
+
+Drop a file and the hole gets heavier. **18.5 GB = one Sun.** One declared
+fiction (`1 byte = 10²⁰ kg`); everything else is real physics computed from that
+mass. The crowd grows the hole from stellar to supermassive through thirty-one
+rungs, each of which is a real object or a physical limit. There is one hole for
+everyone: what somebody dropped in Argentina shows up on your screen a second
+later.
 
 ---
 
-## Файли нікуди не завантажуються
+## Files are never uploaded
 
-Це не обіцянка в політиці конфіденційності, а архітектура.
+This is not a privacy-policy promise, it is the architecture.
 
-Браузер читає `file.size`, бере розширення й рахує підпис по **перших 64 КБ**
-(FNV-1a, потрібен лише для дедупу). На сервер летить рівно це:
+The browser reads `file.size`, takes the extension and computes a signature over
+the **first 64 KB** (FNV-1a, needed only for dedup). Exactly this goes to the
+server:
 
 ```json
 { "bytes": 15482000, "ext": "png", "sig": 2847362910 }
 ```
 
-Імені файлу серед цього немає — і бекенд його не прийме, навіть якщо надіслати.
-Люди кидають у діру `скан_паспорта.jpg` і `зарплати_Q3.xlsx`, і жодне з цих слів
-не має покидати їхній пристрій.
+The filename is not among it — and the backend would not accept it even if sent.
+People throw `passport_scan.jpg` and `salaries_Q3.xlsx` into the hole, and none
+of those words should ever leave their device.
 
-Наслідок: сервер не має **жодного доказу**, що за числом стояв реальний файл.
-Накрутку тут неможливо перемогти в принципі, тому замість оборони зроблено
-відкат — див. нижче.
+The consequence: the server holds **no proof** that a real file stood behind a
+number. Inflation cannot be defeated here in principle, so instead of defending
+against it there is a rollback — see below.
 
 ---
 
-## Фізика
+## Physics
 
-TON 404 перетворює інформацію в матерію. Це **єдина вигадка** в проєкті, і вона
-оголошена на самій сторінці великим шрифтом:
+TON 404 turns information into matter. That is the **only** fiction in the
+project, and it is declared on the page itself in large type:
 
 ```
-M = N · 10²⁰ кг                (N — байтів; це і є вигадка)
+M = N · 10²⁰ kg                (N is bytes; this is the fiction)
 
 r_s = 2GM/c²                   T = ℏc³/(8πGMk)
 t = 5120πG²M³/ℏc⁴              L_Edd = 1.26·10³¹ · M/M☉
 dτ = dt·√(1−3GM/rc²)           Δa = L·c⁶/(4G²M²)
 ```
 
-Далі — жодного підганяння: радіус Шварцшильда, температура Гокінга, час
-випаровування, межа Еддінгтона, уповільнення часу на внутрішньому краю диска й
-приливне розтягнення на горизонті рахуються справжніми формулами з цієї маси.
+Past that, nothing is fudged: the Schwarzschild radius, Hawking temperature,
+evaporation time, Eddington limit, time dilation at the inner edge of the disc
+and tidal stretching at the horizon are all computed with real formulas from
+that mass.
 
-Дві останні варто прочитати разом. Уповільнення на ISCO — рівно 1/√2, і воно
-однакове для діри будь-якої ваги: геометрія Шварцшильда самоподібна за r/r_s,
-тому маса змінює тривалість оберту, але ніколи не темп. Приливне ж розтягнення
-падає як M⁻² — єдине число тут, яке з ростом діри стає меншим, і саме тому
-надмасивну діру можна перетнути цілим, а зоряна розриває за тисячі кілометрів
-від горизонту. За сезон воно проходить дванадцять порядків і на підході до
-надмасивного щабля (≈1.3·10⁴ M☉) опускається нижче людської витривалості.
+The last two are worth reading together. Dilation at the ISCO is exactly 1/√2
+and is the same for a hole of any weight: Schwarzschild geometry is self-similar
+in r/r_s, so mass changes how long an orbit takes but never the rate. Tidal
+stretching, meanwhile, falls as M⁻² — the only number here that gets *smaller*
+as the hole grows, which is exactly why a supermassive hole can be crossed
+intact while a stellar one tears you apart thousands of kilometres out. Over a
+season it travels twelve orders of magnitude and, approaching the supermassive
+rung (≈1.3·10⁴ M☉), drops below human tolerance.
 
-Константу підібрано так, щоб драбина падала на реальні обʼєкти:
+The constant is chosen so that the ladder lands on real objects:
 
-| Поглинуто | Маса | Радіус горизонту | Світить як |
+| Swallowed | Mass | Horizon radius | Shines like |
 |---|---|---|---|
-| 1 байт | 10²⁰ кг | 1.5·10⁻⁷ м | — |
-| 1 ГБ | 18 000 мас Землі | **159 м** | 1 800 Сонць |
-| **18.5 ГБ** | **1 маса Сонця** | 2.95 км | 33 000 Сонць |
-| 393 ГБ | 21.2 маси Сонця — Лебідь X-1 | 62.6 км | 700 000 Сонць |
-| 39 ТБ | 2 156 мас Сонця | 6 371 км — як Земля | 7·10⁷ Сонць |
-| **1.77 ПБ** | **100 000 мас Сонця** | 295 000 км | 3.3·10⁹ Сонць |
+| 1 byte | 10²⁰ kg | 1.5·10⁻⁷ m | — |
+| 1 GB | 18,000 Earth masses | **159 m** | 1,800 Suns |
+| **18.5 GB** | **1 solar mass** | 2.95 km | 33,000 Suns |
+| 393 GB | 21.2 solar masses — Cygnus X-1 | 62.6 km | 700,000 Suns |
+| 39 TB | 2,156 solar masses | 6,371 km — Earth-sized | 7·10⁷ Suns |
+| **1.77 PB** | **100,000 solar masses** | 295,000 km | 3.3·10⁹ Suns |
 
-Головна фраза: **18.5 ГБ = одне Сонце**.
+The headline: **18.5 GB = one Sun**.
 
-Раніше маса виводилася з чесної ентропії Бекенштейна–Гокінга
-(`M = m_P·√(N·ln2/4π)`), і це було науково безкомпромісно — але діра назавжди
-важила кілька грамів, була менша за протон у 10¹⁵ разів, а астрономічні класи в
-коді лишалися недосяжними: найлегша зоряна діра вимагала 1.7·10⁷⁷ байтів, тобто
-один байт на кожні 587 атомів видимого Всесвіту. Половина інтерфейсу обіцяла те,
-чого не станеться ніколи.
+Mass used to be derived from honest Bekenstein–Hawking entropy
+(`M = m_P·√(N·ln2/4π)`), which was scientifically uncompromising — and left the
+hole weighing a few grams forever, 10¹⁵ times smaller than a proton, with the
+astronomical classes in the code permanently out of reach: the lightest stellar
+hole required 1.7·10⁷⁷ bytes, one byte for every 587 atoms in the visible
+universe. Half the interface promised something that would never happen.
 
-**Драбина віх.** Тридцять один щабель, і за кожним стоїть справжня наука. Три
-різновиди: реальний названий обʼєкт, фізична межа, за якою природа змінює
-правила, і розмір горизонту, який можна уявити. Жодне значення не вписане
-руками — усі обчислюються з тих самих формул, тому застаріле число тут завестися
-не може. Кілька щаблів:
+**The milestone ladder.** Thirty-one rungs, each backed by real science, in
+three flavours: a named real object, a physical limit where nature changes the
+rules, and a horizon size you can picture. No value is typed in by hand — all
+are computed from the same formulas, so a stale number cannot appear here. A few
+rungs:
 
-| Віха | Треба зібрати | Чому це віха |
+| Milestone | Needed | Why it is a milestone |
 |---|---|---|
-| Холодніша за Всесвіт | 450 Б | T Гокінга впала до 2.725 K: діра поглинає з реліктового тла більше, ніж випромінює |
-| Земля | 58 КБ | маса Землі в горизонті 9 мм |
-| Межа запалювання зорі | 1.48 ГБ | 0.08 M☉ — нижче водень не горить, зоря не народжується |
-| Межа Чандрасекара | 25.9 ГБ | 1.4 M☉ — важчого білого карлика не існує |
-| Межа Оппенгеймера | 40.2 ГБ | 2.17 M☉ — важчої нейтронної зорі не існує; тільки чорна діра |
-| Лебідь X-1 | 393 ГБ | перша чорна діра, знайдена людством, 1964 |
-| GW150914 | 1.12 ТБ | перше почуте злиття, Нобель 2017 |
-| Заборонена смуга | 1.18–2.35 ТБ | 65–130 M☉: парна нестабільність не лишає чорної діри взагалі |
-| Омега Центавра | 148 ТБ | проміжна діра, знайдена у 2024 |
-| **НАДМАСИВНА** | **1.77 ПБ** | фінал Сезону I; горизонт — одна світлова секунда |
+| Colder than the universe | 450 B | Hawking T fell to 2.725 K: the hole absorbs more from the CMB than it emits |
+| Earth | 58 KB | Earth's mass inside a 9 mm horizon |
+| Stellar ignition limit | 1.48 GB | 0.08 M☉ — below this hydrogen does not burn and no star is born |
+| Chandrasekhar limit | 25.9 GB | 1.4 M☉ — no heavier white dwarf exists |
+| Oppenheimer limit | 40.2 GB | 2.17 M☉ — no heavier neutron star exists; only a black hole |
+| Cygnus X-1 | 393 GB | the first black hole humanity found, 1964 |
+| GW150914 | 1.12 TB | the first merger ever heard, Nobel 2017 |
+| Forbidden gap | 1.18–2.35 TB | 65–130 M☉: pair instability leaves no black hole at all |
+| Omega Centauri | 148 TB | intermediate-mass hole, found in 2024 |
+| **SUPERMASSIVE** | **1.77 PB** | the finale of Season I; the horizon is one light-second across |
 
-Прогрес-бар заповнюється **від попередньої віхи до наступної** — лінійно в
-байтах, бо підпис під ним каже «лишилось 6.5 ГБ», і логарифмічна шкала показувала
-б поруч 78%, що читалося б як брехня.
+The progress bar fills **from the previous milestone to the next**, linearly in
+bytes, because the caption under it says "6.5 GB to go" and a logarithmic scale
+would show 78% next to it, which would read as a lie.
 
-**Класи.** Ранг рахується за реальною масою, і кожна межа класу є одночасно
-віхою — інакше підпис у діалозі й реальний поріг розійшлися б на першій же
-правці. Це перевіряється assert'ом.
+**Classes.** Rank is computed from real mass, and every class boundary is also a
+milestone — otherwise the dialog caption and the actual threshold would drift
+apart on the first edit. An assert checks this.
 
-| Клас | Досягається на | Межа це |
+| Class | Reached at | The boundary is |
 |---|---|---|
-| Первинна діра | 1 байт | вікно первинних дір, що дожили |
-| Холодна діра | 450 Б | холодніша за реліктове тло |
-| Планетарна діра | 58 КБ | маса Землі |
-| Неможлива діра | 246.6 МБ | у цій вазі природа робить білі карлики й нейтронні зорі, а не чорні діри |
-| Зоряна діра | 40.2 ГБ | межа Оппенгеймера |
-| Проміжна діра | 1.81 ТБ | 100 мас Сонця |
-| Надмасивна діра | 1.77 ПБ | 10⁵ мас Сонця |
+| Primordial hole | 1 byte | the window of primordial holes that survived |
+| Cold hole | 450 B | colder than the CMB |
+| Planetary hole | 58 KB | Earth's mass |
+| Impossible hole | 246.6 MB | at this weight nature makes white dwarfs and neutron stars, not black holes |
+| Stellar hole | 40.2 GB | the Oppenheimer limit |
+| Intermediate hole | 1.81 TB | 100 solar masses |
+| Supermassive hole | 1.77 PB | 10⁵ solar masses |
 
-**Розсіювання.** Діра втрачає **0.5% маси за добу**, і це чиста ігрова механіка,
-не фізика: справжнє випаровування діри масою Сонця триває 2·10⁶⁷ років — у 10⁵⁷
-разів довше за вік Всесвіту. Один чесний залишок усе ж є: поки в дірі менше за
-450 байтів, вона справді гарячіша за реліктове тло і справді зменшується.
+**Dissipation.** The hole loses **0.5% of its mass per day**, and that is pure
+game mechanics, not physics: real evaporation of a solar-mass hole takes 2·10⁶⁷
+years, 10⁵⁷ times longer than the age of the universe. One honest remnant does
+survive: below 450 bytes the hole really is hotter than the CMB and really does
+shrink.
 
-Показано окремим рядком і **в байтах, а не у відсотках**: людину цікавить не
-відсоток, а скільки донести, щоб діра лишилась на місці.
+It is shown on its own line and **in bytes, not percent**: what a person wants
+to know is not a percentage but how much to carry in to keep the hole where it is.
 
-Звідси головний наслідок: діра **не накопичувач, а резервуар**. При постійному
-припливі `F` вона виходить на плато `F ÷ 0.005`, тобто **200× добового притоку**.
-Саме тому ставка 0.5%, а не 1%: при 1% і 11 ТБ/добу стеля була б 1.1 ПБ, і ціль
-сезону в 1.77 ПБ лишалася б недосяжною назавжди. Швидкість спаду виведена **з
-цілі**, живе в одній константі `DECAY` по обидва боки (клієнт і воркер) і
-перевіряється assert'ом, який падає, якщо ціль вилізе над стелею.
+Hence the main consequence: the hole is **a reservoir, not an accumulator**. At a
+steady inflow `F` it plateaus at `F ÷ 0.005`, i.e. **200× the daily inflow**.
+That is why the rate is 0.5% and not 1%: at 1% and 11 TB/day the ceiling would be
+1.1 PB and the season's 1.77 PB target would stay unreachable forever. The decay
+rate is derived **from the target**, lives in a single `DECAY` constant on both
+sides (client and worker), and is guarded by an assert that fails if the target
+ever climbs above the ceiling.
 
-Ємність горизонту за справжньою межею Бекенштейна показана окремо — і вона
-розмазує згодоване: на цілі сезону це 1.5·10⁸⁷ бітів проти 1.6·10¹⁶ кинутих.
-Площа горизонту тепер звичайна геометрія `4πr_s²`, тобто росте як **квадрат**
-байтів.
+Horizon capacity by the real Bekenstein bound is shown separately — and it
+dwarfs what has been fed in: at the season target that is 1.5·10⁸⁷ bits against
+1.6·10¹⁶ thrown. Horizon area is now plain geometry `4πr_s²`, so it grows as the
+**square** of bytes.
 
 ---
 
-## Як воно виглядає
+## How it looks
 
-Один фрагментний шейдер на голому WebGL, ~135 рядків GLSL:
+One fragment shader on bare WebGL, ~135 lines of GLSL:
 
-- **гравітаційне лінзування** — промінь відхиляється тим сильніше, чим ближче
-  проходить до горизонту, тож зоряне поле розтягується в кільце;
-- **фотонне кільце** на 1.09 радіуса;
-- **акреційний диск** зі сплюснутою геометрією і доплерівським підсиленням
-  (той бік, що летить на тебе, яскравіший);
-- **релятивістські джети** з полюсів — вмикаються при швидкому годуванні,
-  як у справжніх активних ядер галактик при перевищенні ліміту Еддінгтона;
-- **колір диска за температурою** — сама діра ознак не має (дві діри різної ваги
-  виглядають однаково), а диск має: за моделлю тонкого диска Шакури–Сюняєва
-  T ∝ M<sup>−1/4</sup>, і саме тому діри зоряних мас світять у рентгені, а
-  надмасивні — у видимому. Диск помітно холоднішає, поки спільнота його
-  відгодовує. Усередині він гарячіший за краї, бо T ∝ r<sup>−3/4</sup>. Колір
-  рахується наближенням Планка в RGB по перефарбованій температурі — див.
-  «Свідомі спрощення».
+- **gravitational lensing** — a ray bends more the closer it passes the horizon,
+  so the star field stretches into a ring;
+- **the photon ring** at 1.09 radii;
+- **an accretion disc** with oblate geometry and Doppler boosting (the side
+  coming at you is brighter);
+- **relativistic jets** from the poles — they switch on during fast feeding, the
+  way real active galactic nuclei do past the Eddington limit;
+- **disc colour by temperature** — the hole itself has no features (two holes of
+  different weight look identical), but the disc does: by the Shakura–Sunyaev
+  thin-disc model T ∝ M<sup>−1/4</sup>, which is precisely why stellar-mass holes
+  shine in X-rays and supermassive ones in visible light. The disc cools
+  noticeably as the crowd feeds it. It is hotter inside than at the edges,
+  because T ∝ r<sup>−3/4</sup>. Colour comes from a Planck approximation in RGB
+  over a remapped temperature — see "Deliberate simplifications".
 
-**Перетягування.** Поки файл висить над вікном, діра нахиляється до курсора; на
-відпусканні крізь кадр проходить хвиля викривлення. Обидва ефекти їдуть на
-уніформах, які вже є: `mouse` (паралакс) домножений на 2.5, і `lens` (сила
-відхилення) із затухаючою синусоїдою — картинка веде й повертається, тобто рівно
-те, як виглядає хвиля, що проходить крізь простір. Жодного нового рядка GLSL.
+**Dragging.** While a file hovers over the window the hole tilts toward the
+cursor; on release a wave of curvature crosses the frame. Both effects ride on
+uniforms that already exist: `mouse` (parallax) multiplied by 2.5, and `lens`
+(deflection strength) with a decaying sine — the picture leads and returns,
+which is exactly what a wave passing through space looks like. Not one new line
+of GLSL.
 
-`dragover` зводить `pull` до одиниці на **кожній** події, а кадр його гасить за
-250 мс — тому окремого скидання не потрібно взагалі: щойно перетягування
-спинилось, ефект осідає сам. Це заодно закриває драг, кинутий за межами вікна,
-якого `dragleave` із його `relatedTarget === null` не ловить ніколи.
+`dragover` drives `pull` to one on **every** event and the frame damps it over
+250 ms — so no explicit reset is needed at all: the moment dragging stops, the
+effect settles by itself. This also covers a drag dropped outside the window,
+which `dragleave` with its `relatedTarget === null` never catches.
 
-**Доступність.** При `prefers-reduced-motion` диск сповільнюється (час у шейдері
-×0.35), паралакс вимикається зовсім — разом із нахилом і хвилею, що на ньому
-їдуть, — а затягування HUD стає простим згасанням.
-Спершу тут стояло ×0.08 — і це виявилось не «спокійніше», а «мертво»: на такій
-швидкості диск візуально стоїть, і від проєкту лишається чорний круг. Найгостріший
-подразник тут не обертання само по собі, а паралакс, бо він відповідає на рух
-самої людини.
-Глушити самий лише інтерфейс було мало: для вестибулярної чутливості головна
-проблема — повноекранний диск, що обертається. Повідомлення про кидки, відмови
-й віхи озвучуються читалками з екрана через `role="status" aria-live="polite"`.
+**Accessibility.** Under `prefers-reduced-motion` the disc slows down (shader
+time ×0.35) and parallax is disabled entirely — along with the tilt and the wave
+that ride on it — while the HUD pull-in becomes a plain fade. It started at
+×0.08, and that turned out not to be "calmer" but "dead": at that speed the disc
+visually stands still and all that is left of the project is a black circle. The
+sharpest trigger here is not rotation itself but parallax, because it responds to
+the person's own movement. Muting only the interface was not enough: for
+vestibular sensitivity the real problem is a full-screen rotating disc. Drop,
+rejection and milestone messages are announced by screen readers through
+`role="status" aria-live="polite"`.
 
-**Без WebGL сторінка працює.** Контексту може не бути (вимкнене прискорення,
-стара збірка), і раніше це вбивало все: скрипт падав на `gl.createShader`, а
-`shock`, `quasar` і `hotT` оголошені нижче — тобто лишались у мертвій зоні, і
-жодна цифра не з'являлась. Тепер увесь GL під умовою, а `webglcontextlost`
-перезавантажує сторінку: на мобільних контекст губиться регулярно, і полотно
-інакше застигає назавжди.
+**The page works without WebGL.** The context may be missing (acceleration off,
+an old build), and that used to kill everything: the script threw at
+`gl.createShader`, while `shock`, `quasar` and `hotT` are declared below — so
+they stayed in the dead zone and not a single number appeared. Now all GL sits
+behind a condition, and `webglcontextlost` reloads the page: on mobile the
+context is lost regularly, and the canvas would otherwise freeze forever.
 
-**Віхи.** Перетин щабля драбини на секунду затягує інтерфейс за горизонт, а тоді
-випускає — і показує назву віхи разом із рядком про те, чому вона віха. Тридцять
-один щабель на п'ятнадцять порядків, приблизно один на пів порядку, тому
-наступна ціль завжди близько, а фінальна завжди велика. Пачка файлів може взяти
-кілька щаблів за раз — оголошується лише верхній.
+**Milestones.** Crossing a rung pulls the interface behind the horizon for a
+second, then releases it — and shows the milestone's name together with a line
+about why it is one. Thirty-one rungs across fifteen orders of magnitude, about
+one per half-order, so the next target is always close and the final one always
+large. A batch of files can take several rungs at once; only the top one is
+announced.
 
-Звуку немає навмисно: в космосі його не чути.
+There is no sound on purpose: in space you would not hear it.
 
-Three.js тут возив би сцену-граф і камеру заради двох трикутників на весь екран.
+Three.js here would haul a scene graph and a camera around for two triangles
+covering the screen.
 
 ---
 
-## Мови
+## Languages
 
-Українська для україномовних браузерів (`navigator.languages`), англійська для
-решти. Кнопка внизу перемикає руками, вибір лежить у `localStorage` і перекриває
-автовизначення — україномовний браузер за кордоном і англомовний в Україні
-трапляються обидва.
+Ukrainian for Ukrainian-speaking browsers (`navigator.languages`), English for
+everyone else. A button at the bottom switches manually, and the choice lives in
+`localStorage` and overrides autodetection — a Ukrainian-speaking browser abroad
+and an English-speaking one in Ukraine both happen.
 
-Словник `TXT` у [public/index.html](public/index.html) — по 120 ключів на мову.
-Числові межі лишились у коді, назви пішли в словник: `CLASSES`, `OBJECTS`,
-`SCALES`, `MILES`, `LEN_UNITS`, `KIND_RE` збираються з нього на старті. Розмітка позначена
-`data-t` (текст), `data-th` (з тегами всередині) і `data-ta` (aria-label);
-українська лишається в самому HTML як запасний варіант, якщо скрипт упаде.
+The `TXT` dictionary in [public/index.html](public/index.html) holds about 120
+keys per language. Numeric bounds stayed in code; names moved into the
+dictionary: `CLASSES`, `OBJECTS`, `SCALES`, `MILES`, `LEN_UNITS` and `KIND_RE`
+are assembled from it at startup. Markup is tagged with `data-t` (text), `data-th`
+(with inline tags) and `data-ta` (aria-label); Ukrainian stays in the HTML itself
+as the fallback if the script dies.
 
-Фрази з числами живуть у словнику **функціями**, а не шматками: `у 4 рази
-важча, ніж Сонце` і `4× heavier than the Sun` — це різна граматика, і склеювати
-її спільним кодом означало б писати кальку однією з мов. Назви й нотатки віх
-лежать **за ключем**, а не за індексом: вставка щабля в середину драбини інакше
-зсунула б переклад на чуже число.
+Phrases containing numbers live in the dictionary as **functions**, not
+fragments: `у 4 рази важча, ніж Сонце` and `4× heavier than the Sun` are
+different grammar, and gluing them with shared code would mean writing a calque
+in one of the languages. Milestone names and notes are keyed **by name, not by
+index**: inserting a rung mid-ladder would otherwise shift a translation onto
+somebody else's number.
 
-Усі три таблиці в діалозі — маси, класи, драбина — **генеруються** з тих самих
-формул і меж, що й решта сторінки. Це не тільки прибирає дублювання перекладу:
-коли вперше перейшли на генерацію, вона одразу виправила два числа, які встигли
-застаріти в розмітці. Драбину малює одноразовий `renderMileTable()` при першому
-відкритті діалогу, а не `renderNumbers()` — тридцять один рядок `innerHTML` на
-кожен кадр згладжування маси був би чистим марнотратством.
+All three tables in the dialog — masses, classes, ladder — are **generated** from
+the same formulas and bounds as the rest of the page. That does not only remove
+duplicated translation: when generation first landed, it immediately corrected
+two numbers that had gone stale in the markup. The ladder is drawn by a one-shot
+`renderMileTable()` when the dialog first opens rather than by `renderNumbers()`
+— thirty-one rows of `innerHTML` on every mass-tweening frame would be pure
+waste.
 
-`<title>`, `<meta name="description">` і всі `og:`-теги — **англійською й статично**.
-Їх читають краулери, а вони `Accept-Language` не шлють: картка при шері буде
-однією мовою назавжди, і ця мова має бути тією, якою посилання полетить далі.
-Заголовок вкладки для самого користувача перевизначає скрипт: `document.title = L.title`.
+`<title>`, `<meta name="description">` and all `og:` tags are **English and
+static**. Crawlers read them and crawlers do not send `Accept-Language`: the
+share card will be in one language forever, and that language should be the one
+the link travels in. The tab title for the actual user is overridden by the
+script: `document.title = L.title`.
 
-Картка — `summary_large_image` з `og:image` на `/og.jpg`, 1200×630. Без картинки
-посилання в телеграмі чи твітері виглядає сірим прямокутником, а весь проєкт
-побудований на «кинь другу подивитись».
+The card is `summary_large_image` with `og:image` pointing at `/og.jpg`,
+1200×630. Without an image a link in Telegram or Twitter looks like a grey
+rectangle, and the whole project is built on "send this to a friend".
 
-Сама картка — це знімок сторінки, а не окрема ілюстрація: так вона показує саме
-те, що людина побачить, і несе головне твердження проєкту («18.5 ГБ = маса
-Сонця»). Оновити:
+The card itself is a screenshot of the page rather than separate artwork: that
+way it shows exactly what the person will see and carries the project's headline
+claim ("18.5 GB = the mass of the Sun"). To refresh it:
 
 ```
 chrome --headless --use-gl=swiftshader --force-prefers-reduced-motion \
@@ -249,225 +269,236 @@ chrome --headless --use-gl=swiftshader --force-prefers-reduced-motion \
        --screenshot=og.png file:///.../index.html
 ```
 
-Одна пастка: заголовна маса піднімається з нуля анімацією, а headless віддає
-непередбачувану кількість кадрів, тож знімок ловить число посеред підйому —
-різне на кожному прогоні. Тому в сторінку при зйомці підмінюється
-`requestAnimationFrame`, який прокручує перші 300 кадрів фіксованим кроком.
+One trap: the headline mass animates up from zero, and headless returns an
+unpredictable number of frames, so the screenshot catches the number mid-climb —
+different on every run. So during capture the page has `requestAnimationFrame`
+swapped for one that advances the first 300 frames at a fixed step.
 
 ---
 
-## Архітектура
+## Architecture
 
 ```
-wrangler.toml         один конфіг
-public/index.html     уся сторінка: розмітка, стилі, шейдер, логіка
-worker/src/index.js   бекенд
+wrangler.toml         one config
+public/index.html     the whole page: markup, styles, shader, logic
+worker/src/index.js   the backend
 ```
 
-**Заголовків кешування тут навмисно немає.** Був `public/_headers` із `no-cache`,
-і він робив рівно протилежне задуманому: перекривав те, що Workers Assets віддає
-сам, і разом із ним зникав `ETag`. Без ETag «перепитай перед показом» означає
-«скачай усі 156 КБ заново» — щоразу, перед будь-яким малюванням. Це давало
-порожній екран на кожному оновленні сторінки.
+**There are deliberately no caching headers here.** There used to be a
+`public/_headers` with `no-cache`, and it did precisely the opposite of what was
+intended: it overrode what Workers Assets serves by itself, and the `ETag` went
+with it. Without an ETag, "revalidate before showing" means "download all 156 KB
+again" — every time, before any drawing. That produced a blank screen on every
+page refresh.
 
-Типова поведінка Workers Assets для HTML — `must-revalidate` **з ETag**, тобто
-сторінка завжди свіжа, але при незмінному вмісті приїжджає 304 замість тіла.
-А про вихід нової версії відкриті вкладки й так дізнаються з `CF_VERSION` по
-вебсокету.
+The typical Workers Assets behaviour for HTML is `must-revalidate` **with an
+ETag**: the page is always fresh, but when the content has not changed a 304
+arrives instead of a body. And open tabs learn about a new release from
+`CF_VERSION` over the websocket anyway.
 
-Сторінка і API живуть на **одному воркері й одному домені** — статику віддає
-той самий Worker, тож CORS між своїми не потрібен.
+The page and the API live on **one worker and one domain** — the same Worker
+serves the static files, so there is no CORS between our own parts.
 
-Спільний стан — **один Durable Object** на весь світ (`idFromName('the-hole')`).
-Один обʼєкт означає, що інкременти серіалізуються самі собою: гонок немає без
-жодних транзакцій. WebSocket живе там же, через **Hibernation API** — сокети
-переживають вивантаження обʼєкта з памʼяті, тож відкритий зал не тримає його
-живим вічно.
+Shared state is **a single Durable Object** for the whole world
+(`idFromName('the-hole')`). One object means increments serialise by themselves:
+no races, no transactions. The WebSocket lives there too, through the
+**Hibernation API** — sockets survive the object being evicted from memory, so a
+full room does not keep it alive forever.
 
-Той самий обʼєкт — і єдине вузьке місце всього проєкту, тому до нього не
-пускають нічого зайвого: воркер відповідає 404 на всі шляхи, крім чотирьох
-відомих (інакше `/favicon.ico` кожного відвідувача був би зверненням до нього),
-а сторінка бере початковий стан із першого повідомлення сокета, а не окремим
-`GET /state`.
+That same object is the one bottleneck of the entire project, so nothing
+unnecessary is allowed near it: the worker answers 404 on every path but the four
+known ones (otherwise every visitor's `/favicon.ico` would be a hit on it), and
+the page takes its initial state from the socket's first message rather than a
+separate `GET /state`.
 
-CORS немає навмисно, але **сам по собі він нічого не захищає** — і тут довго
-стояло невірне твердження. Відсутність CORS-заголовків забороняє чужому сайту
-*прочитати відповідь*, а не *надіслати запит*: `POST` із `text/plain` — це
-«простий» запит, він летить без preflight, і побічний ефект відпрацьовує.
+There is no CORS on purpose, but **CORS by itself protects nothing** — a wrong
+claim stood here for a long time. Missing CORS headers forbid another site from
+*reading the response*, not from *sending the request*: a `POST` with
+`text/plain` is a "simple" request, it flies without preflight, and the side
+effect happens.
 
-Тому `/feed` вимагає `content-type: application/json`. Саме ця вимога робить
-запит непростим: браузер спершу шле preflight, а той падає, бо CORS ми не
-віддаємо. Перевірка `Origin` закриває ще й `<form enctype="text/plain">`,
-який preflight не робить взагалі.
+So `/feed` requires `content-type: application/json`. That requirement is what
+makes the request non-simple: the browser sends a preflight first, and the
+preflight fails because we serve no CORS. Checking `Origin` additionally closes
+`<form enctype="text/plain">`, which never preflights at all.
 
-Сторінка працює і без бекенду: якщо `API` у [public/index.html](public/index.html)
-порожній, діра стає особистою і зберігається в `localStorage`. Те саме
-відбувається, якщо воркер ліг — фронт перепідключається сам.
+The page also works without a backend: if `API` in
+[public/index.html](public/index.html) is empty, the hole becomes personal and
+persists in `localStorage`. The same happens if the worker goes down — the front
+end reconnects on its own.
 
-Після другої поспіль невдачі підключення стан береться разово через `GET /state`:
-за корпоративним проксі WebSocket не піднімається ніколи, і без цього людина
-бачила «порожньо» на дірі, що важить тисячі Сонць. Це не полінг — рівно один запит,
-доки сокет не оживе.
+After a second consecutive failed connection the state is fetched once via
+`GET /state`: behind a corporate proxy a WebSocket never comes up, and without
+this a person saw "empty" on a hole weighing thousands of Suns. This is not
+polling — exactly one request, until the socket revives.
 
-Перепідключення **зі зростанням і джитером** (1 с → 60 с, ±50%). З фіксованим
-інтервалом увесь зал ломиться назад в один такт і не дає воркеру піднятись:
-падіння стає самопідтримним. Плюс перевірка на `visibilitychange` — приспаний
-мобільний таб часто не отримує `close`, і сокет мовчки мертвий.
+Reconnection uses **backoff with jitter** (1 s → 60 s, ±50%). At a fixed interval
+the whole room piles back in on one beat and never lets the worker get up: an
+outage becomes self-sustaining. Plus a `visibilitychange` check — a sleeping
+mobile tab often never receives `close`, and the socket is silently dead.
 
 ---
 
 ## API
 
-| Метод | Шлях | Що робить |
+| Method | Path | What it does |
 |---|---|---|
-| `GET` | `/state` | `{ bytes, count, watching, v, record, recent[] }` — `v` це `CF_VERSION` |
-| `GET` | `/ws` | WebSocket, шле знімок стану при підключенні й далі при змінах |
-| `POST` | `/feed` | `{ items: [{ bytes, ext, sig }] }` → новий стан + `rejected[]` |
-| `POST` | `/rollback?hours=N` | знімає всі події за N годин, потрібен `x-admin-token` |
+| `GET` | `/state` | `{ bytes, count, watching, v, record, recent[] }` — `v` is `CF_VERSION` |
+| `GET` | `/ws` | WebSocket; sends a state snapshot on connect and then on changes |
+| `POST` | `/feed` | `{ items: [{ bytes, ext, sig }] }` → new state + `rejected[]` |
+| `POST` | `/rollback?hours=N` | removes every event from the last N hours, requires `x-admin-token` |
 
-`/ws` відповідає `pong` на `ping` через `setWebSocketAutoResponse` — платформа
-обробляє це сама, не будячи обʼєкт. Без keepalive сокет на спокійній дірі мовчить
-годинами, NAT ріже його за 30–120 секунд, і клієнт мовчки показує вчорашню масу.
-Пінгувати самотужки клієнт не може: будь-яке інше вхідне повідомлення закриває
-зʼєднання, бо протокол односторонній.
+`/ws` answers `ping` with `pong` through `setWebSocketAutoResponse` — the
+platform handles it without waking the object. Without keepalive a socket on a
+quiet hole stays silent for hours, NAT cuts it after 30–120 seconds, and the
+client silently shows yesterday's mass. The client cannot ping by itself: any
+other inbound message closes the connection, because the protocol is one-way.
 
-Розсилка по WebSocket **агрегована**, і такт росте разом із залом:
-`min(5 с, 1 с + 2 мс × глядачів)`. Фіксована секунда при двох тисячах глядачів —
-це дві тисячі `send` за секунду з одного однопотокового обʼєкта.
+WebSocket broadcast is **batched**, and the beat grows with the room:
+`min(5 s, 1 s + 2 ms × watchers)`. A fixed second with two thousand watchers is
+two thousand `send` calls per second out of one single-threaded object.
 
-### Ліміти
+### Limits
 
-| Що | Скільки |
+| What | How much |
 |---|---|
-| За один кидок | 100 ГБ |
-| З мережі за добу | 500 ГБ |
-| **Уся діра за добу** | **50 ТБ**, зі сплеском до 5 ТБ |
-| Кулдаун | 150 мс |
-| Дедуп по підпису | серед 300 останніх подій |
-| Пачка за один запит | 200 елементів |
-| Тіло `POST /feed` | 16 КБ, `content-length` обовʼязковий |
+| Per drop | 100 GB |
+| Per network per day | 500 GB |
+| **The whole hole per day** | **50 TB**, with a burst up to 5 TB |
+| Cooldown | 150 ms |
+| Signature dedup | across the last 300 events |
+| Batch per request | 200 items |
+| `POST /feed` body | 16 KB, `content-length` required |
 
-**Пачка — одним запитом.** Кинута тека це одна дія, а не сто. Раніше клієнт
-проштовхував файли по одному, і кулдаун ставив стелю ~6.6 файлів на секунду:
-на 98 файлах більшість відбивалась 429, а людина бачила, що ніби всі
-проковтнулись. Повтори не рятували — вони лише доливали запитів у забитий канал.
+**A batch goes in one request.** A dropped folder is one action, not a hundred.
+The client used to push files one at a time, and the cooldown put a ceiling at
+~6.6 files per second: with 98 files most bounced off with a 429 while the person
+saw what looked like all of them being swallowed. Retries did not help — they
+only poured more requests into a jammed channel.
 
-Кожен елемент пачки судиться окремо, і відмова по одному не валить решту:
-у відповіді приходить `rejected[]` із причинами й підписами, тож клієнт знімає
-рівно відхилені. Одиночний кидок відповідає по-старому — статусом 409/429 —
-щоб не побити відкриті вкладки з попереднім клієнтом.
+Every item in a batch is judged separately, and one rejection does not take down
+the rest: the response carries `rejected[]` with reasons and signatures, so the
+client removes exactly the rejected ones. A single drop still answers the old way
+— 409/429 — so as not to break open tabs running the previous client.
 
-Кулдаун списується з **кожного** запиту, що пройшов саму перевірку кулдауна,
-а не лише з успішного: інакше сміттям можна молотити без обмежень.
+The cooldown is charged on **every** request that passed the cooldown check
+itself, not only on successful ones: otherwise you could hammer away with garbage
+indefinitely.
 
-**Глобальний ліміт — єдиний, який справді тримає.** Кап на адресу це чесність,
-а не захист: адреси безкоштовні. Домашній IPv6-префікс `/48` містить 65 536
-підмереж `/64`, а орендований проксі-пул закриває ті ~4000 адрес, яких вистачає
-на цілий сезон за один вечір. Тому поверх усього стоїть дірявий бак на всю діру:
-50 ТБ за добу сталого припливу, 5 ТБ разового сплеску. Йому байдуже, звідки
-прийшли байти, тож обійти його не можна взагалі — навіть із тисячею адрес
-надмасивна не збереться швидше ніж за сорок діб. Розрахунковий приплив проєкту
-11 ТБ/добу, тобто у чесного трафіку лишається 4.5× запасу.
+**The global limit is the only one that actually holds.** A per-address cap is
+honesty, not defence: addresses are free. A home IPv6 `/48` prefix contains
+65,536 `/64` subnets, and a rented proxy pool covers the ~4,000 addresses that
+would be enough for an entire season in one evening. So on top of everything sits
+a leaky bucket for the whole hole: 50 TB per day of sustained inflow, 5 TB of
+one-off burst. It does not care where the bytes came from, so it cannot be worked
+around at all — even with a thousand addresses, supermassive would take forty
+days. The project's projected inflow is 11 TB/day, which leaves honest traffic
+4.5× of headroom.
 
-IPv6 ріжеться по `/48`, а не по `/64`: абоненту делегують `/56` або `/48`, тож
-усі `/64` всередині — його, і це від 256 до 65 536 безкоштовних добових капів.
-`/48` — найменший блок, якого один абонент не намножить.
+IPv6 is cut at `/48`, not `/64`: a subscriber is delegated a `/56` or a `/48`, so
+every `/64` inside belongs to them — anywhere from 256 to 65,536 free daily caps.
+`/48` is the smallest block a single subscriber cannot multiply.
 
-Лічильники **дзеркаляться у власні ключі сховища** (`ip:*`), а не в блоб: у
-блобі вони росли б із кожною адресою і одного дня перевищили б ліміт значення
-128 КБ, зламавши запис усього стану. Самої памʼяті було замало — старий аргумент
-«під атакою обʼєкт не встигає заснути» вірний для флуду й хибний для повільної
-атаки: кинув 500 ГБ, дочекався евікшену, отримав свіжий кап. Вчорашні рядки
-підмітаються при пробудженні, тож сховище не росте. Витіснення — за **останнім
-зверненням**, а не за вставкою: інакше той, хто вже вперся в кап, скидав собі
-лічильник одним заходом із 20 000 адрес.
+Counters are **mirrored into their own storage keys** (`ip:*`) rather than the
+blob: inside the blob they would grow with every address and one day exceed the
+128 KB value limit, breaking the write of the entire state. Memory alone was not
+enough — the old argument that "under attack the object never gets to sleep" is
+true for a flood and false for a slow one: drop 500 GB, wait for eviction, get a
+fresh cap. Yesterday's rows are swept on wake-up, so storage does not grow.
+Eviction is by **last access**, not by insertion: otherwise somebody already at
+their cap could reset it in one pass with 20,000 addresses.
 
-Розширення санітизується до `[a-z0-9]{1,8}` — `../../ЯКЕСЬ Імʼя.pdf` стає `pdf`.
+The extension is sanitised to `[a-z0-9]{1,8}` — `../../Some Name.pdf` becomes
+`pdf`.
 
-Ліміти написані двічі — у воркері й на сторінці, яка їх показує в розділі
-«Правила». `worker/test.mjs` звіряє обидві копії, як і `DECAY`: сторінка, що
-тихо бреше про ліміт, гірша за сторінку, яка мовчить.
+The limits are written twice — in the worker and on the page that displays them
+under "Rules". `worker/test.mjs` compares both copies, as it does for `DECAY`: a
+page quietly lying about a limit is worse than a page that says nothing.
 
-### Відкат
+### Rollback
 
-Глобальний ліміт робить накрутку безглуздою, але не неможливою — на прибирання
-того, що все ж пролізло:
+The global limit makes inflation pointless but not impossible — this is for
+cleaning up whatever still got through:
 
 ```bash
 curl -X POST "https://nohair.dev/rollback?hours=24" \
      -H "x-admin-token: $ADMIN_TOKEN"
 ```
 
-Знімає всі події за добу й зменшує масу на їхню суму. Накрутка перестає бути
-катастрофою і стає десятьма хвилинами прибирання.
+It removes every event from the last day and reduces the mass by their sum.
+Inflation stops being a catastrophe and becomes ten minutes of cleanup.
 
 ---
 
-## Розробка
+## Development
 
 ```bash
 npx wrangler login
-npx wrangler dev        # локально, з справжнім Durable Object
-npx wrangler deploy     # оновлює одразу і сторінку, і API
+npx wrangler dev        # locally, with a real Durable Object
+npx wrangler deploy     # updates the page and the API at once
 ```
 
-Секрет для відкату:
+The rollback secret:
 
 ```bash
 npx wrangler secret put ADMIN_TOKEN
 ```
 
 ```bash
-node worker/test.mjs      # ліміти, санітизація, /48, відкат, маршрутизація
+node worker/test.mjs      # limits, sanitisation, /48, rollback, routing
 ```
 
-Самоперевірка фізики — відкрий сторінку з `?test` і глянь у консоль, **в обох
-мовах**. Перевіряються формули маси, радіуса, світності, часу випаровування,
-уповільнення часу, приливного розтягнення, оберненість `bytesFor`/`massOf`,
-межі класів, стеля резервуара і драбина віх.
-Три перевірки там навантажені окремо:
+For the physics self-check, open the page with `?test` and look at the console,
+**in both languages**. It verifies the formulas for mass, radius, luminosity,
+evaporation time, time dilation and tidal stretching, the invertibility of
+`bytesFor`/`massOf`, class boundaries, the reservoir ceiling and the milestone
+ladder. Three of those checks carry their own weight:
 
-- `MILES` мусить строго зростати. Значення обчислюються з фізики, тому
-  неправильно відсортований щабель неможливо побачити оком, і він тихо зламав би
-  лічильник пройдених віх.
-- кожна межа класу мусить бути одночасно віхою;
-- масиви в словнику мусять відповідати довжині JS-константи, а не лише один
-  одному. Раніше перевірялася лише парність uk/en — короткий масив тихо
-  рендерив `undefined`.
-
----
-
-## Свідомі спрощення
-
-Позначені в коді коментарями `ponytail:` — це не забуті недоробки, а зрізані кути
-з відомою стелею:
-
-- **сам закон маси.** `1 байт = 10²⁰ кг` — вигадка, і справжня межа Бекенштейна
-  каже протилежне: горизонт масою в кілограм вмістив би кілька петабайтів. Ми
-  граємо навпаки, бо інакше вся сторінка показувала б кілька грамів.
-- **розсіювання 0.5% за добу** — ігрова механіка без фізичного алібі: справжнє
-  випаровування триває 2·10⁶⁷ років. Це також єдиний регулятор складності, тому
-  ставка живе в одній константі `DECAY` по обидва боки.
-- **екранний радіус росте як √(log₁₀ байтів)**, а не прямо. Маса тепер лінійна в
-  байтах, отже й радіус — справжній закон дав би мільярдну різницю між 1 Б і 1 ГБ,
-  і діра була б або невидимою, або на весь екран.
-- **колір диска — false colour.** Закон T ∝ M<sup>−1/4</sup> справжній, і сторінка
-  показує справжню температуру диска (5.6·10⁵–3.8·10⁹ K). Але це рентген і крайній
-  ультрафіолет, око їх не бачить, а наближення Планка в RGB валідне лише
-  1000–40000 K. Тому справжня
-  температура кладеться лог-лінійно у видимий діапазон — так фарбують знімки
-  телескопів. Порядок збережено: гарячіше досі синіше.
-- **підпис файлу — FNV-1a по 64 КБ**, а не SHA-256. Це сіда для дедупу й візуалу
-  випромінювання, не крипта; зате працює на `file://`, де `crypto.subtle` немає.
-- **увесь стан DO — один блоб** під ключем `d`. Ліміт значення — 128 КБ, тому лог
-  відкату обмежений тисячею подій. Треба глибший — перенести лог у
-  `state.storage.sql`, решта коду не зміниться.
-- **немає плану Б, якщо WebSocket не піднімається.** Сторінка просто лишається
-  особистою — це і є задокументована поведінка без бекенду. Опитування `/state`
-  як запасний канал додасть навантаження рівно там, де воно вже болить.
+- `MILES` must increase strictly. The values are computed from physics, so a
+  wrongly sorted rung is impossible to spot by eye and would quietly break the
+  count of milestones passed.
+- every class boundary must also be a milestone;
+- dictionary arrays must match the length of the JS constant, not merely each
+  other. Only uk/en parity was checked before, and a short array quietly rendered
+  `undefined`.
 
 ---
 
-## Ліцензія
+## Deliberate simplifications
 
-MIT. Це фан-проєкт.
+Marked in the code with `ponytail:` comments — these are not forgotten loose ends
+but corners cut with a known ceiling:
+
+- **the mass law itself.** `1 byte = 10²⁰ kg` is a fiction, and the real
+  Bekenstein bound says the opposite: a one-kilogram horizon would hold several
+  petabytes. We play it backwards, because otherwise the whole page would show a
+  few grams.
+- **0.5% dissipation per day** — game mechanics with no physical alibi: real
+  evaporation takes 2·10⁶⁷ years. It is also the only difficulty knob, which is
+  why the rate lives in one `DECAY` constant on both sides.
+- **on-screen radius grows as √(log₁₀ bytes)**, not directly. Mass is now linear
+  in bytes, so the radius would be too — and the real law would put a
+  billion-fold difference between 1 B and 1 GB, leaving the hole either invisible
+  or filling the screen.
+- **disc colour is false colour.** The law T ∝ M<sup>−1/4</sup> is real and the
+  page shows the disc's real temperature (5.6·10⁵–3.8·10⁹ K). But that is X-ray
+  and extreme ultraviolet, the eye cannot see it, and the Planck approximation in
+  RGB is only valid over 1000–40000 K. So the real temperature is mapped
+  log-linearly into the visible range — the way telescope images are coloured.
+  The ordering is preserved: hotter is still bluer.
+- **the file signature is FNV-1a over 64 KB**, not SHA-256. It is a seed for
+  dedup and for the emission visuals, not crypto; in exchange it works on
+  `file://`, where `crypto.subtle` does not exist.
+- **the entire DO state is one blob** under key `d`. The value limit is 128 KB,
+  so the rollback log is capped at a thousand events. If a deeper one is ever
+  needed, move the log into `state.storage.sql` and the rest of the code stays
+  as it is.
+- **there is no plan B if the WebSocket never comes up.** The page simply stays
+  personal — which is the documented behaviour without a backend. Polling
+  `/state` as a fallback channel would add load exactly where it already hurts.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE). It is a fun project.
